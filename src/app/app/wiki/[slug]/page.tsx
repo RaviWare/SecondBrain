@@ -1,31 +1,27 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Edit3, Save, X, ExternalLink, Tag, Clock, Link2 } from 'lucide-react'
+import { gsap } from 'gsap'
+import { ArrowLeft, Edit3, Save, X, ExternalLink, Tag, Clock, Link2, Network } from 'lucide-react'
 import { timeAgo } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
-const TYPE_COLORS: Record<string, string> = {
-  'source-summary': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  concept:          'bg-violet-500/20 text-violet-300 border-violet-500/30',
-  entity:           'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  synthesis:        'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  pattern:          'bg-rose-500/20 text-rose-300 border-rose-500/30',
-  'query-answer':   'bg-zinc-700/50 text-zinc-300 border-zinc-600',
+const TYPE_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
+  'source-summary': { color: 'text-blue-400',    bg: 'bg-blue-500/10',    border: 'border-blue-500/20' },
+  concept:          { color: 'text-violet-400',  bg: 'bg-violet-500/10',  border: 'border-violet-500/20' },
+  entity:           { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  synthesis:        { color: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20' },
+  pattern:          { color: 'text-rose-400',    bg: 'bg-rose-500/10',    border: 'border-rose-500/20' },
+  'query-answer':   { color: 'text-zinc-400',    bg: 'bg-zinc-500/10',    border: 'border-zinc-500/20' },
 }
 
 function renderContent(content: string) {
-  // Strip YAML frontmatter
   const stripped = content.replace(/^---[\s\S]*?---\n?/, '')
-
-  // Replace [[wikilink]] with clickable spans
   const withLinks = stripped.replace(/\[\[([^\]]+)\]\]/g, (_, slug) =>
     `<a href="/app/wiki/${slug}" class="wiki-link">[[${slug}]]</a>`
   )
-
-  // Basic markdown rendering
   return withLinks
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
@@ -50,6 +46,8 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
   const [editing, setEditing] = useState(false)
   const [editContent, setEditContent] = useState('')
   const [saving, setSaving] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const sidebarRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -61,6 +59,15 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
         setLoading(false)
       })
   }, [slug])
+
+  useEffect(() => {
+    if (!loading && contentRef.current) {
+      gsap.from(contentRef.current, { opacity: 0, y: 20, duration: 0.5, ease: 'power2.out' })
+    }
+    if (!loading && sidebarRef.current) {
+      gsap.from(sidebarRef.current, { opacity: 0, x: 16, duration: 0.5, delay: 0.15, ease: 'power2.out' })
+    }
+  }, [loading])
 
   async function handleSave() {
     setSaving(true)
@@ -75,88 +82,109 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
   }
 
   if (loading) return (
-    <div className="p-8 max-w-4xl mx-auto animate-pulse">
-      <div className="h-4 bg-zinc-800 rounded w-32 mb-8" />
-      <div className="h-8 bg-zinc-800 rounded w-2/3 mb-4" />
-      <div className="space-y-3">
-        {[...Array(8)].map((_, i) => <div key={i} className="h-3 bg-zinc-800 rounded" />)}
+    <div className="flex gap-0 min-h-screen">
+      <div className="flex-1 p-8 max-w-3xl animate-pulse">
+        <div className="h-3 bg-white/5 rounded w-24 mb-8" />
+        <div className="h-6 bg-white/5 rounded w-1/3 mb-4" />
+        <div className="h-8 bg-white/5 rounded w-2/3 mb-8" />
+        <div className="space-y-3">
+          {[...Array(10)].map((_, i) => <div key={i} className={`h-3 bg-white/5 rounded ${i % 3 === 2 ? 'w-2/3' : 'w-full'}`} />)}
+        </div>
       </div>
     </div>
   )
 
   if (!data?.page) return (
     <div className="p-8 text-center">
-      <p className="text-zinc-500">Page not found.</p>
-      <Link href="/app/wiki" className="text-violet-400 text-sm mt-2 block">← Back to wiki</Link>
+      <p className="mono text-xs text-white/30 tracking-widest mb-4">PAGE NOT FOUND</p>
+      <Link href="/app/wiki" className="mono text-xs text-violet-400 hover:text-violet-300 tracking-wider">← BACK TO WIKI</Link>
     </div>
   )
 
   const { page, backlinks = [] } = data
+  const cfg = TYPE_CONFIG[page.type] || TYPE_CONFIG['query-answer']
 
   return (
-    <div className="flex gap-0 min-h-screen">
+    <div className="flex min-h-screen">
       {/* Main content */}
-      <div className="flex-1 p-8 max-w-3xl">
-        {/* Back + actions */}
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={() => router.back()} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back
+      <div ref={contentRef} className="flex-1 p-8 max-w-3xl min-w-0">
+        {/* Nav bar */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 mono text-[10px] text-white/25 hover:text-white/50 tracking-widest transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            BACK
           </button>
           {editing ? (
             <div className="flex items-center gap-2">
-              <button onClick={() => setEditing(false)} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm px-3 py-1.5 rounded-lg transition-colors">
-                <X className="w-3.5 h-3.5" /> Cancel
+              <button
+                onClick={() => setEditing(false)}
+                className="flex items-center gap-1.5 mono text-[10px] text-white/25 hover:text-white/50 tracking-wider px-3 py-1.5 rounded-lg glass border border-white/5 transition-all"
+              >
+                <X className="w-3 h-3" /> CANCEL
               </button>
-              <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-sm px-3 py-1.5 rounded-lg transition-colors">
-                <Save className="w-3.5 h-3.5" />
-                {saving ? 'Saving...' : 'Save'}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 mono text-[10px] btn-primary px-3 py-1.5 rounded-lg tracking-wider"
+              >
+                <Save className="w-3 h-3" />
+                {saving ? 'SAVING...' : 'SAVE'}
               </button>
             </div>
           ) : (
-            <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors">
-              <Edit3 className="w-3.5 h-3.5" /> Edit
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 mono text-[10px] text-white/25 hover:text-white/50 tracking-wider px-3 py-1.5 rounded-lg glass border border-white/5 hover:border-white/10 transition-all"
+            >
+              <Edit3 className="w-3 h-3" /> EDIT
             </button>
           )}
         </div>
 
         {/* Meta */}
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className={cn('text-xs px-2.5 py-1 rounded-full border font-medium', TYPE_COLORS[page.type] || 'bg-zinc-700 text-zinc-300 border-zinc-600')}>
-            {page.type}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <span className={cn('mono text-[9px] px-2.5 py-1 rounded border font-medium tracking-wider', cfg.color, cfg.bg, cfg.border)}>
+            {page.type?.toUpperCase()}
           </span>
           {page.confidence && (
-            <span className={cn('text-xs font-medium',
-              page.confidence === 'high' ? 'text-emerald-400' :
-              page.confidence === 'low'  ? 'text-rose-400' : 'text-zinc-500')}>
-              {page.confidence} confidence
+            <span className={cn('mono text-[9px] tracking-wider',
+              page.confidence === 'high' ? 'text-emerald-400/70' :
+              page.confidence === 'low'  ? 'text-rose-400/70' : 'text-white/25')}>
+              {page.confidence.toUpperCase()} CONFIDENCE
             </span>
           )}
-          <span className="text-xs text-zinc-600 flex items-center gap-1">
+          <span className="mono text-[9px] text-white/20 flex items-center gap-1 tracking-wider ml-auto">
             <Clock className="w-3 h-3" />
-            Updated {timeAgo(page.updatedAt)}
+            {timeAgo(page.updatedAt).toUpperCase()}
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold text-zinc-100 mb-6 leading-tight">{page.title}</h1>
+        <h1 className="text-3xl font-black text-white/90 mb-6 leading-tight">{page.title}</h1>
 
         {/* Tags */}
         {page.tags?.length > 0 && (
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            <Tag className="w-3.5 h-3.5 text-zinc-600" />
+          <div className="flex items-center gap-2 mb-8 flex-wrap">
+            <Tag className="w-3 h-3 text-white/20" />
             {page.tags.map((t: string) => (
-              <span key={t} className="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">#{t}</span>
+              <span key={t} className="mono text-[9px] text-white/25 bg-white/3 border border-white/5 px-2 py-0.5 rounded tracking-wider">
+                #{t}
+              </span>
             ))}
           </div>
         )}
+
+        {/* Separator */}
+        <div className="h-px bg-gradient-to-r from-violet-500/20 via-white/5 to-transparent mb-8" />
 
         {/* Content */}
         {editing ? (
           <textarea
             value={editContent}
             onChange={e => setEditContent(e.target.value)}
-            className="w-full h-[60vh] bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-sm text-zinc-200 font-mono focus:outline-none focus:border-violet-500 resize-none leading-7"
+            className="w-full h-[60vh] bg-black/30 border border-white/8 rounded-xl p-5 text-sm text-white/70 font-mono focus:outline-none focus:border-violet-500/50 resize-none leading-7"
           />
         ) : (
           <div
@@ -167,17 +195,23 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
       </div>
 
       {/* Right sidebar */}
-      <div className="w-64 shrink-0 border-l border-zinc-800 p-6 sticky top-0 h-screen overflow-y-auto">
+      <div ref={sidebarRef} className="w-60 shrink-0 border-l border-white/5 p-6 sticky top-0 h-screen overflow-y-auto bg-[#06060f]">
+        <p className="mono text-[9px] text-white/20 tracking-widest mb-5">CONNECTIONS</p>
+
         {/* Related */}
         {page.relatedSlugs?.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <ExternalLink className="w-3 h-3" /> Related
-            </h3>
+            <div className="flex items-center gap-1.5 mb-3">
+              <Network className="w-3 h-3 text-white/20" />
+              <p className="mono text-[9px] text-white/25 tracking-widest">RELATED</p>
+            </div>
             <div className="space-y-1.5">
               {page.relatedSlugs.map((s: string) => (
-                <Link key={s} href={`/app/wiki/${s}`}
-                  className="block text-sm text-zinc-400 hover:text-violet-300 transition-colors truncate">
+                <Link
+                  key={s}
+                  href={`/app/wiki/${s}`}
+                  className="block mono text-[10px] text-white/30 hover:text-violet-300 transition-colors truncate tracking-wide py-0.5"
+                >
                   [[{s}]]
                 </Link>
               ))}
@@ -187,14 +221,18 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
 
         {/* Backlinks */}
         {backlinks.length > 0 && (
-          <div>
-            <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <Link2 className="w-3 h-3" /> Backlinks
-            </h3>
+          <div className="mb-6">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Link2 className="w-3 h-3 text-white/20" />
+              <p className="mono text-[9px] text-white/25 tracking-widest">BACKLINKS</p>
+            </div>
             <div className="space-y-1.5">
               {backlinks.map((b: any) => (
-                <Link key={b.slug} href={`/app/wiki/${b.slug}`}
-                  className="block text-sm text-zinc-400 hover:text-violet-300 transition-colors truncate">
+                <Link
+                  key={b.slug}
+                  href={`/app/wiki/${b.slug}`}
+                  className="block text-[11px] text-white/30 hover:text-violet-300 transition-colors truncate py-0.5"
+                >
                   {b.title}
                 </Link>
               ))}
@@ -202,8 +240,33 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
           </div>
         )}
 
+        {/* Sources */}
+        {page.sources?.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-3">
+              <ExternalLink className="w-3 h-3 text-white/20" />
+              <p className="mono text-[9px] text-white/25 tracking-widest">SOURCES</p>
+            </div>
+            <div className="space-y-1.5">
+              {page.sources.map((s: string, i: number) => (
+                <a
+                  key={i}
+                  href={s.startsWith('http') ? s : undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block mono text-[9px] text-white/20 hover:text-white/40 transition-colors truncate tracking-wide py-0.5"
+                >
+                  {s.length > 40 ? s.slice(0, 40) + '...' : s}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {!page.relatedSlugs?.length && !backlinks.length && (
-          <p className="text-xs text-zinc-700">No connections yet. Ingest more sources to build the network.</p>
+          <p className="mono text-[9px] text-white/15 tracking-wider leading-relaxed">
+            NO CONNECTIONS YET. INGEST MORE SOURCES TO BUILD THE NETWORK.
+          </p>
         )}
       </div>
     </div>

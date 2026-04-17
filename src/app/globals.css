@@ -1,37 +1,216 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --bg: #04040a;
+  --surface: #0a0a14;
+  --surface2: #0f0f1a;
+  --border: rgba(255,255,255,0.06);
+  --border-bright: rgba(255,255,255,0.12);
+  --cyan: #00d4ff;
+  --violet: #7c3aed;
+  --violet-bright: #8b5cf6;
+  --indigo: #6366f1;
+  --text-primary: #f0f0ff;
+  --text-secondary: #8888aa;
+  --text-muted: #444460;
+  --glow-cyan: 0 0 30px rgba(0, 212, 255, 0.15);
+  --glow-violet: 0 0 30px rgba(124, 58, 237, 0.2);
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-* { box-sizing: border-box; }
+/* ── Noise texture overlay ─────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
 
-/* Wiki content styles */
-.wiki-content h1 { font-size: 1.5rem; font-weight: 700; color: #fafafa; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-.wiki-content h2 { font-size: 1.25rem; font-weight: 600; color: #e4e4e7; margin-top: 1.25rem; margin-bottom: 0.5rem; border-bottom: 1px solid #27272a; padding-bottom: 0.25rem; }
-.wiki-content h3 { font-size: 1.1rem; font-weight: 500; color: #d4d4d8; margin-top: 1rem; margin-bottom: 0.5rem; }
-.wiki-content p  { color: #a1a1aa; line-height: 1.75; margin-bottom: 1rem; }
-.wiki-content ul { list-style: disc inside; color: #a1a1aa; margin-bottom: 1rem; }
-.wiki-content ol { list-style: decimal inside; color: #a1a1aa; margin-bottom: 1rem; }
-.wiki-content blockquote { border-left: 4px solid #7c3aed; padding-left: 1rem; font-style: italic; color: #71717a; margin: 1rem 0; }
-.wiki-content code { background: #18181b; color: #c4b5fd; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; font-family: monospace; }
-.wiki-content pre { background: #18181b; border: 1px solid #27272a; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin-bottom: 1rem; }
-.wiki-content pre code { background: transparent; padding: 0; }
-.wiki-content strong { color: #fafafa; font-weight: 600; }
-.wiki-content a { color: #a78bfa; text-decoration: underline; text-underline-offset: 2px; }
-.wiki-content hr { border-color: #27272a; margin: 1.5rem 0; }
+/* ── Grid background ───────────────────────────── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.dot-bg {
+  background-image: radial-gradient(rgba(99,102,241,0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Glassmorphism ─────────────────────────────── */
+.glass {
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+
+.glass-bright {
+  background: rgba(15, 15, 30, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-bright);
+}
+
+/* ── Glow effects ──────────────────────────────── */
+.glow-cyan  { box-shadow: var(--glow-cyan); }
+.glow-violet{ box-shadow: var(--glow-violet); }
+
+.text-glow-cyan {
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+/* ── Gradient text ─────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa 0%, #00d4ff 50%, #a78bfa 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+.gradient-text-static {
+  background: linear-gradient(135deg, #c4b5fd, #00d4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── Scan line animation ───────────────────────── */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.1), transparent);
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Pulse dot ─────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ── Border glow animation ─────────────────────── */
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(99,102,241,0.2); }
+  50% { border-color: rgba(99,102,241,0.6); }
+}
+.border-animate { animation: border-glow 3s ease-in-out infinite; }
+
+/* ── Floating animation ────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.float { animation: float 6s ease-in-out infinite; }
+
+/* ── Fade up ───────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.6s ease forwards; }
+.fade-up-delay-1 { animation: fade-up 0.6s ease 0.1s forwards; opacity: 0; }
+.fade-up-delay-2 { animation: fade-up 0.6s ease 0.2s forwards; opacity: 0; }
+.fade-up-delay-3 { animation: fade-up 0.6s ease 0.3s forwards; opacity: 0; }
+.fade-up-delay-4 { animation: fade-up 0.6s ease 0.4s forwards; opacity: 0; }
+
+/* ── Blink cursor ──────────────────────────────── */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.blink { animation: blink 1s step-end infinite; }
+
+/* ── Mono font ─────────────────────────────────── */
+.mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+/* ── Wiki content ──────────────────────────────── */
+.wiki-content h1 { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 1.5rem 0 0.75rem; }
+.wiki-content h2 { font-size: 1.25rem; font-weight: 600; color: #c4b5fd; margin: 1.25rem 0 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+.wiki-content h3 { font-size: 1.05rem; font-weight: 500; color: #a78bfa; margin: 1rem 0 0.5rem; }
+.wiki-content p  { color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem; }
+.wiki-content ul, .wiki-content ol { color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.5rem; }
+.wiki-content li { margin-bottom: 0.25rem; line-height: 1.7; }
+.wiki-content blockquote { border-left: 3px solid var(--cyan); padding-left: 1rem; color: #666688; margin: 1rem 0; font-style: italic; }
+.wiki-content code { background: rgba(99,102,241,0.1); color: #a78bfa; padding: 0.1rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; border: 1px solid rgba(99,102,241,0.2); }
+.wiki-content pre { background: #0a0a14; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; margin-bottom: 1rem; }
+.wiki-content pre code { background: transparent; border: none; padding: 0; }
+.wiki-content strong { color: var(--text-primary); font-weight: 600; }
+.wiki-content a { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
+.wiki-content hr { border-color: var(--border); margin: 2rem 0; }
 .wiki-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-.wiki-content th { background: #18181b; color: #e4e4e7; padding: 0.5rem 0.75rem; text-align: left; border: 1px solid #27272a; font-weight: 600; }
-.wiki-content td { color: #a1a1aa; padding: 0.5rem 0.75rem; border: 1px solid #27272a; }
+.wiki-content th { background: rgba(99,102,241,0.1); color: var(--text-primary); padding: 0.5rem 0.75rem; text-align: left; border: 1px solid var(--border); font-weight: 600; }
+.wiki-content td { color: var(--text-secondary); padding: 0.5rem 0.75rem; border: 1px solid var(--border); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
+/* ── Custom scrollbar ──────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }
+
+/* ── Button styles ─────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  color: white;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #8b5cf6, #818cf8);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.btn-primary:hover::before { opacity: 1; }
+.btn-primary:hover { box-shadow: 0 0 30px rgba(124,58,237,0.4), 0 0 60px rgba(124,58,237,0.2); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-bright);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+.btn-ghost:hover { border-color: rgba(99,102,241,0.5); color: var(--text-primary); background: rgba(99,102,241,0.05); }
+
+/* ── Card hover ────────────────────────────────── */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99,102,241,0.3) !important;
+  box-shadow: 0 8px 32px rgba(99,102,241,0.1);
+}

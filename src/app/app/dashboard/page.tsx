@@ -1,28 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { Brain, FileText, MessageSquare, Zap, Clock, ArrowRight, Plus, BookOpen } from 'lucide-react'
+import { gsap } from 'gsap'
+import { Plus, ArrowRight, Activity, Database, Zap, BookOpen } from 'lucide-react'
 import { timeAgo } from '@/lib/utils'
 
 const TYPE_COLORS: Record<string, string> = {
-  'source-summary': 'bg-blue-500/20 text-blue-300',
-  concept:          'bg-violet-500/20 text-violet-300',
-  entity:           'bg-emerald-500/20 text-emerald-300',
-  synthesis:        'bg-amber-500/20 text-amber-300',
-  pattern:          'bg-rose-500/20 text-rose-300',
-  'query-answer':   'bg-zinc-500/20 text-zinc-300',
+  'source-summary': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+  concept:          'text-violet-400 bg-violet-500/10 border-violet-500/20',
+  entity:           'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+  synthesis:        'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  pattern:          'text-rose-400 bg-rose-500/10 border-rose-500/20',
+  'query-answer':   'text-zinc-400 bg-zinc-500/10 border-zinc-500/20',
 }
 
 const OP_COLORS: Record<string, string> = {
   ingest: 'text-violet-400',
-  query:  'text-blue-400',
+  query:  'text-cyan-400',
   lint:   'text-amber-400',
+}
+
+function StatCard({ label, value, icon: Icon, color, sub, delay }: any) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!ref.current) return
+    gsap.from(ref.current, { opacity: 0, y: 20, duration: 0.5, delay, ease: 'power2.out' })
+  }, [delay])
+
+  return (
+    <div ref={ref} className="glass border border-white/5 rounded-xl p-5 card-hover relative overflow-hidden group">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="flex items-start justify-between mb-4">
+        <p className={`mono text-[10px] tracking-widest ${color} opacity-70`}>{label}</p>
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color.replace('text-', 'bg-').replace('400', '500/10')}`}>
+          <Icon className={`w-3.5 h-3.5 ${color}`} />
+        </div>
+      </div>
+      <p className="text-3xl font-black text-white/90 mb-1">{value}</p>
+      {sub && <p className="mono text-[10px] text-white/20 tracking-wider">{sub}</p>}
+    </div>
+  )
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/vault/ensure', { method: 'POST' })
@@ -33,9 +57,9 @@ export default function DashboardPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-full">
-      <div className="flex items-center gap-3 text-zinc-500">
-        <Brain className="w-5 h-5 animate-pulse text-violet-500" />
-        <span className="text-sm">Loading your brain...</span>
+      <div className="text-center">
+        <div className="w-8 h-8 border border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto mb-4" />
+        <p className="mono text-xs text-white/20 tracking-widest">LOADING NEURAL NETWORK...</p>
       </div>
     </div>
   )
@@ -43,101 +67,112 @@ export default function DashboardPage() {
   const { vault, plan, recentLogs = [], recentPages = [] } = data || {}
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div ref={containerRef} className="p-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-100">Dashboard</h1>
-        <p className="text-zinc-500 text-sm mt-1">Your second brain at a glance</p>
+      <div className="flex items-start justify-between mb-10 fade-up">
+        <div>
+          <p className="mono text-[10px] text-white/25 tracking-widest mb-2">SYSTEM · DASHBOARD</p>
+          <h1 className="text-2xl font-black text-white/90">Knowledge Base</h1>
+          <p className="text-white/30 text-sm mt-1">Your second brain status overview</p>
+        </div>
+        <Link href="/app/ingest"
+          className="btn-primary flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-lg relative z-10">
+          <Plus className="w-3.5 h-3.5" />
+          Ingest Source
+        </Link>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Wiki Pages',    value: vault?.pageCount ?? 0,   icon: BookOpen,      color: 'text-violet-400' },
-          { label: 'Sources',       value: vault?.sourceCount ?? 0, icon: FileText,      color: 'text-blue-400' },
-          { label: 'Queries Used',  value: plan?.queriesThisMonth ?? 0, icon: MessageSquare, color: 'text-emerald-400' },
-          { label: 'Plan',          value: plan?.plan === 'pro' ? 'Pro' : 'Free', icon: Zap, color: 'text-amber-400' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Icon className={`w-4 h-4 ${color}`} />
-              <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">{label}</span>
-            </div>
-            <p className="text-2xl font-bold text-zinc-100">{value}</p>
-            {label === 'Plan' && plan?.plan === 'free' && (
-              <Link href="/app/settings" className="text-xs text-violet-400 hover:text-violet-300 mt-1 block">Upgrade →</Link>
-            )}
-          </div>
-        ))}
+        <StatCard label="WIKI PAGES"    value={vault?.pageCount ?? 0}      icon={BookOpen}  color="text-violet-400" sub="IN KNOWLEDGE BASE" delay={0.1} />
+        <StatCard label="SOURCES"       value={vault?.sourceCount ?? 0}    icon={Database}  color="text-blue-400"   sub="INGESTED SOURCES"  delay={0.2} />
+        <StatCard label="QUERIES"       value={plan?.queriesThisMonth ?? 0} icon={Zap}       color="text-cyan-400"   sub="THIS MONTH"        delay={0.3} />
+        <StatCard label="PLAN"          value={plan?.plan === 'pro' ? 'PRO' : 'FREE'} icon={Activity} color="text-emerald-400" sub={plan?.plan === 'free' ? `${25 - (plan?.ingestsThisMonth ?? 0)} INGESTS LEFT` : 'UNLIMITED'} delay={0.4} />
       </div>
 
-      {/* Quick Ingest */}
-      <div className="bg-gradient-to-r from-violet-600/10 to-blue-600/10 border border-violet-500/20 rounded-xl p-6 mb-8">
-        <div className="flex items-center justify-between">
+      {/* Quick ingest */}
+      <div className="fade-up-delay-2 glass border border-violet-500/15 rounded-xl p-6 mb-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-600/5 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+        <div className="relative flex items-center justify-between">
           <div>
-            <h2 className="text-zinc-100 font-semibold mb-1">Add to your brain</h2>
-            <p className="text-zinc-500 text-sm">Paste a URL or text — Claude will read, summarize, and connect it to your wiki.</p>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 pulse-dot" />
+              <p className="mono text-[10px] text-violet-300/70 tracking-widest">INGEST ENGINE · READY</p>
+            </div>
+            <h2 className="text-white/90 font-bold mb-1">Add to your knowledge base</h2>
+            <p className="text-white/35 text-xs">Paste a URL or text — Claude reads, structures, and cross-links it automatically.</p>
           </div>
-          <Link
-            href="/app/ingest"
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Ingest Source
+          <Link href="/app/ingest"
+            className="btn-primary flex items-center gap-2 text-xs font-semibold px-5 py-3 rounded-lg relative z-10 shrink-0 ml-6">
+            Initialize ingest
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        {/* Recent Pages */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-zinc-200">Recent Wiki Pages</h2>
-            <Link href="/app/wiki" className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
+      <div className="grid grid-cols-5 gap-6">
+        {/* Recent pages */}
+        <div className="col-span-3 glass border border-white/5 rounded-xl p-5 fade-up-delay-3">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="mono text-[10px] text-white/25 tracking-widest mb-1">WIKI INDEX</p>
+              <h2 className="text-sm font-bold text-white/80">Recent Pages</h2>
+            </div>
+            <Link href="/app/wiki" className="mono text-[10px] text-violet-400 hover:text-violet-300 flex items-center gap-1 tracking-wider">
+              VIEW ALL <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+
           {recentPages.length === 0 ? (
-            <p className="text-zinc-600 text-sm text-center py-8">No pages yet. Ingest a source to get started.</p>
+            <div className="py-12 text-center">
+              <BookOpen className="w-8 h-8 text-white/10 mx-auto mb-3" />
+              <p className="mono text-xs text-white/20 tracking-wider">NO PAGES YET</p>
+              <p className="text-white/30 text-xs mt-1">Ingest your first source to begin</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {recentPages.map((p: any) => (
                 <Link key={p.slug} href={`/app/wiki/${p.slug}`}
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-800 transition-colors group">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 mt-0.5 ${TYPE_COLORS[p.type] || 'bg-zinc-700 text-zinc-300'}`}>
-                    {p.type}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/3 transition-colors group border border-transparent hover:border-white/5">
+                  <span className={`mono text-[9px] px-2 py-0.5 rounded border font-medium shrink-0 tracking-wider ${TYPE_COLORS[p.type] || 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20'}`}>
+                    {p.type?.toUpperCase().slice(0, 8)}
                   </span>
-                  <div className="min-w-0">
-                    <p className="text-sm text-zinc-200 group-hover:text-white truncate font-medium">{p.title}</p>
-                    <p className="text-xs text-zinc-600 mt-0.5">{timeAgo(p.updatedAt)}</p>
-                  </div>
+                  <p className="text-xs text-white/60 group-hover:text-white/90 flex-1 truncate transition-colors font-medium">{p.title}</p>
+                  <p className="mono text-[9px] text-white/20 shrink-0">{timeAgo(p.updatedAt)}</p>
                 </Link>
               ))}
             </div>
           )}
         </div>
 
-        {/* Activity Log */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-zinc-200">Activity Log</h2>
-            <Link href="/app/log" className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
+        {/* Activity log */}
+        <div className="col-span-2 glass border border-white/5 rounded-xl p-5 fade-up-delay-4">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="mono text-[10px] text-white/25 tracking-widest mb-1">SYSTEM LOG</p>
+              <h2 className="text-sm font-bold text-white/80">Activity</h2>
+            </div>
+            <Link href="/app/log" className="mono text-[10px] text-violet-400 hover:text-violet-300 tracking-wider">
+              ALL →
             </Link>
           </div>
+
           {recentLogs.length === 0 ? (
-            <p className="text-zinc-600 text-sm text-center py-8">No activity yet.</p>
+            <div className="py-12 text-center">
+              <Activity className="w-8 h-8 text-white/10 mx-auto mb-3" />
+              <p className="mono text-xs text-white/20 tracking-wider">NO ACTIVITY</p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {recentLogs.map((log: any) => (
-                <div key={log._id} className="flex items-start gap-3 p-3 rounded-lg">
-                  <Clock className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-zinc-400 truncate">{log.summary}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-xs font-medium ${OP_COLORS[log.operation]}`}>{log.operation}</span>
-                      <span className="text-zinc-700 text-xs">{timeAgo(log.createdAt)}</span>
-                    </div>
+                <div key={log._id} className="flex items-start gap-3 py-2 border-b border-white/3 last:border-0">
+                  <span className={`mono text-[9px] font-medium shrink-0 mt-0.5 tracking-wider ${OP_COLORS[log.operation]}`}>
+                    {log.operation?.toUpperCase()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] text-white/40 truncate leading-relaxed">{log.summary}</p>
+                    <p className="mono text-[9px] text-white/20 mt-0.5">{timeAgo(log.createdAt)}</p>
                   </div>
                 </div>
               ))}
