@@ -8,10 +8,10 @@ const items = [
 
 export function Ticker() {
   return (
-    <div className="overflow-hidden border-y border-white/5 py-2.5 bg-black/20">
-      <div className="flex gap-12 animate-[ticker_30s_linear_infinite] whitespace-nowrap">
+    <div className="overflow-hidden border-y border-white/5 py-2 md:py-2.5 bg-black/20">
+      <div className="flex gap-8 md:gap-12 animate-[ticker_30s_linear_infinite] whitespace-nowrap">
         {[...items, ...items, ...items].map((item, i) => (
-          <span key={i} className="flex items-center gap-3 mono text-xs tracking-widest text-white/20 uppercase shrink-0">
+          <span key={i} className="flex items-center gap-2.5 md:gap-3 mono text-[10px] md:text-xs tracking-[0.2em] md:tracking-widest text-white/20 uppercase shrink-0">
             <span
               className="w-1 h-1 rounded-full inline-block pulse-dot"
               style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent)' }}

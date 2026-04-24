@@ -40,7 +40,7 @@ const ROW_A: Quote[] = [
     name: 'Jonas Weber', role: 'CTO', company: 'Runway', initials: 'JW', accent: 'silver',
   },
   {
-    body: 'Feels like Obsidian had a kid with Perplexity. Minimal, fast, and the graph view is genuinely beautiful to stare at.',
+    body: 'It feels like a premium AI memory workspace rather than another note app. Minimal, fast, and the graph view is genuinely useful.',
     name: 'Sana Al-Rashid', role: 'Design Lead', company: 'Linear', initials: 'SR', accent: 'silver',
   },
 ]
@@ -55,7 +55,7 @@ const ROW_B: Quote[] = [
     name: 'Emily Tran', role: 'PM', company: 'Notion', initials: 'ET', accent: 'accent',
   },
   {
-    body: "The ingest queue watching Claude compile pages in real time is oddly satisfying. It's the only SaaS I've opened a second tab just to watch.",
+    body: "The ingest queue watching sources turn into connected memory pages is oddly satisfying. It's the only SaaS I've opened a second tab just to watch.",
     name: 'Kai Nakamura', role: 'Indie Hacker', company: 'Solo', initials: 'KN', accent: 'accent',
   },
   {
@@ -70,7 +70,7 @@ const ROW_B: Quote[] = [
 
 export function Testimonials() {
   return (
-    <section id="testimonials" className="relative py-28 overflow-hidden">
+    <section id="testimonials" className="relative py-20 md:py-28 overflow-hidden">
       {/* soft plume */}
       <div
         aria-hidden
@@ -82,7 +82,7 @@ export function Testimonials() {
       />
 
       {/* ── Header ───────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-6 text-center">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 text-center">
         <Badge tone="accent" dot className="mb-4">LOVED · BY · KNOWLEDGE · WORKERS</Badge>
         <h2 className="type-h1 gradient-text">Thinking, compiled.</h2>
         <p className="type-body mt-4 mx-auto max-w-2xl">
@@ -92,7 +92,7 @@ export function Testimonials() {
       </div>
 
       {/* ── Marquee rows ─────────────────────────────────── */}
-      <div className="mt-14 space-y-5" aria-label="testimonials">
+      <div className="mt-10 md:mt-14 space-y-4 md:space-y-5" aria-label="testimonials">
         <Marquee items={ROW_A} direction="left" duration={60} />
         <Marquee items={ROW_B} direction="right" duration={72} />
       </div>
@@ -155,7 +155,7 @@ function TestimonialCard({ quote }: { quote: Quote }) {
   return (
     <figure
       className={cn(
-        'relative shrink-0 w-[340px] md:w-[420px] p-6 rounded-[var(--radius-lg)]',
+        'relative shrink-0 w-[288px] sm:w-[320px] md:w-[420px] p-5 md:p-6 rounded-[var(--radius-lg)]',
         'glass border border-[var(--border)]',
         'transition-all duration-500 ease-out',
         'hover:-translate-y-1 hover:border-[var(--border-glow)]',

@@ -16,7 +16,7 @@ import { CalibrationDial } from '@/components/widgets/CalibrationDial'
 
 export function PrecisionGrid() {
   return (
-    <section id="features" className="relative py-28 md:py-36 overflow-hidden">
+    <section id="features" className="relative py-16 md:py-36 overflow-hidden">
       {/* ambient plume */}
       <div
         aria-hidden
@@ -28,35 +28,36 @@ export function PrecisionGrid() {
       />
 
       {/* ── Header with corner brackets ──────────────────── */}
-      <div className="mx-auto max-w-6xl px-6 text-center relative">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 text-center relative">
         <CornerBrackets />
         <h2
           className="relative"
           style={{
             fontFamily: 'var(--font-inter), ui-sans-serif, system-ui',
             fontWeight: 600,
-            fontSize: 'clamp(2.25rem, 5vw, 4.25rem)',
+            fontSize: 'clamp(1.9rem, 5vw, 4.25rem)',
             lineHeight: 1.02,
             letterSpacing: '-0.03em',
           }}
         >
-          <span className="block text-[var(--text-primary)]">Everything your second brain</span>
-          <span className="block brushed-text">needs, engineered.</span>
+          <span className="block text-[var(--text-primary)]">The AI memory system</span>
+          <span className="block brushed-text">for serious knowledge work.</span>
         </h2>
 
         <p className="type-body mt-5 mx-auto max-w-2xl">
-          Every component built for clarity, citations, and absolute recall.
+          Capture sources, build a private knowledge base, search with citations,
+          and keep your most important thinking connected every hour of the day.
         </p>
 
         <div className="mt-7 flex items-center justify-center gap-2">
           <span className="type-mono-xs text-[var(--text-muted)] tracking-[0.4em]">{'///'}</span>
-          <span className="type-mono-xs text-[var(--text-muted)]">MK-IV · 2026</span>
+          <span className="type-mono-xs text-[var(--text-muted)]">MEMORY ENGINE · 2026</span>
           <span className="type-mono-xs text-[var(--text-muted)] tracking-[0.4em]">{'///'}</span>
         </div>
       </div>
 
       {/* ── Instrument grid ──────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-6 mt-16">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 mt-10 md:mt-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
           {CARDS.map((c, i) => (
             <InstrumentCard key={c.code} {...c} delay={i * 120} />
@@ -187,27 +188,27 @@ function InstrumentCard({
    ═══════════════════════════════════════════════════════ */
 const CARDS: CardDef[] = [
   {
-    code: 'ING.01',
-    title: 'Paste a URL. Claude does the rest.',
-    desc: 'Drop any link, article, PDF or raw text. Claude reads, summarizes, and structures it into your personal wiki automatically.',
+    code: 'CAP.01',
+    title: 'Capture every source',
+    desc: 'Add links, PDFs, documents, notes, and transcripts. SecondBrain preserves the original source and turns it into searchable knowledge.',
     Visual: StreamChart,
   },
   {
-    code: 'GRP.02',
-    title: 'Auto-linked concepts',
-    desc: 'Every ingest updates related pages. Your knowledge compounds.',
+    code: 'MEM.02',
+    title: 'Memory that stays current',
+    desc: 'Each topic keeps the latest understanding, source history, and evidence trail so your knowledge base improves over time.',
     Visual: RoutingGraph,
   },
   {
-    code: 'QRY.03',
-    title: 'Cited AI answers',
-    desc: 'Ask anything. Get answers with exact wiki citations — primary and backup sources cross-verified.',
+    code: 'ANS.03',
+    title: 'Cited AI search',
+    desc: 'Ask natural-language questions and get grounded answers with references back to the pages and sources behind them.',
     Visual: FailSafe,
   },
   {
-    code: 'WIK.04',
-    title: 'Wikipedia-style layout',
-    desc: 'Backlinks, related pages, confidence scores, tags — calibrated on the fly as your vault grows.',
+    code: 'CLK.04',
+    title: '24 hour memory graph',
+    desc: 'Browse topics, people, decisions, sources, and patterns as a living map that keeps your second brain active around the clock.',
     Visual: DialMount,
   },
 ]
@@ -216,14 +217,14 @@ function DialMount() {
   return (
     <div className="absolute inset-0 grid place-items-center p-2">
       <CalibrationDial
-        label="VAULT TUNING"
+        label="ALWAYS ON"
         min={0}
-        max={12}
-        initial={4}
+        max={24}
+        initial={24}
         step={0.5}
-        majorEvery={3}
-        bottomLeft="CAL·01"
-        bottomRight="CAL·02"
+        majorEvery={6}
+        bottomLeft="SYNC"
+        bottomRight="24H"
       />
     </div>
   )
