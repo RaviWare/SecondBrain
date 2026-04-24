@@ -12,7 +12,10 @@ export function Ticker() {
       <div className="flex gap-12 animate-[ticker_30s_linear_infinite] whitespace-nowrap">
         {[...items, ...items, ...items].map((item, i) => (
           <span key={i} className="flex items-center gap-3 mono text-xs tracking-widest text-white/20 uppercase shrink-0">
-            <span className="w-1 h-1 rounded-full bg-indigo-500 inline-block pulse-dot" />
+            <span
+              className="w-1 h-1 rounded-full inline-block pulse-dot"
+              style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent)' }}
+            />
             {item}
           </span>
         ))}

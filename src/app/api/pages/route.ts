@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get('type')
   const search = searchParams.get('search')
 
-  const query: any = { userId, vaultId: vault._id }
+  const query: Record<string, unknown> = { userId, vaultId: vault._id }
   if (type) query.type = type
   if (search) query.$text = { $search: search }
 

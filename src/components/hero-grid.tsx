@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
 
 export function HeroGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null)

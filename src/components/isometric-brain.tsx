@@ -105,7 +105,7 @@ export function IsometricBrain() {
         const h = Math.round(height + pulse * 1.5)
 
         for (let z = 0; z < h; z++) {
-          const alpha = (0.3 + pulse * 0.4) * (z === h - 1 ? 1 : 0.6)
+          const alpha = (0.55 + pulse * 0.35) * (z === h - 1 ? 1 : 0.75)
           drawCube(gx - 1.5, gy - 1.5, z, colors[colorIdx], alpha)
         }
       })

@@ -43,34 +43,42 @@ const SourceSchema = new Schema<ISource>({
 }, { timestamps: true })
 
 // ── Wiki Page ───────────────────────────────────────────────
+// Uses GBrain "Compiled Truth + Timeline" pattern:
+//   content field contains both zones separated by ---TIMELINE---
+//   Zone 1 (above separator): Current synthesized understanding
+//   Zone 2 (below separator): Append-only evidence trail
 export interface IPage extends Document {
   userId: string
   vaultId: mongoose.Types.ObjectId
   slug: string
   title: string
   type: 'source-summary' | 'concept' | 'entity' | 'synthesis' | 'pattern' | 'query-answer'
+  entityType?: 'person' | 'organization' | 'product' | 'place'
   content: string
   summary: string
   sources: mongoose.Types.ObjectId[]
   relatedSlugs: string[]
   tags: string[]
   confidence: 'high' | 'medium' | 'low'
+  timelineEntries: number
   createdAt: Date
   updatedAt: Date
 }
 
 const PageSchema = new Schema<IPage>({
-  userId:       { type: String, required: true, index: true },
-  vaultId:      { type: Schema.Types.ObjectId, ref: 'Vault', required: true },
-  slug:         { type: String, required: true },
-  title:        { type: String, required: true },
-  type:         { type: String, enum: ['source-summary', 'concept', 'entity', 'synthesis', 'pattern', 'query-answer'], required: true },
-  content:      { type: String, required: true },
-  summary:      { type: String, default: '' },
-  sources:      [{ type: Schema.Types.ObjectId, ref: 'Source' }],
-  relatedSlugs: [String],
-  tags:         [String],
-  confidence:   { type: String, enum: ['high', 'medium', 'low'], default: 'medium' },
+  userId:         { type: String, required: true, index: true },
+  vaultId:        { type: Schema.Types.ObjectId, ref: 'Vault', required: true },
+  slug:           { type: String, required: true },
+  title:          { type: String, required: true },
+  type:           { type: String, enum: ['source-summary', 'concept', 'entity', 'synthesis', 'pattern', 'query-answer'], required: true },
+  entityType:     { type: String, enum: ['person', 'organization', 'product', 'place'], default: null },
+  content:        { type: String, required: true },
+  summary:        { type: String, default: '' },
+  sources:        [{ type: Schema.Types.ObjectId, ref: 'Source' }],
+  relatedSlugs:   [String],
+  tags:           [String],
+  confidence:     { type: String, enum: ['high', 'medium', 'low'], default: 'medium' },
+  timelineEntries:{ type: Number, default: 1 },
 }, { timestamps: true })
 
 PageSchema.index({ userId: 1, vaultId: 1, slug: 1 }, { unique: true })
