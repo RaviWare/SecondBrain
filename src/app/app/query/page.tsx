@@ -69,10 +69,10 @@ export default function QueryPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen text-[var(--text-primary)]">
+    <div className="flex h-full min-h-[calc(100dvh-160px)] flex-col text-[var(--text-primary)] md:min-h-screen">
       {/* Header */}
       <div
-        className="px-8 py-5 shrink-0 relative"
+        className="relative shrink-0 px-4 py-4 sm:px-6 md:px-8 md:py-5"
         style={{
           borderBottom: '1px solid var(--border)',
           background: 'var(--surface)',
@@ -101,9 +101,9 @@ export default function QueryPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 md:py-6">
         {messages.length === 0 ? (
-          <div className="max-w-2xl mx-auto mt-12">
+          <div className="mx-auto mt-6 max-w-2xl sm:mt-12">
             {/* Empty state */}
             <div className="flex flex-col items-center text-center mb-10">
               <div
@@ -124,7 +124,7 @@ export default function QueryPage() {
             </div>
 
             {/* Suggestions */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map(s => (
                 <button
                   key={s}
@@ -146,12 +146,12 @@ export default function QueryPage() {
             </div>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto space-y-6">
+          <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
             {messages.map((msg, i) => (
               <div key={i} className={msg.role === 'user' ? 'flex justify-end' : ''}>
                 {msg.role === 'user' ? (
                   <div
-                    className="px-4 py-3 rounded-2xl rounded-tr-sm text-sm max-w-[80%]"
+                    className="max-w-[88%] rounded-2xl rounded-tr-sm px-4 py-3 text-sm sm:max-w-[80%]"
                     style={{
                       background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
                       color: '#0b0b0d',

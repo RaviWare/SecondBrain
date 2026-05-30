@@ -216,7 +216,7 @@ export default function IngestPage() {
     /* file */       fileMetas.length > 0 && text.trim().length > 50 && !parsing
 
   return (
-    <div className="p-8 max-w-2xl mx-auto text-[var(--text-primary)]">
+    <div className="mx-auto max-w-2xl p-4 text-[var(--text-primary)] sm:p-6 md:p-8">
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -231,7 +231,7 @@ export default function IngestPage() {
 
         {/* Tabs */}
         <div
-          className="rounded-xl p-1 flex gap-1"
+          className="grid grid-cols-1 gap-1 rounded-xl p-1 sm:grid-cols-3"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
         >
           {([
@@ -245,7 +245,7 @@ export default function IngestPage() {
                 key={key}
                 onClick={() => { setTab(key); setStatus('idle'); setResult(null) }}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200'
+                  'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all duration-200'
                 )}
                 style={
                   on

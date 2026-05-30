@@ -20,31 +20,31 @@ const NAV_LINKS = [
 ]
 
 const STEPS = [
-  { num: '01', title: 'Capture', desc: 'Paste a URL, upload a document, or add raw notes. SecondBrain preserves the source and prepares it for long-term memory.' },
-  { num: '02', title: 'Organize', desc: 'SecondBrain creates summaries, topics, entities, decisions, and evidence trails inside your private knowledge base.' },
-  { num: '03', title: 'Recall', desc: 'Ask questions against your SecondBrain. Answers cite the exact memory pages and sources behind the response.' },
+  { num: '01', title: 'Capture', desc: 'Save the sources, notes, and decisions worth remembering.' },
+  { num: '02', title: 'Structure', desc: 'SecondBrain organizes them into linked, searchable memory.' },
+  { num: '03', title: 'Recall', desc: 'Ask questions and get answers with the source trail attached.' },
 ]
 
 const PRINCIPLES = [
   {
     label: 'SecondBrain Core',
-    title: 'An AI knowledge base that maintains itself',
-    desc: 'Every source updates a persistent memory vault so understanding compounds instead of disappearing into chat history.',
+    title: 'Knowledge that compounds',
+    desc: 'Every saved source strengthens a private memory vault.',
   },
   {
     label: 'Always-On Memory',
-    title: 'Your second brain runs 24 hours',
-    desc: 'Current understanding stays clean while the evidence trail records where every answer and insight came from.',
+    title: 'Context stays clean',
+    desc: 'Important topics keep their current summary and evidence trail.',
   },
   {
     label: 'Linked Thinking',
-    title: 'Context connects automatically',
-    desc: 'Related people, ideas, sources, decisions, and themes become connected pages you can browse or search.',
+    title: 'Ideas connect naturally',
+    desc: 'People, topics, sources, and decisions become linked pages.',
   },
   {
     label: 'Living Graph',
-    title: 'A visual map of your knowledge',
-    desc: 'Topics, sources, people, and patterns become visible nodes you can browse, filter, and query.',
+    title: 'Memory becomes visible',
+    desc: 'Browse your knowledge as a graph, not a pile of files.',
   },
 ]
 
@@ -61,22 +61,22 @@ const FLOW = [
   {
     code: 'SOURCE',
     title: 'Capture the signal',
-    desc: 'Articles, files, notes, and raw text enter one clean ingest lane.',
+    desc: 'Save sources, notes, and files in one clean lane.',
   },
   {
     code: 'VAULT',
-    title: 'Write the SecondBrain',
-    desc: 'The AI turns sources into durable pages with summaries, tags, links, and evidence trails.',
+    title: 'Build the vault',
+    desc: 'SecondBrain creates durable pages with summaries and links.',
   },
   {
     code: 'GRAPH',
-    title: 'Connect the meaning',
-    desc: 'Entities, concepts, sources, and patterns become navigable relationships.',
+    title: 'Map the meaning',
+    desc: 'Concepts, sources, and decisions become relationships.',
   },
   {
     code: 'ANSWER',
-    title: 'Recall with citations',
-    desc: 'Queries return grounded answers that point back into the wiki.',
+    title: 'Answer with proof',
+    desc: 'Every answer can point back to its source trail.',
   },
 ]
 
@@ -91,42 +91,42 @@ const VAULT_LAYERS = [
 const FAQS = [
   {
     q: 'What is SecondBrain Cloud?',
-    a: 'SecondBrain Cloud is an AI second brain and personal knowledge base that captures your sources, organizes them into connected memory pages, and answers questions with citations back to your vault.',
+    a: 'SecondBrain Cloud is a private AI memory workspace that turns your sources into searchable, connected knowledge with cited answers.',
   },
   {
     q: 'How is SecondBrain different from a chatbot with RAG?',
-    a: 'SecondBrain does not rely only on retrieval at answer time. It maintains durable structure between your sources and your questions by creating summaries, topics, entities, synthesis pages, and evidence trails inside the knowledge base.',
+    a: 'It keeps durable structure between sessions: summaries, links, evidence trails, and memory pages that improve as your vault grows.',
   },
   {
     q: 'What can I ingest into SecondBrain?',
-    a: 'The current product supports URLs, plain text, markdown, PDFs, DOCX files, and TXT files. The goal is to preserve the source and turn it into searchable, connected knowledge.',
+    a: 'You can add URLs, text, markdown, PDFs, DOCX files, and TXT files, then turn them into searchable knowledge.',
   },
   {
     q: 'Who is SecondBrain for?',
-    a: 'SecondBrain is built for researchers, founders, operators, creators, students, and teams who need a searchable, cited, and maintained memory system instead of scattered notes and one-off AI chats.',
+    a: 'It is built for researchers, founders, operators, creators, students, and teams who need reliable recall from their own material.',
   },
   {
     q: 'Does SecondBrain support wiki links and graph navigation?',
-    a: 'Yes. The product is designed around connected memory pages, backlinks, node relationships, and a graph dashboard so users can browse meaning, not just files.',
+    a: 'Yes. Memory pages, backlinks, node relationships, and graph navigation help you browse meaning, not just files.',
   },
 ]
 
 const USE_CASES = [
   {
     title: 'Researchers and analysts',
-    desc: 'Turn papers, reports, transcripts, and notes into a cited research knowledge base with connected concepts and source-level recall.',
+    desc: 'Turn papers, reports, transcripts, and notes into cited research memory.',
   },
   {
     title: 'Founders and operators',
-    desc: 'Keep strategy docs, customer calls, product notes, and market research inside one AI second brain your team can actually query.',
+    desc: 'Keep strategy, customer calls, product notes, and market research queryable.',
   },
   {
     title: 'Creators and students',
-    desc: 'Capture articles, ideas, highlights, course material, and references into a personal knowledge base that compounds over time.',
+    desc: 'Capture ideas, highlights, course material, and references that compound over time.',
   },
   {
     title: 'Product and engineering teams',
-    desc: 'Build a living wiki for specs, decisions, retros, docs, and architecture notes with graph navigation and timeline-backed changes.',
+    desc: 'Build a living memory layer for specs, decisions, docs, and architecture notes.',
   },
 ]
 
@@ -139,7 +139,7 @@ export default function LandingPage() {
       name: 'SecondBrain Cloud',
       url: SITE_URL,
       description:
-        'SecondBrain Cloud is an AI second brain and personal knowledge base that builds and maintains a linked wiki from your sources.',
+        'SecondBrain Cloud is a private AI memory workspace for source-backed research, notes, documents, meetings, and cited search.',
     },
     {
       '@context': 'https://schema.org',
@@ -149,7 +149,7 @@ export default function LandingPage() {
       operatingSystem: 'Web',
       url: SITE_URL,
       description:
-        'AI second brain software for ingesting sources, building a personal knowledge base, browsing a graph, and querying a linked wiki with citations.',
+        'AI second brain software for capturing sources, building a private knowledge base, and searching your own memory with cited answers.',
       offers: [
         { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free' },
         { '@type': 'Offer', price: '18', priceCurrency: 'USD', name: 'Pro' },
@@ -186,11 +186,11 @@ export default function LandingPage() {
 
       {/* Nav — Apple Silicon treatment */}
       <nav
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          scrolled ? 'glass-bright border-b border-[var(--border)]' : ''
+        className={`site-nav fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+          scrolled ? 'site-nav--scrolled' : ''
         }`}
       >
-        <div className="max-w-7xl mx-auto px-3.5 md:px-6 py-2.5 md:py-4 flex items-center justify-between gap-2.5 md:gap-3">
+        <div className="max-w-7xl mx-auto px-3.5 md:px-6 py-2 md:py-4 flex items-center justify-between gap-2.5 md:gap-3">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2.5 md:gap-3 group min-w-0">
             <span
@@ -236,7 +236,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/sign-up"
-              className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-[10px] border border-[var(--border-bright)] px-2.5 sm:px-3 md:px-4 py-2 text-[10.5px] md:text-xs font-semibold tracking-[-0.005em] transition-all duration-300 hover:border-[var(--border-glow)] hover:-translate-y-[1px]"
+              className="nav-cta relative inline-flex items-center gap-1.5 overflow-hidden rounded-[10px] border border-[var(--border-bright)] px-2.5 sm:px-3 md:px-4 py-2 text-[10.5px] md:text-xs font-semibold tracking-[-0.005em] transition-all duration-300 hover:border-[var(--border-glow)] hover:-translate-y-[1px]"
               style={{
                 background: 'var(--metallic)',
                 boxShadow: 'var(--shadow-1)',
@@ -247,25 +247,25 @@ export default function LandingPage() {
                 className="pointer-events-none absolute inset-0"
                 style={{ background: 'var(--metallic-hi)' }}
               />
-              <span className="relative z-[1] brushed-text">
+              <span className="nav-cta-label relative z-[1]">
                 <span className="sm:hidden">Start free</span>
                 <span className="hidden sm:inline">Get started free</span>
               </span>
             </Link>
           </div>
         </div>
-        <div className="md:hidden max-w-7xl mx-auto px-3.5 pb-2.5 overflow-x-auto">
+        <div className="md:hidden max-w-7xl mx-auto px-3.5 pb-2 overflow-x-auto">
           <div className="flex items-center gap-2 min-w-max">
             {NAV_LINKS.map((l) => (
               <a
                 key={l.label}
                 href={l.href}
-                className="mono text-[9px] tracking-widest px-2.5 py-1.5 rounded-full border whitespace-nowrap"
-                style={{
-                  color: 'var(--text-secondary)',
-                  borderColor: 'var(--border)',
-                  background: 'color-mix(in srgb, var(--surface) 76%, transparent)',
-                }}
+	                className="mono text-[8px] tracking-widest px-2.5 py-1.5 rounded-full border whitespace-nowrap"
+	                style={{
+	                  color: 'var(--text-secondary)',
+	                  borderColor: 'color-mix(in srgb, var(--border-bright) 52%, transparent)',
+	                  background: 'color-mix(in srgb, var(--surface) 54%, transparent)',
+	                }}
               >
                 {l.label.toUpperCase()}
               </a>
@@ -281,7 +281,7 @@ export default function LandingPage() {
       <Ticker />
 
       {/* Product thesis */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-12 md:py-24 overflow-hidden">
         <div className="absolute inset-0 dot-bg opacity-30" />
         <div
           aria-hidden
@@ -294,15 +294,13 @@ export default function LandingPage() {
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-4">
                 PRODUCT THESIS
               </p>
-              <h2 className="text-3xl md:text-6xl font-semibold tracking-tight leading-[1.02] text-[var(--text-primary)]">
+              <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-[1.04] text-[var(--text-primary)]">
                 Your SecondBrain
-                <span className="block brushed-text">learns in layers.</span>
+                <span className="block brushed-text">for work that matters.</span>
               </h2>
-              <p className="mt-5 text-sm md:text-base text-[var(--text-secondary)] leading-7 md:leading-8 max-w-xl">
-                SecondBrain Cloud is AI second brain software for people who need a private,
-                searchable knowledge base instead of scattered notes and disposable chat output.
-                It turns sources into connected memory, evidence trails, and grounded answers
-                that cite their path through your vault.
+              <p className="mt-4 text-sm md:text-base text-[var(--text-secondary)] leading-6 md:leading-8 max-w-xl">
+                A calm, private layer for research, notes, files, calls, and decisions.
+                Everything stays searchable, connected, and ready to cite.
               </p>
               <div className="mt-7 flex flex-wrap gap-2">
                 {['Ingest', 'Compile', 'Link', 'Query', 'Maintain'].map((item) => (
@@ -325,7 +323,7 @@ export default function LandingPage() {
               {PRINCIPLES.map((p, i) => (
                 <div
                   key={p.label}
-                  className="relative rounded-2xl p-5 md:p-6 border overflow-hidden fade-up"
+                  className="relative rounded-2xl p-4 md:p-6 border overflow-hidden fade-up"
                   style={{
                     background: 'var(--metallic)',
                     borderColor: 'var(--border-bright)',
@@ -340,7 +338,7 @@ export default function LandingPage() {
                   />
                   <div className="relative z-[1]">
                     <p
-                      className="mono text-[10px] tracking-widest mb-5"
+                      className="mono text-[9px] tracking-widest mb-3 md:mb-5"
                       style={{ color: i % 2 === 0 ? 'var(--accent-bright)' : '#c8c8cf' }}
                     >
                       {p.label.toUpperCase()}
@@ -348,7 +346,7 @@ export default function LandingPage() {
                     <h3 className="text-base md:text-lg font-semibold tracking-tight text-[var(--text-primary)]">
                       {p.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-6 md:leading-7 text-[var(--text-secondary)]">
+                    <p className="mt-2 text-sm leading-6 md:leading-7 text-[var(--text-secondary)]">
                       {p.desc}
                     </p>
                   </div>
@@ -360,7 +358,7 @@ export default function LandingPage() {
       </section>
 
       {/* SecondBrain loop */}
-      <section className="relative py-16 md:py-28 overflow-hidden">
+      <section className="relative py-12 md:py-28 overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-35" />
         <div
           aria-hidden
@@ -368,20 +366,18 @@ export default function LandingPage() {
           style={{ background: 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 28%, transparent), transparent)' }}
         />
         <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-6 mb-10 md:mb-14">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 mb-7 md:mb-14">
             <div>
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">
                 SECONDBRAIN LOOP
               </p>
-              <h2 className="text-3xl md:text-6xl font-semibold tracking-tight leading-tight">
+              <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-tight">
                 From source
-                <span className="block brushed-text">to structured recall.</span>
+                <span className="block brushed-text">to trusted recall.</span>
               </h2>
             </div>
-            <p className="max-w-md text-sm md:text-base leading-7 md:leading-8 text-[var(--text-secondary)]">
-              SecondBrain follows one durable loop: ingest sources, build a maintained knowledge base,
-              connect pages into a living memory graph, and return cited answers when you query
-              your own knowledge base.
+            <p className="max-w-md text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
+              Capture what matters, structure it into memory, then query it with citations.
             </p>
           </div>
 
@@ -407,7 +403,7 @@ export default function LandingPage() {
                     style={{ background: 'var(--metallic-hi)' }}
                   />
                   <div className="relative z-[1]">
-                    <div className="flex items-center justify-between mb-8 md:mb-10">
+                    <div className="flex items-center justify-between mb-5 md:mb-10">
                       <span className="mono text-[9px] tracking-widest text-[var(--text-muted)]">
                         {item.code}
                       </span>
@@ -504,10 +500,10 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-16 md:py-32 relative">
+      <section id="how-it-works" className="relative scroll-mt-28 py-12 md:scroll-mt-32 md:py-32">
         <div className="absolute inset-0 dot-bg opacity-40" />
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
-          <div className="text-center mb-10 md:mb-16">
+          <div className="text-center mb-8 md:mb-16">
             <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">HOW IT WORKS</p>
             <h2 className="type-h2">Three steps to an always-on memory</h2>
           </div>
@@ -516,7 +512,7 @@ export default function LandingPage() {
             {STEPS.map((step, i) => (
               <div
                 key={i}
-                className="relative rounded-2xl p-6 md:p-8 border border-[var(--border)] overflow-hidden group transition-all duration-300 hover:-translate-y-[2px] hover:border-[var(--border-bright)]"
+                className="relative rounded-2xl p-4 md:p-8 border border-[var(--border)] overflow-hidden group transition-all duration-300 hover:-translate-y-[2px] hover:border-[var(--border-bright)]"
                 style={{ background: 'var(--metallic)', boxShadow: 'var(--shadow-1)' }}
               >
                 <span
@@ -527,8 +523,8 @@ export default function LandingPage() {
                 <div className="absolute top-0 left-0 w-full h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)' }}
                 />
-                <p className="relative z-[1] mono text-5xl md:text-6xl font-black text-[var(--text-muted)] opacity-20 mb-4 select-none">{step.num}</p>
-                <div className="relative z-[1] w-8 h-px mb-4" style={{ background: 'var(--accent)' }} />
+                <p className="relative z-[1] mono text-4xl md:text-6xl font-black text-[var(--text-muted)] opacity-20 mb-3 md:mb-4 select-none">{step.num}</p>
+                <div className="relative z-[1] w-8 h-px mb-3 md:mb-4" style={{ background: 'var(--accent)' }} />
                 <h3 className="relative z-[1] text-lg md:text-xl font-semibold mb-3 text-[var(--text-primary)]">{step.title}</h3>
                 <p className="relative z-[1] text-[var(--text-secondary)] text-sm leading-relaxed">{step.desc}</p>
               </div>
@@ -541,7 +537,7 @@ export default function LandingPage() {
       <PrecisionGrid />
 
       {/* Vault anatomy */}
-      <section className="relative py-16 md:py-28 overflow-hidden">
+      <section className="relative py-12 md:py-28 overflow-hidden">
         <div className="absolute inset-0 dot-bg opacity-25" />
         <div className="relative mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 md:gap-10 lg:gap-16 items-center">
@@ -549,13 +545,12 @@ export default function LandingPage() {
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">
                 VAULT ANATOMY
               </p>
-              <h2 className="text-3xl md:text-6xl font-semibold tracking-tight leading-tight">
-                A SecondBrain is
-                <span className="block brushed-text">more than storage.</span>
+              <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-tight">
+                A vault that
+                <span className="block brushed-text">understands context.</span>
               </h2>
-              <p className="mt-6 text-sm md:text-base leading-8 text-[var(--text-secondary)] max-w-xl">
-                Storage keeps files. SecondBrain keeps structure: what happened, what changed,
-                what connects, and what the system currently understands.
+              <p className="mt-4 md:mt-6 text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)] max-w-xl">
+                SecondBrain keeps the source, summary, links, and latest context together.
               </p>
             </div>
 
@@ -633,12 +628,12 @@ export default function LandingPage() {
       </section>
 
       {/* System model */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
+      <section className="py-12 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-50" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
           <div
-            className="relative rounded-2xl p-5 md:p-8 border border-[var(--border)] overflow-hidden"
+            className="relative rounded-2xl p-4 md:p-8 border border-[var(--border)] overflow-hidden"
             style={{ background: 'var(--metallic)', boxShadow: 'var(--shadow-2)' }}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: 'var(--metallic-hi)' }} />
@@ -651,13 +646,13 @@ export default function LandingPage() {
                   />
                   <span className="type-mono-xs text-[var(--text-muted)] tracking-widest">SECONDBRAIN ENGINE · LIVE</span>
                 </div>
-                <h2 className="text-2xl md:text-5xl font-semibold tracking-tight leading-tight">
-                  A real product loop,
-                  <span className="block brushed-text">not a mockup.</span>
+                <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight">
+                  One workspace,
+                  <span className="block brushed-text">built for recall.</span>
                 </h2>
-                <p className="mt-5 text-sm md:text-base leading-8 text-[var(--text-secondary)]">
-                  SecondBrain connects source capture, private memory pages, cited AI search,
-                  activity logs, and a graph dashboard into one SaaS workspace for knowledge work.
+                <p className="mt-4 md:mt-5 text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
+                  Capture sources, browse memory pages, search with citations, and inspect the graph
+                  from one focused workspace.
                 </p>
               </div>
 
@@ -695,22 +690,22 @@ export default function LandingPage() {
       </section>
 
       {/* Use cases */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-12 md:py-24 overflow-hidden">
         <div className="absolute inset-0 dot-bg opacity-25" />
         <div className="relative max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 md:gap-8 mb-10 md:mb-12">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 md:gap-8 mb-8 md:mb-12">
             <div>
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">
                 BUILT FOR REAL WORK
               </p>
-              <h2 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
-                One SecondBrain,
-                <span className="block brushed-text">many knowledge workflows.</span>
+              <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight">
+                One memory layer,
+                <span className="block brushed-text">for every knowledge workflow.</span>
               </h2>
             </div>
-            <p className="max-w-2xl text-sm md:text-base leading-7 md:leading-8 text-[var(--text-secondary)]">
-              The same system can act as a personal knowledge base, research wiki, internal team memory,
-              meeting intelligence layer, and AI search surface for everything you already know.
+            <p className="max-w-2xl text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
+              Built for research, founder notes, product decisions, study material,
+              meeting recall, and internal team knowledge.
             </p>
           </div>
 
@@ -718,7 +713,7 @@ export default function LandingPage() {
             {USE_CASES.map((item, i) => (
               <div
                 key={item.title}
-                className="relative rounded-2xl border overflow-hidden p-5 md:p-6"
+                className="relative rounded-2xl border overflow-hidden p-4 md:p-6"
                 style={{
                   background: 'var(--metallic)',
                   borderColor: 'var(--border-bright)',
@@ -732,7 +727,7 @@ export default function LandingPage() {
                   style={{ background: 'var(--metallic-hi)' }}
                 />
                 <div className="relative z-[1]">
-                  <div className="mb-5 flex items-center justify-between gap-3">
+                  <div className="mb-3 md:mb-5 flex items-center justify-between gap-3">
                     <span className="mono text-[9px] tracking-widest text-[var(--text-muted)]">
                       USE CASE {String(i + 1).padStart(2, '0')}
                     </span>
@@ -758,14 +753,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-16 md:py-32">
+      <section id="pricing" className="scroll-mt-28 py-12 md:scroll-mt-32 md:py-32">
         <div className="max-w-5xl mx-auto px-4 md:px-6">
-          <div className="text-center mb-10 md:mb-16">
+          <div className="text-center mb-8 md:mb-16">
             <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">PRICING</p>
-            <h2 className="type-h2">Simple, transparent pricing</h2>
+            <h2 className="type-h2">Start small. Scale your memory.</h2>
             <p className="text-[var(--text-secondary)] mt-4 text-sm md:text-base max-w-2xl mx-auto">
-              Start with a free AI second brain, then upgrade when you need more vaults,
-              more ingestion, stronger models, and faster knowledge workflows.
+              Start free, then upgrade when your vault, team, and source library grow.
             </p>
           </div>
 
@@ -784,7 +778,7 @@ export default function LandingPage() {
             ].map((plan) => (
               <div
                 key={plan.name}
-                className="relative rounded-2xl p-6 md:p-8 border overflow-hidden transition-all duration-300 hover:-translate-y-[2px]"
+                className="relative rounded-2xl p-4 md:p-8 border overflow-hidden transition-all duration-300 hover:-translate-y-[2px]"
                 style={{
                   background: 'var(--metallic)',
                   borderColor: plan.highlight ? 'var(--border-glow)' : 'var(--border)',
@@ -855,7 +849,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
+      <section className="py-12 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30" />
         <div
           aria-hidden
@@ -867,12 +861,12 @@ export default function LandingPage() {
         />
         <div className="max-w-3xl mx-auto px-4 md:px-6 text-center relative">
           <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-4">GET STARTED</p>
-          <h2 className="text-4xl md:text-5xl font-semibold mb-5 md:mb-6 leading-tight tracking-tight">
-            Initialize your<br />
-            <span className="brushed-text">second brain</span>
+          <h2 className="text-[2rem] md:text-5xl font-semibold mb-4 md:mb-6 leading-tight tracking-tight">
+            Build a SecondBrain<br />
+            <span className="brushed-text">you can trust</span>
           </h2>
-          <p className="text-[var(--text-secondary)] mb-8 md:mb-10 text-base md:text-lg leading-7">
-            Ingest your first source, build your first linked page, and start querying a personal knowledge base that keeps getting sharper.
+          <p className="text-[var(--text-secondary)] mb-6 md:mb-10 text-sm md:text-lg leading-6 md:leading-7">
+            Add your first source and start asking questions with context, links, and citations.
           </p>
           <Link
             href="/sign-up"
@@ -883,27 +877,26 @@ export default function LandingPage() {
               boxShadow: 'var(--shadow-2)',
             }}
           >
-            Initialize system
+            Start building memory
             <span className="mono opacity-70">→</span>
           </Link>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="relative py-16 md:py-24 overflow-hidden">
+      <section id="faq" className="relative scroll-mt-28 overflow-hidden py-12 md:scroll-mt-32 md:py-24">
         <div className="absolute inset-0 grid-bg opacity-30" />
         <div className="relative max-w-6xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[0.86fr_1.14fr] gap-8 md:gap-10 lg:gap-14 items-start">
             <div className="lg:sticky lg:top-28">
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">FAQ</p>
-              <h2 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
-                Questions people ask
-                <span className="block brushed-text">before they trust a second brain.</span>
+              <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight">
+                Clear answers
+                <span className="block brushed-text">before you start.</span>
               </h2>
-              <p className="mt-5 text-sm md:text-base leading-7 md:leading-8 text-[var(--text-secondary)] max-w-xl">
-                These answers are written for humans first, but they also make the product intent
-                legible to search engines and AI systems that are trying to understand what
-                SecondBrain actually does.
+              <p className="mt-4 md:mt-5 text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)] max-w-xl">
+                The essentials on private memory, source-backed answers, graph navigation,
+                and what makes SecondBrain different.
               </p>
             </div>
 
@@ -924,7 +917,7 @@ export default function LandingPage() {
                     className="pointer-events-none absolute inset-0 rounded-2xl"
                     style={{ background: 'var(--metallic-hi)' }}
                   />
-                  <div className="relative z-[1] p-5 md:p-6">
+                  <div className="relative z-[1] p-4 md:p-6">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <span className="mono text-[9px] tracking-widest text-[var(--text-muted)]">
                         FAQ {String(i + 1).padStart(2, '0')}

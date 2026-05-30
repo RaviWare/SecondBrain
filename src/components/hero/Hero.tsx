@@ -21,10 +21,10 @@ const TELEMETRY = [
 ]
 
 const STACK = [
-  'AI knowledge base',
-  'Private memory vault',
-  'Cited AI search',
-  'Living knowledge graph',
+  'Research memory',
+  'Cited answers',
+  'Private vault',
+  'Knowledge graph',
 ]
 
 const SOURCES = [
@@ -102,7 +102,7 @@ export function Hero() {
       ref={rootRef}
       id="hero"
       aria-labelledby="hero-heading"
-      className="hero-root relative isolate overflow-hidden border-b border-[var(--border)] px-4 pb-12 pt-[118px] md:px-6 md:pb-20 md:pt-32"
+      className="hero-root relative isolate overflow-hidden border-b border-[var(--border)] px-4 pb-10 pt-[104px] md:px-6 md:pb-20 md:pt-32"
     >
       <div aria-hidden className="absolute inset-0 -z-20 grid-bg opacity-35" />
       <div aria-hidden className="hero-aurora hero-aurora-a" />
@@ -113,23 +113,22 @@ export function Hero() {
         <div className="max-w-[660px]">
           <div className="hero-reveal inline-flex max-w-full items-center gap-2 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_82%,transparent)] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur-xl">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_16px_var(--accent)]" />
-            SecondBrain knowledge OS
+            AI memory for serious work
           </div>
 
           <h1
             id="hero-heading"
-            className="hero-title hero-reveal mt-5 max-w-[12ch] text-[clamp(3.65rem,8vw,7.7rem)] font-semibold leading-[0.9] tracking-[-0.055em] text-[var(--text-primary)] max-[720px]:text-[clamp(3.1rem,14.5vw,4.3rem)] max-[480px]:text-[clamp(2.75rem,13.5vw,3.45rem)] md:mt-7"
+            className="hero-title hero-reveal mt-5 max-w-[12ch] text-[clamp(3.65rem,8vw,7.7rem)] font-semibold leading-[0.9] tracking-[-0.055em] text-[var(--text-primary)] max-[720px]:text-[clamp(2.85rem,13vw,4rem)] max-[480px]:text-[clamp(2.35rem,12vw,3.05rem)] md:mt-7"
           >
             SecondBrain Cloud.
           </h1>
 
-          <p className="hero-copy hero-reveal mt-5 max-w-xl text-base leading-8 text-[var(--text-secondary)] md:text-lg md:leading-9">
-            Build an AI second brain that turns notes, PDFs, links, meetings,
-            and research into a private knowledge base with cited answers,
-            living memory, and a graph that keeps learning around the clock.
+          <p className="hero-copy hero-reveal mt-5 max-w-xl text-[15px] leading-7 text-[var(--text-secondary)] md:text-lg md:leading-9">
+            A private AI workspace that captures what you read, write, and decide,
+            then turns it into trusted recall with citations.
           </p>
 
-          <div className="hero-reveal mt-6 flex flex-wrap gap-2">
+          <div className="hero-reveal mt-5 flex flex-wrap gap-2">
             {STACK.map((item) => (
               <span
                 key={item}
@@ -140,12 +139,12 @@ export function Hero() {
             ))}
           </div>
 
-          <div className="hero-reveal mt-8 flex flex-wrap items-center gap-3">
+          <div className="hero-reveal mt-6 flex flex-wrap items-center gap-3">
             <Link
               href="/sign-up"
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--accent-bright),var(--accent))] px-5 text-sm font-semibold text-[var(--text-inverse)] shadow-[0_16px_42px_color-mix(in_srgb,var(--accent)_28%,transparent)] transition duration-300 hover:-translate-y-0.5"
             >
-              Start your AI memory
+              Start building memory
               <ArrowRight size={16} strokeWidth={2.3} />
             </Link>
             <a
@@ -179,10 +178,10 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="hero-lab relative min-h-[540px] lg:min-h-[650px]">
+        <div className="hero-lab relative min-h-[500px] lg:min-h-[650px]">
           <div className="lab-card lab-shell relative overflow-hidden rounded-[28px] border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_70%,transparent)] p-3 shadow-[0_34px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
             <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_78%_22%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_28%,rgba(255,255,255,0.03))]" />
-            <div className="relative rounded-[22px] border border-[var(--border)] bg-[rgba(5,5,7,0.62)]">
+            <div className="hero-console relative rounded-[22px] border border-[var(--border)] bg-[rgba(5,5,7,0.62)]">
               <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent)]" />
@@ -245,34 +244,34 @@ export function Hero() {
                   </div>
                 </div>
 
-                <div className="graph-panel relative min-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[radial-gradient(circle_at_50%_42%,rgba(255,124,37,0.14),transparent_36%),rgba(255,255,255,0.025)] p-4">
+                <div className="graph-panel dark-preview relative min-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[radial-gradient(circle_at_50%_42%,rgba(255,124,37,0.14),transparent_36%),rgba(255,255,255,0.025)] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur">
+                    <span className="preview-chip rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur">
                       Living memory
                     </span>
-                    <span className="rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)] backdrop-blur">
+                    <span className="preview-chip preview-chip-accent rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)] backdrop-blur">
                       Always on
                     </span>
                   </div>
 
                   <BrainMemoryVisual />
 
-                  <div className="query-card relative rounded-2xl border border-[var(--border-bright)] bg-black/45 p-4 backdrop-blur-xl">
+                  <div className="query-card dark-preview relative rounded-2xl border border-[var(--border-bright)] bg-black/45 p-4 backdrop-blur-xl">
                     <div className="mb-3 flex items-center gap-2">
                       <Network size={16} className="text-[var(--accent-bright)]" />
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                      <p className="preview-muted text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
                         Cited answer
                       </p>
                     </div>
-                    <p className="text-sm font-semibold leading-6 text-[var(--text-primary)]">
-                      Your AI knowledge base connects the source, context, and
-                      decision trail before it answers.
+                    <p className="preview-title text-sm font-semibold leading-6 text-[var(--text-primary)]">
+                      Answers stay connected to the sources, notes, and decisions
+                      behind them.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {['Cited sources', 'Linked context', 'Memory graph'].map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[8px] uppercase tracking-[0.12em] text-[var(--text-secondary)]"
+                          className="preview-pill rounded-full border border-[var(--border)] px-2.5 py-1 text-[8px] uppercase tracking-[0.12em] text-[var(--text-secondary)]"
                         >
                           {tag}
                         </span>
@@ -400,6 +399,75 @@ export function Hero() {
           0%, 100% { border-color: var(--border); }
           50% { border-color: color-mix(in srgb, var(--accent) 48%, var(--border)); }
         }
+        :global([data-theme='light']) .hero-root {
+          background:
+            radial-gradient(ellipse 72% 42% at 18% 18%, rgba(255, 122, 31, 0.12), transparent 58%),
+            linear-gradient(180deg, #fffdf8 0%, #f8f2e8 54%, #fffaf3 100%);
+        }
+        :global([data-theme='light']) .hero-noise {
+          opacity: 0.62;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(246, 237, 222, 0.28) 100%),
+            repeating-linear-gradient(90deg, rgba(61, 43, 22, 0.035) 0 1px, transparent 1px 8px);
+        }
+        :global([data-theme='light']) .hero-aurora-a {
+          opacity: 0.55;
+        }
+        :global([data-theme='light']) .hero-aurora-b {
+          opacity: 0.18;
+        }
+        :global([data-theme='light']) .lab-shell {
+          background: rgba(255, 255, 255, 0.84);
+          border-color: rgba(54, 38, 22, 0.16);
+          box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.95) inset,
+            0 28px 80px rgba(60, 42, 20, 0.16);
+        }
+        :global([data-theme='light']) .hero-console {
+          background: linear-gradient(180deg, rgba(255, 252, 246, 0.92), rgba(246, 238, 225, 0.84));
+          border-color: rgba(54, 38, 22, 0.10);
+        }
+        :global([data-theme='light']) .dark-preview {
+          --text-primary: #f8f7f4;
+          --text-secondary: rgba(248, 247, 244, 0.72);
+          --text-muted: rgba(248, 247, 244, 0.46);
+          --border: rgba(255,255,255,0.10);
+          --border-bright: rgba(255,255,255,0.16);
+          background:
+            radial-gradient(circle at 50% 42%, rgba(255, 122, 31, 0.18), transparent 38%),
+            linear-gradient(145deg, rgba(34, 33, 31, 0.98), rgba(15, 15, 15, 0.98));
+          color: #f8f7f4;
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.10),
+            0 18px 44px rgba(43, 31, 18, 0.24);
+        }
+        :global([data-theme='light']) .preview-chip {
+          color: rgba(248, 247, 244, 0.74);
+          background: rgba(0, 0, 0, 0.36);
+          border-color: rgba(255, 255, 255, 0.14);
+        }
+        :global([data-theme='light']) .preview-chip-accent {
+          color: #ff8a32;
+        }
+        :global([data-theme='light']) .preview-title {
+          color: #f8f7f4;
+        }
+        :global([data-theme='light']) .preview-muted,
+        :global([data-theme='light']) .preview-pill {
+          color: rgba(248, 247, 244, 0.55);
+          border-color: rgba(255, 255, 255, 0.12);
+        }
+        :global([data-theme='light']) .source-panel,
+        :global([data-theme='light']) .wiki-panel {
+          background: rgba(255, 255, 255, 0.78);
+          border-color: rgba(54, 38, 22, 0.10);
+          box-shadow: 0 10px 30px rgba(60, 42, 20, 0.06);
+        }
+        :global([data-theme='light']) .source-row {
+          background: rgba(255, 255, 255, 0.72);
+          border-color: rgba(54, 38, 22, 0.10);
+        }
         @media (max-width: 1024px) {
           .hero-root {
             min-height: auto;
@@ -418,8 +486,8 @@ export function Hero() {
         }
         @media (max-width: 720px) {
           .hero-root {
-            padding-top: 108px;
-            padding-bottom: 36px;
+            padding-top: 100px;
+            padding-bottom: 30px;
           }
           .hero-title {
             letter-spacing: -0.052em;
@@ -437,7 +505,7 @@ export function Hero() {
             grid-template-columns: 1fr;
           }
           .graph-panel {
-            min-height: 320px;
+            min-height: 270px;
           }
           .float-card,
           .signal-path {
@@ -447,7 +515,7 @@ export function Hero() {
         @media (max-width: 480px) {
           .hero-root {
             padding-inline: 14px;
-            padding-top: 104px;
+            padding-top: 96px;
           }
           .hero-title {
             max-width: 8.8ch;
@@ -455,8 +523,8 @@ export function Hero() {
           }
           .hero-copy {
             margin-top: 16px;
-            font-size: 13.5px;
-            line-height: 1.62;
+            font-size: 13px;
+            line-height: 1.58;
           }
           .lab-shell {
             margin-inline: -2px;
@@ -472,7 +540,7 @@ export function Hero() {
             display: none;
           }
           .graph-panel {
-            min-height: 300px;
+            min-height: 250px;
           }
           .query-card {
             padding: 12px;
@@ -490,7 +558,7 @@ export function Hero() {
 
 function BrainMemoryVisual() {
   return (
-    <div className="brain-memory relative mx-auto my-4 aspect-square w-full max-w-[330px] overflow-hidden rounded-[28px] border border-[var(--border)] bg-[radial-gradient(circle_at_50%_48%,rgba(255,124,37,0.12),transparent_42%),rgba(0,0,0,0.28)]">
+    <div className="brain-memory dark-preview relative mx-auto my-4 aspect-square w-full max-w-[330px] overflow-hidden rounded-[28px] border border-[var(--border)] bg-[radial-gradient(circle_at_50%_48%,rgba(255,124,37,0.12),transparent_42%),rgba(0,0,0,0.28)]">
       <div className="absolute inset-0 opacity-85">
         <BrainCanvas className="h-full w-full" />
       </div>
@@ -516,7 +584,7 @@ function BrainMemoryVisual() {
         }
         @media (max-width: 480px) {
           .brain-memory {
-            max-width: 280px;
+            max-width: 238px;
             border-radius: 22px;
           }
         }

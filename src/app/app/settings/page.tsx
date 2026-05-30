@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const queryPct    = Math.min((queries / 50) * 100, 100)
 
   return (
-    <div className="p-8 max-w-3xl mx-auto text-[var(--text-primary)]">
+    <div className="mx-auto max-w-3xl p-4 text-[var(--text-primary)] sm:p-6 md:p-8">
       {/* ── Heading ─────────────────────────────────────────── */}
       <div className="mb-8">
         <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-2">
@@ -56,7 +56,7 @@ export default function SettingsPage() {
       <div className="space-y-5">
         {/* ── Account card ───────────────────────────────── */}
         <Section icon={<Shield className="w-3.5 h-3.5" />} label="ACCOUNT">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div
               className="w-11 h-11 rounded-xl grid place-items-center font-semibold text-sm"
               style={{
@@ -77,7 +77,7 @@ export default function SettingsPage() {
                 {user?.emailAddresses?.[0]?.emailAddress}
               </p>
             </div>
-            <div className="ml-auto">
+            <div className="sm:ml-auto">
               <Pill tone={isPro ? 'accent' : 'silver'}>{isPro ? 'PRO' : 'FREE'}</Pill>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function SettingsPage() {
 
         {/* ── Vault stats ────────────────────────────────── */}
         <Section icon={<Database className="w-3.5 h-3.5" />} label="VAULT STATISTICS">
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Stat
               icon={<BookOpen className="w-4 h-4" style={{ color: 'var(--accent-bright)' }} />}
               value={vault?.pageCount ?? 0}

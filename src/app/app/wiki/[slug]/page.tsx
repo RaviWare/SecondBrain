@@ -105,8 +105,8 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
   }
 
   if (loading) return (
-    <div className="flex gap-0 min-h-screen text-[var(--text-primary)]">
-      <div className="flex-1 p-8 max-w-3xl animate-pulse">
+    <div className="flex min-h-screen gap-0 text-[var(--text-primary)]">
+      <div className="max-w-3xl flex-1 animate-pulse p-4 sm:p-6 md:p-8">
         <div className="h-3 rounded w-24 mb-8" style={{ background: 'var(--surface-2)' }} />
         <div className="h-6 rounded w-1/3 mb-4" style={{ background: 'var(--surface-2)' }} />
         <div className="h-8 rounded w-2/3 mb-8" style={{ background: 'var(--surface-2)' }} />
@@ -124,7 +124,7 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
   )
 
   if (!data?.page) return (
-    <div className="p-8 text-center text-[var(--text-primary)]">
+    <div className="p-4 text-center text-[var(--text-primary)] sm:p-8">
       <p className="mono text-xs text-[var(--text-muted)] tracking-widest mb-4">PAGE NOT FOUND</p>
       <Link
         href="/app/wiki"
@@ -140,11 +140,11 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
   const tone = TYPE_TONE[page.type] ?? 'silver'
 
   return (
-    <div className="flex min-h-screen text-[var(--text-primary)]">
+    <div className="flex min-h-screen flex-col text-[var(--text-primary)] lg:flex-row">
       {/* Main content */}
-      <div className="flex-1 p-8 max-w-3xl min-w-0">
+      <div className="max-w-3xl min-w-0 flex-1 p-4 sm:p-6 md:p-8">
         {/* Nav bar */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-1.5 mono text-[10px] text-[var(--text-muted)] tracking-widest transition-colors hover:text-[var(--text-secondary)]"
@@ -153,7 +153,7 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
             BACK
           </button>
           {editing ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setEditing(false)}
                 className="flex items-center gap-1.5 mono text-[10px] text-[var(--text-muted)] tracking-wider px-3 py-1.5 rounded-lg transition-all"
@@ -212,13 +212,13 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
               {page.confidence.toUpperCase()} CONFIDENCE
             </span>
           )}
-          <span className="mono text-[9px] text-[var(--text-muted)] flex items-center gap-1 tracking-wider ml-auto">
+          <span className="mono flex items-center gap-1 text-[9px] text-[var(--text-muted)] tracking-wider sm:ml-auto">
             <Clock className="w-3 h-3" />
             {timeAgo(page.updatedAt ?? new Date()).toUpperCase()}
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight mb-6 leading-tight">
+        <h1 className="mb-6 text-2xl font-bold tracking-tight leading-tight sm:text-3xl">
           {page.title}
         </h1>
 
@@ -256,7 +256,7 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
           <textarea
             value={editContent}
             onChange={e => setEditContent(e.target.value)}
-            className="w-full h-[60vh] rounded-xl p-5 text-sm font-mono focus:outline-none resize-none leading-7"
+            className="h-[55vh] w-full resize-none rounded-xl p-4 font-mono text-sm leading-7 focus:outline-none sm:h-[60vh] sm:p-5"
             style={{
               background: 'var(--surface-2)',
               border: '1px solid var(--border-bright)',
@@ -273,9 +273,8 @@ export default function WikiPageView({ params }: { params: Promise<{ slug: strin
 
       {/* Right sidebar */}
       <div
-        className="w-60 shrink-0 p-6 sticky top-0 h-screen overflow-y-auto"
+        className="h-auto w-full shrink-0 overflow-y-auto border-t border-[var(--border)] p-4 lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:border-l lg:border-t-0 lg:p-6"
         style={{
-          borderLeft: '1px solid var(--border)',
           background: 'var(--surface)',
         }}
       >

@@ -223,11 +223,27 @@ const DEMO_EDGES: GraphEdge[] = [
 // Larger nodes = more room for crisp typography. Hub reads as the focal
 // point; satellites are still compact enough that 6 fit comfortably on a
 // 1280-wide panel.
-function realRadius(connectionCount: number) {
-  return Math.min(38 + connectionCount * 3, 64)
+function realRadius(connectionCount: number, compact = false) {
+  return compact
+    ? Math.min(26 + connectionCount * 1.6, 42)
+    : Math.min(38 + connectionCount * 3, 64)
 }
-function demoRadius(id: string) {
+function demoRadius(id: string, compact = false) {
+  if (compact) return id === 'core' ? 52 : 40
   return id === 'core' ? 74 : 58
+}
+
+function fitCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+  if (ctx.measureText(text).width <= maxWidth) return text
+  const ellipsis = '...'
+  let lo = 0
+  let hi = text.length
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if (ctx.measureText(text.slice(0, mid) + ellipsis).width <= maxWidth) lo = mid
+    else hi = mid - 1
+  }
+  return lo > 0 ? text.slice(0, lo) + ellipsis : ellipsis
 }
 
 export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlightId, focusNodeId, focusNonce, onNodeClick, className }: Props) {
@@ -279,15 +295,16 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
     if (!canvas) return
     const W = Number(canvas.dataset.cssW) || canvas.width
     const H = Number(canvas.dataset.cssH) || canvas.height
+    const compact = W < 640
 
     if (demo) {
       const cx = W / 2
       const cy = H / 2
-      const ring = Math.min(W, H) * 0.28
+      const ring = Math.min(W, H) * (compact ? 0.24 : 0.28)
       const satellites = ns.filter(n => n.id !== 'core')
       physicsRef.current = ns.map((node) => {
         if (node.id === 'core') {
-          return { ...node, x: cx, y: cy, vx: 0, vy: 0, radius: demoRadius(node.id) }
+          return { ...node, x: cx, y: cy, vx: 0, vy: 0, radius: demoRadius(node.id, compact) }
         }
         const idx = satellites.findIndex(n => n.id === node.id)
         // Start from -90° so the first satellite sits above the hub.
@@ -297,7 +314,7 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
           x: cx + Math.cos(angle) * ring,
           y: cy + Math.sin(angle) * ring,
           vx: 0, vy: 0,
-          radius: demoRadius(node.id),
+          radius: demoRadius(node.id, compact),
         }
       })
       edgesRef.current = es
@@ -308,7 +325,7 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
     const existing = new Map(physicsRef.current.map(n => [n.id, n]))
     physicsRef.current = ns.map(node => {
       const prev = existing.get(node.id)
-      const radius = realRadius(node.connectionCount)
+      const radius = realRadius(node.connectionCount, compact)
       return prev
         ? { ...node, x: prev.x, y: prev.y, vx: prev.vx, vy: prev.vy, radius }
         : {
@@ -406,14 +423,15 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
 
       const { x: ox, y: oy, scale } = offsetRef.current
       const demo = isDemoRef.current
+      const compact = W < 640
       const selId = selectedIdRef.current
       const hovId = hoveredRef.current
 
       // ── Physics (real-data only) ──────────────────────────────────────────
       if (!demo && !simStableRef.current) {
-        const REPEL = 2400
+        const REPEL = compact ? 1400 : 2400
         const SPRING = 0.04
-        const REST = 160
+        const REST = compact ? 108 : 160
         const GRAVITY = 0.018
         const DAMP = 0.82
 
@@ -593,16 +611,16 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
         // Icon + labels. Layout: icon above centre, title on centre, subtitle
         // as a mono label below centre. Larger sizes + tracked subtitle read
         // cleanly at DPR 1/1.5/2.
-        const showCompact = r < 42
+        const showCompact = compact || r < 42
         const iconKey: IconKey = n.icon ?? iconForType(n.type)
-        const iconSize = showCompact ? 18 : 24
-        const titleSize = showCompact ? 12 : 14
-        const subSize   = showCompact ? 9  : 10
+        const iconSize = showCompact ? 14 : 24
+        const titleSize = showCompact ? 9 : 14
+        const subSize   = showCompact ? 8  : 10
 
         // Vertical rhythm relative to the centre: icon, title, subtitle.
-        const iconY  = drawY - (showCompact ? 13 : 17)
-        const titleY = drawY + (showCompact ? 6 : 9)
-        const subY   = drawY + (showCompact ? 22 : 26)
+        const iconY  = drawY - (showCompact ? 8 : 17)
+        const titleY = drawY + (showCompact ? 7 : 9)
+        const subY   = drawY + (showCompact ? 20 : 26)
 
         ctx.save()
         ctx.translate(drawX, iconY)
@@ -615,8 +633,7 @@ export function KnowledgeGraph({ nodes, edges, selectedId, highlightId: _highlig
         // Title — crisp, 600 weight, -0.02em tracking via letterSpacing.
         ctx.fillStyle = dim ? TEXT_DIM : TEXT
         ctx.font = `600 ${titleSize}px -apple-system, "SF Pro Text", "Inter", system-ui, sans-serif`
-        const maxTitleChars = showCompact ? 10 : 14
-        const title = n.title.length > maxTitleChars ? n.title.slice(0, maxTitleChars - 1) + '…' : n.title
+        const title = fitCanvasText(ctx, n.title, r * (showCompact ? 1.35 : 1.65))
         ctx.fillText(title, drawX, titleY)
 
         // Subtitle — mono + uppercase + tracking, sized as a meta label.

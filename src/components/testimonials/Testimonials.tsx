@@ -70,7 +70,7 @@ const ROW_B: Quote[] = [
 
 export function Testimonials() {
   return (
-    <section id="testimonials" className="relative py-20 md:py-28 overflow-hidden">
+    <section id="testimonials" className="relative py-12 md:py-28 overflow-hidden">
       {/* soft plume */}
       <div
         aria-hidden
@@ -83,16 +83,16 @@ export function Testimonials() {
 
       {/* ── Header ───────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-4 md:px-6 text-center">
-        <Badge tone="accent" dot className="mb-4">LOVED · BY · KNOWLEDGE · WORKERS</Badge>
+        <Badge tone="accent" dot className="mb-3 md:mb-4">LOVED · BY · KNOWLEDGE · WORKERS</Badge>
         <h2 className="type-h1 gradient-text">Thinking, compiled.</h2>
-        <p className="type-body mt-4 mx-auto max-w-2xl">
+        <p className="type-body mt-3 md:mt-4 mx-auto max-w-2xl">
           Early users ingesting transcripts, papers, meeting notes, and raw thought streams —
           turning them into cited, linked, timeline-aware knowledge.
         </p>
       </div>
 
       {/* ── Marquee rows ─────────────────────────────────── */}
-      <div className="mt-10 md:mt-14 space-y-4 md:space-y-5" aria-label="testimonials">
+      <div className="mt-8 md:mt-14 space-y-3 md:space-y-5" aria-label="testimonials">
         <Marquee items={ROW_A} direction="left" duration={60} />
         <Marquee items={ROW_B} direction="right" duration={72} />
       </div>
@@ -155,7 +155,7 @@ function TestimonialCard({ quote }: { quote: Quote }) {
   return (
     <figure
       className={cn(
-        'relative shrink-0 w-[288px] sm:w-[320px] md:w-[420px] p-5 md:p-6 rounded-[var(--radius-lg)]',
+        'relative shrink-0 w-[260px] sm:w-[320px] md:w-[420px] p-4 md:p-6 rounded-[var(--radius-lg)]',
         'glass border border-[var(--border)]',
         'transition-all duration-500 ease-out',
         'hover:-translate-y-1 hover:border-[var(--border-glow)]',
@@ -174,11 +174,11 @@ function TestimonialCard({ quote }: { quote: Quote }) {
 
       <QuoteIcon size={18} className="opacity-40" style={{ color: accent }} />
 
-      <blockquote className="mt-3 type-body-sm text-[var(--text-primary)] leading-relaxed">
+      <blockquote className="mt-3 text-[13px] leading-[1.6] text-[var(--text-primary)] md:type-body-sm md:leading-relaxed">
         &ldquo;{quote.body}&rdquo;
       </blockquote>
 
-      <figcaption className="mt-5 flex items-center gap-3">
+      <figcaption className="mt-4 md:mt-5 flex items-center gap-3">
         <span
           className="grid place-items-center h-10 w-10 rounded-full border text-xs font-semibold"
           style={{

@@ -56,7 +56,7 @@ export function BrainCanvas({ className }: { className?: string }) {
       CX = S / 2
       CY = S / 2
       OR = S * 0.39
-      BR = S * 0.34
+      BR = S * 0.335
       initNodes()
     }
 
@@ -68,8 +68,8 @@ export function BrainCanvas({ className }: { className?: string }) {
       for (let i = 0; i < TARGET_COUNT; i++) {
         let x = 0, y = 0, valid = false, tries = 0
         do {
-      x = CX + (Math.random() - 0.5) * BR * 2.0
-      y = CY + (Math.random() - 0.5) * BR * 1.82
+          x = CX + (Math.random() - 0.5) * BR * 2.05
+          y = CY + (Math.random() - 0.5) * BR * 1.9
           if (ctx!.isPointInPath(brainPath, x * DPR, y * DPR)) {
             if (Math.abs(x - CX) > BR * 0.05) valid = true
           }
@@ -132,15 +132,18 @@ export function BrainCanvas({ className }: { className?: string }) {
     function makeBrainPath(sc: number) {
       const r = BR * sc
       const p = new Path2D()
-      p.moveTo(CX - r * 0.08, CY - r * 0.86)
-      p.bezierCurveTo(CX - r * 0.48, CY - r * 0.98, CX - r * 0.86, CY - r * 0.64, CX - r * 0.88, CY - r * 0.24)
-      p.bezierCurveTo(CX - r * 1.05, CY + r * 0.02, CX - r * 0.96, CY + r * 0.52, CX - r * 0.72, CY + r * 0.78)
-      p.bezierCurveTo(CX - r * 0.50, CY + r * 1.02, CX - r * 0.20, CY + r * 0.92, CX - r * 0.05, CY + r * 0.98)
-      p.bezierCurveTo(CX - r * 0.02, CY + r * 1.03, CX + r * 0.02, CY + r * 1.03, CX + r * 0.05, CY + r * 0.98)
-      p.bezierCurveTo(CX + r * 0.20, CY + r * 0.92, CX + r * 0.50, CY + r * 1.02, CX + r * 0.72, CY + r * 0.78)
-      p.bezierCurveTo(CX + r * 0.96, CY + r * 0.52, CX + r * 1.05, CY + r * 0.02, CX + r * 0.88, CY - r * 0.24)
-      p.bezierCurveTo(CX + r * 0.86, CY - r * 0.64, CX + r * 0.48, CY - r * 0.98, CX + r * 0.08, CY - r * 0.86)
-      p.bezierCurveTo(CX + r * 0.03, CY - r * 0.90, CX - r * 0.03, CY - r * 0.90, CX - r * 0.08, CY - r * 0.86)
+      p.moveTo(CX, CY - r * 0.86)
+      p.bezierCurveTo(CX + r * 0.09, CY - r * 0.95, CX + r * 0.24, CY - r * 0.98, CX + r * 0.40, CY - r * 0.92)
+      p.bezierCurveTo(CX + r * 0.66, CY - r * 0.98, CX + r * 0.88, CY - r * 0.70, CX + r * 0.88, CY - r * 0.43)
+      p.bezierCurveTo(CX + r * 1.05, CY - r * 0.31, CX + r * 1.03, CY - r * 0.02, CX + r * 0.96, CY + r * 0.14)
+      p.bezierCurveTo(CX + r * 1.08, CY + r * 0.43, CX + r * 0.86, CY + r * 0.78, CX + r * 0.58, CY + r * 0.82)
+      p.bezierCurveTo(CX + r * 0.43, CY + r * 0.98, CX + r * 0.15, CY + r * 0.96, CX + r * 0.05, CY + r * 0.84)
+      p.bezierCurveTo(CX + r * 0.03, CY + r * 0.76, CX - r * 0.03, CY + r * 0.76, CX - r * 0.05, CY + r * 0.84)
+      p.bezierCurveTo(CX - r * 0.15, CY + r * 0.96, CX - r * 0.43, CY + r * 0.98, CX - r * 0.58, CY + r * 0.82)
+      p.bezierCurveTo(CX - r * 0.86, CY + r * 0.78, CX - r * 1.08, CY + r * 0.43, CX - r * 0.96, CY + r * 0.14)
+      p.bezierCurveTo(CX - r * 1.03, CY - r * 0.02, CX - r * 1.05, CY - r * 0.31, CX - r * 0.88, CY - r * 0.43)
+      p.bezierCurveTo(CX - r * 0.88, CY - r * 0.70, CX - r * 0.66, CY - r * 0.98, CX - r * 0.40, CY - r * 0.92)
+      p.bezierCurveTo(CX - r * 0.24, CY - r * 0.98, CX - r * 0.09, CY - r * 0.95, CX, CY - r * 0.86)
       p.closePath()
       return p
     }
@@ -166,17 +169,25 @@ export function BrainCanvas({ className }: { className?: string }) {
       ctx!.fillRect(CX - BR * 1.2, CY - BR * 1.2, BR * 2.4, BR * 2.4)
       ctx!.restore()
 
-      ctx!.strokeStyle = 'rgba(255,255,255,0.30)'
-      ctx!.lineWidth = 1.35
+      ctx!.strokeStyle = 'rgba(255,255,255,0.34)'
+      ctx!.lineWidth = 1.45
       ctx!.stroke(bp)
 
       drawCorticalLines(bp, sc)
+      drawMemoryTraces(bp, sc)
 
       ctx!.beginPath()
       ctx!.moveTo(CX, CY - BR * sc * 0.78)
-      ctx!.bezierCurveTo(CX - BR * 0.035, CY - BR * 0.30, CX + BR * 0.045, CY + BR * 0.28, CX, CY + BR * sc * 0.80)
-      ctx!.strokeStyle = 'rgba(255,255,255,0.16)'
-      ctx!.lineWidth = 0.9
+      ctx!.bezierCurveTo(
+        CX - BR * 0.035,
+        CY - BR * 0.45,
+        CX + BR * 0.03,
+        CY + BR * 0.20,
+        CX - BR * 0.01,
+        CY + BR * sc * 0.72
+      )
+      ctx!.strokeStyle = 'rgba(255,255,255,0.20)'
+      ctx!.lineWidth = 1
       ctx!.stroke()
       ctx!.restore()
     }
@@ -187,15 +198,14 @@ export function BrainCanvas({ className }: { className?: string }) {
       ctx!.clip(bp)
       ctx!.lineCap = 'round'
       const lines = [
-        [-0.66, -0.46, -0.45, -0.68, -0.22, -0.54, -0.28, -0.30],
-        [-0.78, -0.08, -0.52, -0.24, -0.34, -0.07, -0.44, 0.18],
-        [-0.58, 0.34, -0.40, 0.16, -0.18, 0.30, -0.22, 0.56],
-        [0.24, -0.56, 0.48, -0.70, 0.68, -0.45, 0.55, -0.18],
-        [0.34, -0.02, 0.58, -0.18, 0.72, 0.08, 0.54, 0.30],
-        [0.20, 0.44, 0.46, 0.22, 0.68, 0.46, 0.44, 0.66],
+        [-0.76, -0.42, -0.60, -0.62, -0.36, -0.62, -0.28, -0.38],
+        [-0.83, -0.12, -0.60, -0.30, -0.40, -0.10, -0.52, 0.12],
+        [-0.70, 0.24, -0.50, 0.03, -0.28, 0.17, -0.34, 0.42],
+        [-0.48, 0.58, -0.31, 0.39, -0.13, 0.51, -0.22, 0.70],
+        [-0.23, -0.72, -0.10, -0.58, -0.18, -0.36, -0.05, -0.22],
       ]
       lines.forEach((line, i) => {
-        const glow = 0.045 + Math.max(0, Math.sin(t * 0.9 + i * 1.8)) * 0.055
+        const glow = 0.12 + Math.max(0, Math.sin(t * 0.78 + i * 1.7)) * 0.08
         ctx!.beginPath()
         ctx!.moveTo(CX + BR * sc * line[0], CY + BR * sc * line[1])
         ctx!.bezierCurveTo(
@@ -204,10 +214,140 @@ export function BrainCanvas({ className }: { className?: string }) {
           CX + BR * sc * line[6], CY + BR * sc * line[7]
         )
         ctx!.strokeStyle = `rgba(255,255,255,${glow})`
-        ctx!.lineWidth = 0.8
+        ctx!.lineWidth = 1.65
+        ctx!.shadowBlur = 5
+        ctx!.shadowColor = 'rgba(255,255,255,0.12)'
         ctx!.stroke()
       })
       ctx!.restore()
+    }
+
+    function drawMemoryTraces(bp: Path2D, sc: number) {
+      const t = frame / 60
+      const toX = (x: number) => CX + BR * sc * x
+      const toY = (y: number) => CY + BR * sc * y
+      const active = 0.62 + Math.sin(t * 1.15) * 0.16
+
+      ctx!.save()
+      ctx!.clip(bp)
+      ctx!.lineCap = 'round'
+      ctx!.lineJoin = 'round'
+
+      const drawTrace = (
+        y: number,
+        endX: number,
+        c1x: number,
+        c1y: number,
+        c2x: number,
+        c2y: number,
+        terminalY = y,
+        delay = 0
+      ) => {
+        const p0 = { x: toX(0.04), y: toY(y) }
+        const p1 = { x: toX(c1x), y: toY(c1y) }
+        const p2 = { x: toX(c2x), y: toY(c2y) }
+        const p3 = { x: toX(endX), y: toY(terminalY) }
+
+        ctx!.beginPath()
+        ctx!.moveTo(p0.x, p0.y)
+        ctx!.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+        ctx!.strokeStyle = `rgba(255,255,255,${0.20 + active * 0.10})`
+        ctx!.lineWidth = 1.85
+        ctx!.shadowBlur = 6
+        ctx!.shadowColor = `rgba(${accentRGB},0.18)`
+        ctx!.stroke()
+        drawSignalPacket(p0, p1, p2, p3, (t * 0.22 + delay) % 1)
+        drawTerminal(p3.x, p3.y, active)
+      }
+
+      drawTrace(-0.42, 0.36, 0.12, -0.26, 0.38, -0.22, -0.48, 0.04)
+      drawTrace(-0.10, 0.66, 0.24, -0.06, 0.54, 0.02, -0.24, 0.30)
+      drawTrace(0.20, 0.58, 0.28, 0.18, 0.56, 0.26, 0.50, 0.58)
+      drawTrace(0.52, 0.32, 0.22, 0.50, 0.32, 0.62, 0.72, 0.78)
+
+      ctx!.beginPath()
+      ctx!.moveTo(toX(0.04), toY(-0.78))
+      ctx!.lineTo(toX(0.04), toY(0.82))
+      ctx!.strokeStyle = 'rgba(255,255,255,0.26)'
+      ctx!.lineWidth = 2.1
+      ctx!.shadowBlur = 0
+      ctx!.stroke()
+
+      ;[
+        [0.38, -0.72, 1.6],
+        [0.55, 0.10, 1.2],
+        [0.70, 0.32, 1.2],
+        [0.34, 0.86, 1.45],
+      ].forEach(([x, y, pulse], i) => {
+        const r = 1.6 + Math.max(0, Math.sin(t * pulse + i)) * 0.8
+        ctx!.beginPath()
+        ctx!.arc(toX(x), toY(y), r, 0, Math.PI * 2)
+        ctx!.fillStyle = i === 0 ? `rgba(${accentRGB},0.82)` : 'rgba(255,255,255,0.62)'
+        ctx!.shadowBlur = i === 0 ? 8 : 3
+        ctx!.shadowColor = i === 0 ? `rgba(${accentRGB},0.66)` : 'rgba(255,255,255,0.18)'
+        ctx!.fill()
+      })
+      ctx!.restore()
+    }
+
+    function drawSignalPacket(
+      p0: { x: number; y: number },
+      p1: { x: number; y: number },
+      p2: { x: number; y: number },
+      p3: { x: number; y: number },
+      progress: number
+    ) {
+      const head = cubicPoint(p0, p1, p2, p3, progress)
+      const tail = cubicPoint(p0, p1, p2, p3, Math.max(0, progress - 0.08))
+
+      ctx!.save()
+      ctx!.lineCap = 'round'
+      ctx!.shadowBlur = 10
+      ctx!.shadowColor = `rgba(${accentRGB},0.72)`
+      ctx!.beginPath()
+      ctx!.moveTo(tail.x, tail.y)
+      ctx!.lineTo(head.x, head.y)
+      ctx!.strokeStyle = `rgba(${accentRGB},0.62)`
+      ctx!.lineWidth = 2
+      ctx!.stroke()
+
+      ctx!.beginPath()
+      ctx!.arc(head.x, head.y, 2.4, 0, Math.PI * 2)
+      ctx!.fillStyle = `rgba(${accentRGB},0.96)`
+      ctx!.fill()
+      ctx!.restore()
+    }
+
+    function cubicPoint(
+      p0: { x: number; y: number },
+      p1: { x: number; y: number },
+      p2: { x: number; y: number },
+      p3: { x: number; y: number },
+      t: number
+    ) {
+      const u = 1 - t
+      const tt = t * t
+      const uu = u * u
+      const uuu = uu * u
+      const ttt = tt * t
+      return {
+        x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+        y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
+      }
+    }
+
+    function drawTerminal(x: number, y: number, active: number) {
+      ctx!.beginPath()
+      ctx!.arc(x, y, 6.2, 0, Math.PI * 2)
+      ctx!.strokeStyle = `rgba(255,255,255,${0.28 + active * 0.18})`
+      ctx!.lineWidth = 2
+      ctx!.stroke()
+      ctx!.beginPath()
+      ctx!.arc(x, y, 2.1, 0, Math.PI * 2)
+      ctx!.fillStyle = `rgba(${accentRGB},${0.72 + active * 0.18})`
+      ctx!.shadowBlur = 8
+      ctx!.shadowColor = `rgba(${accentRGB},0.62)`
+      ctx!.fill()
     }
 
     // ── Layer 4 ─────────────────────────────────────
@@ -221,8 +361,8 @@ export function BrainCanvas({ className }: { className?: string }) {
           const dist = Math.hypot(dx, dy)
           const maxD = BR * 0.27
           if (dist < maxD) {
-            const base = (1 - dist / maxD) * 0.08
-            const boost = Math.max(a.brt, b.brt) * 0.22
+            const base = (1 - dist / maxD) * 0.035
+            const boost = Math.max(a.brt, b.brt) * 0.12
             ctx!.beginPath()
             ctx!.moveTo(a.x, a.y)
             ctx!.lineTo(b.x, b.y)
@@ -261,35 +401,47 @@ export function BrainCanvas({ className }: { className?: string }) {
 
     // ── Layer 6 ─────────────────────────────────────
     function drawScanArc() {
-      const arcLen = 0.82
+      const arcLen = 1.02
       const end = scanAngle
       const start = end - arcLen
 
       ctx!.save()
       ctx!.lineCap = 'round'
 
-      for (let i = 2; i >= 1; i--) {
-        const op = 0.035 - i * 0.011
+      ctx!.beginPath()
+      ctx!.arc(CX, CY, OR, Math.PI * 0.55, Math.PI * 0.98)
+      ctx!.strokeStyle = `rgba(${accentRGB},0.10)`
+      ctx!.lineWidth = 2
+      ctx!.stroke()
+
+      for (let i = 4; i >= 1; i--) {
+        const op = 0.075 - i * 0.014
         if (op <= 0) continue
         ctx!.beginPath()
-        ctx!.arc(CX, CY, OR, start - i * 0.18, start - (i - 1) * 0.18)
+        ctx!.arc(CX, CY, OR, start - i * 0.16, start - (i - 1) * 0.16)
         ctx!.strokeStyle = `rgba(${accentRGB},${op})`
-        ctx!.lineWidth = 1
+        ctx!.lineWidth = 1.2
         ctx!.stroke()
       }
 
-      ctx!.shadowBlur = 12
-      ctx!.shadowColor = `rgba(${accentRGB},0.50)`
+      ctx!.shadowBlur = 18
+      ctx!.shadowColor = `rgba(${accentRGB},0.62)`
       ctx!.beginPath()
       ctx!.arc(CX, CY, OR, start, end)
-      ctx!.strokeStyle = `rgba(${accentRGB},0.78)`
-      ctx!.lineWidth = 2.1
+      ctx!.strokeStyle = `rgba(${accentRGB},0.84)`
+      ctx!.lineWidth = 2.8
       ctx!.stroke()
 
+      const hx = CX + Math.cos(end) * OR
+      const hy = CY + Math.sin(end) * OR
       ctx!.beginPath()
-      ctx!.arc(CX, CY, OR, end - 0.055, end + 0.01)
-      ctx!.strokeStyle = `rgba(${accentRGB},0.92)`
-      ctx!.lineWidth = 3.2
+      ctx!.arc(hx, hy, 4.2, 0, Math.PI * 2)
+      ctx!.fillStyle = `rgba(${accentRGB},0.94)`
+      ctx!.fill()
+      ctx!.beginPath()
+      ctx!.arc(hx, hy, 9.5, 0, Math.PI * 2)
+      ctx!.strokeStyle = `rgba(${accentRGB},0.22)`
+      ctx!.lineWidth = 1.1
       ctx!.stroke()
       ctx!.shadowBlur = 0
       ctx!.restore()
@@ -315,7 +467,7 @@ export function BrainCanvas({ className }: { className?: string }) {
 
     // ── Update ──────────────────────────────────────
     function update() {
-      scanAngle += 0.0062
+      scanAngle += 0.0076
       if (scanAngle > Math.PI * 1.5) scanAngle -= Math.PI * 2
       nodes.forEach((n) => {
         let diff = Math.atan2(n.y - CY, n.x - CX) - scanAngle

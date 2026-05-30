@@ -14,12 +14,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  title: {
-    default: 'SecondBrain Cloud | AI Second Brain and Personal Knowledge Base',
-    template: '%s | SecondBrain Cloud',
-  },
-  description:
-    'SecondBrain Cloud is AI second brain software that turns notes, PDFs, URLs, and transcripts into a private knowledge base with cited answers, living memory, and graph search.',
+	  title: {
+	    default: 'SecondBrain Cloud | Private AI Memory Workspace',
+	    template: '%s | SecondBrain Cloud',
+	  },
+	  description:
+	    'SecondBrain Cloud captures sources, notes, files, and decisions in a private AI memory workspace with cited search and graph context.',
   keywords: [
     'AI second brain',
     'personal knowledge base',
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: siteUrl,
     siteName: 'SecondBrain Cloud',
-    title: 'SecondBrain Cloud | AI Second Brain and Personal Knowledge Base',
-    description:
-      'Turn sources into a maintained, searchable, cited second brain with memory pages, graph navigation, and evidence-backed answers.',
+	    title: 'SecondBrain Cloud | Private AI Memory Workspace',
+	    description:
+	      'A private AI workspace for source-backed recall, cited answers, and connected knowledge.',
     images: [
       {
         url: '/icon.svg',
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SecondBrain Cloud | AI Second Brain and Personal Knowledge Base',
-    description:
-      'Ingest anything. Build a private AI knowledge base. Query your own memory with citations and graph context.',
+	    title: 'SecondBrain Cloud | Private AI Memory Workspace',
+	    description:
+	      'Capture sources, organize memory, and search your own knowledge with citations.',
     images: ['/icon.svg'],
   },
 }

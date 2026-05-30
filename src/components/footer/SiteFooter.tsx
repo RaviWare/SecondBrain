@@ -73,8 +73,8 @@ export function SiteFooter() {
       />
 
       {/* ── Top content: link columns + newsletter ───────── */}
-      <div className="mx-auto max-w-7xl px-4 md:px-6 pt-16 md:pt-24 pb-10 md:pb-14">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 pt-12 md:pt-24 pb-8 md:pb-14">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12">
           {/* Brand · newsletter */}
           <div className="md:col-span-5">
             <div className="flex items-center gap-3">
@@ -87,13 +87,13 @@ export function SiteFooter() {
               </div>
             </div>
 
-            <p className="type-body-sm mt-4 md:mt-5 max-w-sm">
+            <p className="type-body-sm mt-3 md:mt-5 max-w-sm">
               Ingest anything, query everything. A compiled source of truth with a preserved timeline —
               shipped as your personal AI knowledge base.
             </p>
 
             <form
-              className="mt-6 md:mt-7 max-w-sm"
+              className="mt-5 md:mt-7 max-w-sm"
               onSubmit={(e) => {
                 e.preventDefault()
                 // hook up in Phase 2 (Resend/Loops)
@@ -131,7 +131,7 @@ export function SiteFooter() {
         </div>
 
         {/* Pill row · quick actions */}
-        <div className="mt-10 md:mt-14 flex flex-wrap items-center gap-2">
+        <div className="mt-8 md:mt-14 flex flex-wrap items-center gap-2">
           {PILLS.map((p) => (
             <Link
               key={p.label}
@@ -152,7 +152,7 @@ export function SiteFooter() {
       </div>
 
       {/* ── Giant wordmark with scroll reveal ───────────── */}
-      <div className="relative select-none px-4 md:px-6 pb-8 md:pb-10 overflow-hidden">
+      <div className="relative select-none px-4 md:px-6 pb-6 md:pb-10 overflow-hidden">
         <div
           aria-hidden
           className="mx-auto max-w-7xl flex justify-center"

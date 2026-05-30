@@ -30,6 +30,8 @@ type Props = {
   bottomLeft?: string
   bottomRight?: string
   className?: string
+  autoAnimate?: boolean
+  autoDelayMs?: number
 }
 
 export function CalibrationDial({
@@ -43,6 +45,8 @@ export function CalibrationDial({
   bottomLeft = 'CAL·01',
   bottomRight = 'CAL·02',
   className = '',
+  autoAnimate = false,
+  autoDelayMs = 450,
 }: Props) {
   const START_ANGLE = 135
   const SWEEP = 270
@@ -119,6 +123,16 @@ export function CalibrationDial({
       mq?.removeEventListener?.('change', onChange)
     }
   }, [])
+
+  useEffect(() => {
+    if (!autoAnimate) return
+    targetRef.current = min
+    const timer = window.setTimeout(() => {
+      targetRef.current = max
+      if (reducedMotionRef.current) setCurrent(max)
+    }, autoDelayMs)
+    return () => window.clearTimeout(timer)
+  }, [autoAnimate, autoDelayMs, max, min])
 
   const progress = (current - min) / (max - min)
   const currentAngle = START_ANGLE + progress * SWEEP
@@ -259,6 +273,38 @@ export function CalibrationDial({
 
       <style jsx>{`
         .cal-dial { width: 100%; aspect-ratio: 1 / 1; }
+        .cal-dial.feature-card-dial {
+          width: 100%;
+          height: 100%;
+          aspect-ratio: auto;
+          transform: none;
+        }
+        .cal-dial.feature-card-dial .cal-plate {
+          border-radius: 12px;
+          border-color: var(--border);
+          background:
+            radial-gradient(circle at 50% 50%, rgba(255,122,31,0.07), transparent 54%),
+            #09090a;
+        }
+        .cal-dial.feature-card-dial .cal-knob-wrap {
+          width: min(58%, 154px);
+          max-width: calc(100% - 28px);
+        }
+        .cal-dial.feature-card-dial .cal-knob { width: 55%; }
+        .cal-dial.feature-card-dial .cal-label {
+          font-size: 7.5px;
+          letter-spacing: 0.16em;
+          line-height: 1.25;
+          text-align: center;
+          max-width: 72px;
+        }
+        .cal-dial.feature-card-dial .cal-value {
+          font-size: clamp(38px, 4.2vw, 52px);
+        }
+        .cal-dial.feature-card-dial .cal-tags {
+          bottom: 12px;
+          padding: 0 26%;
+        }
         .cal-plate {
           position: absolute;
           inset: 0;

@@ -16,7 +16,7 @@ import { CalibrationDial } from '@/components/widgets/CalibrationDial'
 
 export function PrecisionGrid() {
   return (
-    <section id="features" className="relative py-16 md:py-36 overflow-hidden">
+    <section id="features" className="relative scroll-mt-28 overflow-hidden py-12 md:scroll-mt-32 md:py-36">
       {/* ambient plume */}
       <div
         aria-hidden
@@ -35,21 +35,21 @@ export function PrecisionGrid() {
           style={{
             fontFamily: 'var(--font-inter), ui-sans-serif, system-ui',
             fontWeight: 600,
-            fontSize: 'clamp(1.9rem, 5vw, 4.25rem)',
+            fontSize: 'clamp(1.8rem, 5vw, 4.25rem)',
             lineHeight: 1.02,
             letterSpacing: '-0.03em',
           }}
         >
-          <span className="block text-[var(--text-primary)]">The AI memory system</span>
-          <span className="block brushed-text">for serious knowledge work.</span>
+          <span className="block text-[var(--text-primary)]">Turn scattered knowledge</span>
+          <span className="block brushed-text">into trusted memory.</span>
         </h2>
 
-        <p className="type-body mt-5 mx-auto max-w-2xl">
-          Capture sources, build a private knowledge base, search with citations,
-          and keep your most important thinking connected every hour of the day.
+        <p className="type-body mt-4 mx-auto max-w-2xl">
+          SecondBrain keeps your sources, summaries, links, and answers connected
+          so important context is never lost.
         </p>
 
-        <div className="mt-7 flex items-center justify-center gap-2">
+        <div className="mt-5 md:mt-7 flex items-center justify-center gap-2">
           <span className="type-mono-xs text-[var(--text-muted)] tracking-[0.4em]">{'///'}</span>
           <span className="type-mono-xs text-[var(--text-muted)]">MEMORY ENGINE · 2026</span>
           <span className="type-mono-xs text-[var(--text-muted)] tracking-[0.4em]">{'///'}</span>
@@ -57,8 +57,8 @@ export function PrecisionGrid() {
       </div>
 
       {/* ── Instrument grid ──────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 md:px-6 mt-10 md:mt-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 mt-8 md:mt-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {CARDS.map((c, i) => (
             <InstrumentCard key={c.code} {...c} delay={i * 120} />
           ))}
@@ -119,7 +119,7 @@ function InstrumentCard({
   return (
     <div
       ref={ref}
-      className="group relative rounded-[22px] p-5 md:p-6 border border-[var(--border)] transition-all duration-500"
+      className="group relative flex h-full flex-col rounded-2xl border border-[var(--border)] p-3.5 transition-all duration-500 md:rounded-[22px] md:p-5"
       style={{
         background: 'var(--metallic)',
         boxShadow: entered
@@ -152,11 +152,11 @@ function InstrumentCard({
 
       {/* instrument bezel */}
       <div
-        className="relative mt-4 rounded-[14px] border border-[var(--border)] overflow-hidden"
+        className="relative mt-4 overflow-hidden rounded-[14px] border border-[var(--border)]"
         style={{
           background:
             'linear-gradient(160deg, #0a0a0c 0%, #050506 60%, #0c0c0e 100%)',
-          aspectRatio: '4 / 3',
+          aspectRatio: '16 / 11',
         }}
       >
         <span
@@ -173,11 +173,11 @@ function InstrumentCard({
       </div>
 
       {/* title + desc */}
-      <div className="relative mt-5">
+      <div className="relative mt-4 md:mt-5 flex flex-1 flex-col">
         <h3 className="text-[1.05rem] md:text-[1.125rem] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
           {title}
         </h3>
-        <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-secondary)]">{desc}</p>
+        <p className="mt-2 text-[0.8125rem] leading-[1.55] text-[var(--text-secondary)] md:text-[0.875rem] md:leading-[1.65]">{desc}</p>
       </div>
     </div>
   )
@@ -189,42 +189,70 @@ function InstrumentCard({
 const CARDS: CardDef[] = [
   {
     code: 'CAP.01',
-    title: 'Capture every source',
-    desc: 'Add links, PDFs, documents, notes, and transcripts. SecondBrain preserves the original source and turns it into searchable knowledge.',
+    title: 'Capture high-value inputs',
+    desc: 'Save links, PDFs, notes, documents, and transcripts with their source trail intact.',
     Visual: StreamChart,
   },
   {
     code: 'MEM.02',
-    title: 'Memory that stays current',
-    desc: 'Each topic keeps the latest understanding, source history, and evidence trail so your knowledge base improves over time.',
+    title: 'Create durable memory',
+    desc: 'Convert raw material into summaries, topics, decisions, and linked pages.',
     Visual: RoutingGraph,
   },
   {
     code: 'ANS.03',
-    title: 'Cited AI search',
-    desc: 'Ask natural-language questions and get grounded answers with references back to the pages and sources behind them.',
+    title: 'Search with citations',
+    desc: 'Get grounded answers with the pages and sources behind each response.',
     Visual: FailSafe,
   },
   {
     code: 'CLK.04',
-    title: '24 hour memory graph',
-    desc: 'Browse topics, people, decisions, sources, and patterns as a living map that keeps your second brain active around the clock.',
+    title: 'Navigate the graph',
+    desc: 'See people, concepts, sources, and decisions as connected memory.',
     Visual: DialMount,
   },
 ]
 
 function DialMount() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [entered, setEntered] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setEntered(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.45 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
-    <div className="absolute inset-0 grid place-items-center p-2">
+    <div
+      ref={ref}
+      className="absolute inset-0 grid place-items-center overflow-hidden"
+      style={{
+        background:
+          'radial-gradient(circle at 50% 52%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 52%)',
+      }}
+    >
       <CalibrationDial
+        className="feature-card-dial"
         label="ALWAYS ON"
-        min={0}
+        min={1}
         max={24}
-        initial={24}
+        initial={1}
         step={0.5}
         majorEvery={6}
         bottomLeft="SYNC"
         bottomRight="24H"
+        autoAnimate={entered}
       />
     </div>
   )
@@ -234,7 +262,6 @@ function DialMount() {
    VISUAL · ING.01 — live EKG stream
    ═══════════════════════════════════════════════════════ */
 function StreamChart() {
-  // Pre-computed polyline (looping waveform with a spike)
   const pts = [
     [0, 45], [6, 44], [12, 46], [18, 42], [24, 40], [30, 48],
     [36, 20], [40, 58], [46, 42], [52, 46], [58, 40], [64, 44],
@@ -246,7 +273,6 @@ function StreamChart() {
 
   return (
     <div className="absolute inset-2 rounded-[10px] overflow-hidden bg-[#0a0a0c] border border-[var(--border)]">
-      {/* grid */}
       <svg className="absolute inset-0 h-full w-full opacity-30" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="sg" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -256,28 +282,19 @@ function StreamChart() {
         <rect width="100%" height="100%" fill="url(#sg)" />
       </svg>
 
-      {/* header strip */}
       <div className="absolute inset-x-2 top-2 flex items-center justify-between">
         <span className="type-mono-xs" style={{ color: 'var(--accent-bright)', letterSpacing: '0.18em' }}>
           STREAM.IO
         </span>
         <span className="flex items-center gap-1.5">
-          <span
-            className="h-1.5 w-1.5 rounded-full pulse-dot"
-            style={{ background: 'var(--accent)' }}
-          />
+          <span className="h-1.5 w-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent)' }} />
           <span className="type-mono-xs" style={{ color: 'var(--accent-bright)' }}>
             LIVE
           </span>
         </span>
       </div>
 
-      {/* waveform */}
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 100 60"
-        preserveAspectRatio="none"
-      >
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 60" preserveAspectRatio="none">
         <path
           d={ghostPath}
           fill="none"
@@ -300,7 +317,6 @@ function StreamChart() {
         />
       </svg>
 
-      {/* footer metrics */}
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between text-[9px] px-2 py-1.5 border-t border-[var(--border)]" style={{ background: '#0a0a0c' }}>
         <Metric label="RX" value="48.2k" tone="accent" />
         <Metric label="TX" value="12.1k" tone="muted" />
@@ -309,7 +325,7 @@ function StreamChart() {
 
       <style jsx>{`
         @keyframes ekg-shift {
-          0%   { transform: translateX(0); }
+          0% { transform: translateX(0); }
           100% { transform: translateX(-14%); }
         }
       `}</style>
@@ -336,7 +352,6 @@ function Metric({ label, value, tone }: { label: string; value: string; tone: 'a
 function RoutingGraph() {
   return (
     <div className="absolute inset-2 flex gap-2">
-      {/* load bar */}
       <div className="w-[22%] rounded-[8px] border border-[var(--border)] bg-[#0a0a0c] p-2 flex flex-col gap-1">
         <span className="type-mono-xs text-[var(--text-muted)]" style={{ fontSize: 8 }}>LOAD</span>
         <div className="flex-1 flex flex-col gap-0.5">
@@ -359,7 +374,6 @@ function RoutingGraph() {
         </div>
       </div>
 
-      {/* graph pane */}
       <div className="flex-1 rounded-[8px] border border-[var(--border)] bg-[#0a0a0c] p-2 relative">
         <svg className="absolute inset-0 h-full w-full opacity-25" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -370,7 +384,6 @@ function RoutingGraph() {
           <rect width="100%" height="100%" fill="url(#sg2)" />
         </svg>
 
-        {/* label */}
         <div className="absolute top-1.5 left-2 right-2 flex items-center justify-between type-mono-xs" style={{ fontSize: 8 }}>
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--emerald)' }} />
@@ -378,9 +391,7 @@ function RoutingGraph() {
           </span>
         </div>
 
-        {/* paths */}
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 60" preserveAspectRatio="none">
-          {/* active path */}
           <path
             d="M5 42 L30 42 L55 22 L92 22"
             fill="none"
@@ -394,7 +405,6 @@ function RoutingGraph() {
               animation: 'path-draw 2.2s var(--ease-out-expo) forwards',
             }}
           />
-          {/* inactive path */}
           <path
             d="M5 42 L30 42 L55 52 L92 52"
             fill="none"
@@ -402,7 +412,6 @@ function RoutingGraph() {
             strokeWidth="1"
             strokeDasharray="2 2"
           />
-          {/* nodes */}
           <circle cx="5" cy="42" r="2" fill="#2a2a30" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
           <circle cx="30" cy="42" r="2" fill="#2a2a30" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
           <circle cx="55" cy="22" r="2.2" fill="var(--emerald)" stroke="rgba(255,255,255,0.6)" strokeWidth="0.5" />
@@ -411,7 +420,6 @@ function RoutingGraph() {
           <circle cx="92" cy="52" r="2" fill="var(--accent)" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" />
         </svg>
 
-        {/* bottom label */}
         <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between type-mono-xs" style={{ fontSize: 8 }}>
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--accent)' }} />
@@ -422,7 +430,7 @@ function RoutingGraph() {
 
       <style jsx>{`
         @keyframes load-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
-        @keyframes path-draw  { to { stroke-dashoffset: 0; } }
+        @keyframes path-draw { to { stroke-dashoffset: 0; } }
       `}</style>
     </div>
   )
@@ -434,7 +442,6 @@ function RoutingGraph() {
 function FailSafe() {
   return (
     <div className="absolute inset-2 rounded-[8px] border border-[var(--border)] bg-[#0a0a0c] relative flex items-center justify-around px-3">
-      {/* grid */}
       <svg className="absolute inset-0 h-full w-full opacity-20" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="sg3" width="6" height="6" patternUnits="userSpaceOnUse">
@@ -454,10 +461,7 @@ function FailSafe() {
 function Server({ variant }: { variant: 'primary' | 'secondary' }) {
   const active = variant === 'primary'
   return (
-    <div
-      className="relative flex flex-col items-center gap-1.5"
-      style={{ width: '34%' }}
-    >
+    <div className="relative flex flex-col items-center gap-1.5" style={{ width: '34%' }}>
       <div
         className="w-full rounded-[6px] border flex flex-col gap-1 p-2"
         style={{
@@ -526,13 +530,11 @@ function Connector() {
       </div>
       <style jsx>{`
         @keyframes sync-pulse {
-          0%   { left: 0;   width: 0%;  }
-          50%  { left: 20%; width: 60%; }
+          0% { left: 0; width: 0%; }
+          50% { left: 20%; width: 60%; }
           100% { left: 100%; width: 0%; }
         }
       `}</style>
     </div>
   )
 }
-
-/* WIK.04 visual is now rendered by CalibrationDial (see DialMount above). */

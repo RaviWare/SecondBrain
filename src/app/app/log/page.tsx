@@ -68,7 +68,7 @@ export default function LogPage() {
   }, [])
 
   return (
-    <div className="p-8 max-w-3xl mx-auto text-[var(--text-primary)]">
+    <div className="mx-auto max-w-3xl p-4 text-[var(--text-primary)] sm:p-6 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-2">
@@ -83,7 +83,7 @@ export default function LogPage() {
       {/* Stats bar */}
       {!loading && logs.length > 0 && (
         <div
-          className="rounded-xl p-4 mb-6 flex items-center gap-6"
+          className="mb-6 flex flex-wrap items-center gap-3 rounded-xl p-4 sm:gap-6"
           style={{ background: 'var(--surface)', border: '1px solid var(--border-bright)' }}
         >
           {Object.entries(OP_CONFIG).map(([op, cfg]) => {
@@ -153,7 +153,7 @@ export default function LogPage() {
             return (
               <div
                 key={log._id}
-                className="rounded-xl p-4 flex items-start gap-4 relative overflow-hidden transition-colors"
+            className="relative flex items-start gap-3 overflow-hidden rounded-xl p-3 transition-colors sm:gap-4 sm:p-4"
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border-bright)',
@@ -162,7 +162,7 @@ export default function LogPage() {
                 {/* Timeline line */}
                 {idx < logs.length - 1 && (
                   <div
-                    className="absolute left-[27px] top-12 bottom-[-10px] w-px"
+            className="absolute left-[23px] top-12 bottom-[-10px] w-px sm:left-[27px]"
                     style={{ background: 'var(--border)' }}
                   />
                 )}

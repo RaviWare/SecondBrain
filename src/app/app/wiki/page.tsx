@@ -70,9 +70,9 @@ export default function WikiIndexPage() {
   }, [type, search])
 
   return (
-    <div className="p-8 max-w-6xl mx-auto text-[var(--text-primary)]">
+    <div className="mx-auto max-w-6xl p-4 text-[var(--text-primary)] sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-2">
             WIKI INDEX · KNOWLEDGE BASE
@@ -84,7 +84,7 @@ export default function WikiIndexPage() {
         </div>
         <Link
           href="/app/ingest"
-          className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-lg mono tracking-widest"
+          className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold mono tracking-widest sm:w-auto"
           style={{
             background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
             color: '#0b0b0d',
@@ -100,7 +100,7 @@ export default function WikiIndexPage() {
         className="rounded-xl p-4 mb-6"
         style={{ background: 'var(--surface)', border: '1px solid var(--border-bright)' }}
       >
-        <div className="flex gap-3">
+        <div className="grid gap-3 lg:flex">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
             <input
@@ -116,7 +116,7 @@ export default function WikiIndexPage() {
             />
           </div>
           <div
-            className="flex gap-1 p-1 rounded-lg"
+            className="grid grid-cols-2 gap-1 rounded-lg p-1 sm:grid-cols-5 lg:flex"
             style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
           >
             {TYPES.slice(0, 5).map(t => {
@@ -152,7 +152,7 @@ export default function WikiIndexPage() {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(9)].map((_, i) => (
             <div
               key={i}
@@ -193,7 +193,7 @@ export default function WikiIndexPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pages.map(p => {
             const tone = TYPE_TONE[p.type] ?? 'silver'
             return (
