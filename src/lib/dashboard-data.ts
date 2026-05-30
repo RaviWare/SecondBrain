@@ -12,11 +12,11 @@ import {
 } from 'lucide-react'
 
 export const dashboardStats = [
-  { label: 'Sources', value: '1,248', delta: '+23 this week', icon: FileText, tone: 'violet' },
-  { label: 'Notes', value: '732', delta: '+18 this week', icon: BookOpen, tone: 'blue' },
-  { label: 'Topics', value: '418', delta: '+11 this week', icon: Network, tone: 'green' },
-  { label: 'Decisions', value: '156', delta: '+7 this week', icon: CheckCircle2, tone: 'orange' },
-  { label: 'AI Answers', value: '87', delta: '+33 this week', icon: Search, tone: 'purple' },
+  { label: 'Sources', value: 1248, delta: '+23 this week', icon: FileText, tone: 'violet', trend: [6, 9, 7, 12, 10, 15, 18, 23] },
+  { label: 'Notes', value: 732, delta: '+18 this week', icon: BookOpen, tone: 'blue', trend: [4, 7, 6, 9, 8, 11, 14, 18] },
+  { label: 'Topics', value: 418, delta: '+11 this week', icon: Network, tone: 'green', trend: [3, 5, 4, 6, 5, 8, 9, 11] },
+  { label: 'Decisions', value: 156, delta: '+7 this week', icon: CheckCircle2, tone: 'orange', trend: [2, 3, 5, 4, 6, 5, 6, 7] },
+  { label: 'AI Answers', value: 87, delta: '+33 this week', icon: Search, tone: 'purple', trend: [5, 8, 12, 10, 18, 22, 28, 33] },
 ] as const
 
 export const suggestedQuestions = [

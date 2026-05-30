@@ -4,12 +4,21 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import {
   Zap, Check, BookOpen, Database, Activity, Shield, CreditCard,
+  Bot, Plus, Copy, Trash2, KeyRound,
 } from 'lucide-react'
 
 const SILVER = '#c8c8cf'
 
 type PlanData = { plan?: string; tier?: string; ingestsThisMonth?: number; queriesThisMonth?: number }
 type VaultData = { pageCount?: number; sourceCount?: number; nodeCount?: number; edgeCount?: number }
+type AgentTokenMeta = {
+  id: string
+  name: string
+  prefix: string
+  scopes: string[]
+  lastUsedAt: string | null
+  createdAt: string
+}
 
 export default function SettingsPage() {
   const { user } = useUser()
@@ -233,6 +242,9 @@ export default function SettingsPage() {
             </div>
           )}
         </Section>
+
+        {/* ── Agent Access (Hermes / MCP) ────────────────── */}
+        <AgentAccessSection />
       </div>
     </div>
   )
@@ -345,5 +357,192 @@ function Pill({ tone, children }: { tone: 'accent' | 'silver'; children: React.R
     >
       {children}
     </span>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* Agent Access — Hermes / OpenClaw / MCP bearer tokens     */
+function AgentAccessSection() {
+  const [tokens, setTokens] = useState<AgentTokenMeta[]>([])
+  const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [name, setName] = useState('Hermes agent')
+  const [writeScope, setWriteScope] = useState(false)
+  const [freshToken, setFreshToken] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState('')
+
+  const base = typeof window !== 'undefined' ? window.location.origin : ''
+
+  async function load() {
+    setLoading(true)
+    try {
+      const r = await fetch('/api/agent/tokens')
+      const d = await r.json()
+      setTokens(d.tokens || [])
+    } catch {
+      setTokens([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  async function createToken() {
+    setCreating(true)
+    setError('')
+    setFreshToken(null)
+    try {
+      const r = await fetch('/api/agent/tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() || 'Hermes agent', scopes: writeScope ? ['read', 'write'] : ['read'] }),
+      })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error || 'Failed to create token'); return }
+      setFreshToken(d.token)
+      await load()
+    } catch {
+      setError('Network error creating token')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  async function revoke(id: string) {
+    await fetch(`/api/agent/tokens?id=${id}`, { method: 'DELETE' })
+    await load()
+  }
+
+  function copy(text: string) {
+    navigator.clipboard?.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <Section icon={<Bot className="w-3.5 h-3.5" />} label="AGENT ACCESS · HERMES / MCP">
+      <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
+        Connect an autonomous agent (Hermes, OpenClaw, or any MCP client) to this vault.
+        It can query with synthesis + gap analysis, search, and optionally ingest. Tokens are
+        shown once — store them securely.
+      </p>
+
+      {/* Connection details */}
+      <div
+        className="rounded-lg p-3 mb-4 space-y-1.5"
+        style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
+      >
+        <ConnRow label="MANIFEST" value={`${base}/api/agent/manifest`} onCopy={copy} />
+        <ConnRow label="QUERY" value={`${base}/api/agent/query`} onCopy={copy} />
+        <ConnRow label="SEARCH" value={`${base}/api/agent/search`} onCopy={copy} />
+        <ConnRow label="INGEST" value={`${base}/api/agent/ingest`} onCopy={copy} />
+      </div>
+
+      {/* Create */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end mb-4">
+        <div className="flex-1">
+          <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest mb-1.5">TOKEN NAME</p>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Hermes agent"
+            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+          />
+        </div>
+        <button
+          onClick={() => setWriteScope(v => !v)}
+          className="mono text-[9px] tracking-widest px-3 py-2.5 rounded-lg transition-colors"
+          style={{
+            background: writeScope ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--surface-2)',
+            border: `1px solid ${writeScope ? 'color-mix(in srgb, var(--accent) 30%, transparent)' : 'var(--border)'}`,
+            color: writeScope ? 'var(--accent-bright)' : 'var(--text-muted)',
+          }}
+        >
+          {writeScope ? 'READ + WRITE' : 'READ ONLY'}
+        </button>
+        <button
+          onClick={createToken}
+          disabled={creating}
+          className="mono text-[10px] font-semibold py-2.5 px-4 rounded-lg tracking-widest flex items-center justify-center gap-1.5 disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))', color: '#0b0b0d' }}
+        >
+          <Plus className="w-3 h-3" /> CREATE
+        </button>
+      </div>
+
+      {error && <p className="text-xs mb-3" style={{ color: '#e0633c' }}>{error}</p>}
+
+      {/* Fresh token (shown once) */}
+      {freshToken && (
+        <div
+          className="rounded-lg p-3 mb-4"
+          style={{ background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)' }}
+        >
+          <p className="mono text-[9px] tracking-widest mb-2" style={{ color: 'var(--accent-bright)' }}>
+            COPY NOW — SHOWN ONLY ONCE
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-[11px] break-all" style={{ color: 'var(--text-primary)' }}>{freshToken}</code>
+            <button
+              onClick={() => copy(freshToken)}
+              className="shrink-0 grid place-items-center w-8 h-8 rounded-lg"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              {copied ? <Check className="w-3.5 h-3.5" style={{ color: 'var(--accent-bright)' }} /> : <Copy className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Existing tokens */}
+      {loading ? (
+        <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest">LOADING…</p>
+      ) : tokens.length === 0 ? (
+        <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest">NO TOKENS YET</p>
+      ) : (
+        <div className="space-y-2">
+          {tokens.map(t => (
+            <div
+              key={t.id}
+              className="flex items-center gap-3 rounded-lg p-3"
+              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
+            >
+              <span className="grid place-items-center w-8 h-8 rounded-lg shrink-0" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <KeyRound className="w-3.5 h-3.5" style={{ color: SILVER }} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{t.name}</p>
+                <p className="mono text-[9px] text-[var(--text-muted)] tracking-wider truncate">
+                  {t.prefix}••• · {t.scopes.join(' + ').toUpperCase()} · {t.lastUsedAt ? `used ${new Date(t.lastUsedAt).toLocaleDateString()}` : 'never used'}
+                </p>
+              </div>
+              <button
+                onClick={() => revoke(t.id)}
+                aria-label="Revoke token"
+                className="shrink-0 grid place-items-center w-8 h-8 rounded-lg transition-colors hover:bg-[var(--surface)]"
+                style={{ border: '1px solid var(--border)' }}
+              >
+                <Trash2 className="w-3.5 h-3.5" style={{ color: '#e0633c' }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function ConnRow({ label, value, onCopy }: { label: string; value: string; onCopy: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="mono text-[9px] text-[var(--text-muted)] tracking-widest w-16 shrink-0">{label}</span>
+      <code className="flex-1 text-[10px] truncate" style={{ color: 'var(--text-secondary)' }}>{value}</code>
+      <button onClick={() => onCopy(value)} aria-label={`Copy ${label} URL`} className="shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+        <Copy className="w-3 h-3" />
+      </button>
+    </div>
   )
 }

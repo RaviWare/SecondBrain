@@ -274,28 +274,51 @@ Return JSON only:
   }
 }
 
-// ── Query Wiki (with RRF-ranked context) ─────────────────────────────────────
+// ── Query Wiki (synthesis + gap analysis — GBrain "think" mode) ───────────────
+// GBrain's differentiator over plain search: don't just answer, also tell the
+// user what the brain DOESN'T know yet. Returns the synthesized answer plus an
+// explicit gap analysis — stale pages, uncited claims, contradictions, and
+// holes worth filling. This is what makes it a brain instead of a search box.
+// ─────────────────────────────────────────────────────────────────────────────
+export interface GapAnalysis {
+  /** Short, honest notes about what the brain is missing or unsure about. */
+  gaps: string[]
+  /** Slugs that look stale / haven't been updated recently relative to the topic. */
+  staleSlugs: string[]
+  /** Plain-language note about contradictions found across pages, if any. */
+  contradictions: string[]
+  /** A 0-1 confidence the answer is well-supported by the cited pages. */
+  confidence: number
+}
+
 export async function queryWiki(
   question: string,
-  relevantPages: Array<{ title: string; slug: string; content: string }>
-): Promise<{ answer: string; citedSlugs: string[]; tokensUsed: number }> {
+  relevantPages: Array<{ title: string; slug: string; content: string; updatedAt?: string | Date }>
+): Promise<{ answer: string; citedSlugs: string[]; gap: GapAnalysis; tokensUsed: number }> {
   // For query answers, show only the Compiled Truth section (above ---TIMELINE---)
   // so Claude answers from synthesized knowledge, not raw evidence logs
   const pagesContext = relevantPages
     .map(p => {
       const compiledTruth = p.content.split('---TIMELINE---')[0] || p.content
-      return `## ${p.title} (slug: ${p.slug})\n${compiledTruth.slice(0, 2500)}`
+      const age = p.updatedAt ? ` (last updated ${new Date(p.updatedAt).toISOString().slice(0, 10)})` : ''
+      return `## ${p.title} (slug: ${p.slug})${age}\n${compiledTruth.slice(0, 2500)}`
     })
     .join('\n\n---\n\n')
 
   const response = await anthropicClient().messages.create({
     model: MODEL,
-    max_tokens: 2000,
+    max_tokens: 2400,
     system: WIKI_SCHEMA,
     messages: [{
       role: 'user',
-      content: `Answer this question using ONLY the wiki pages below. Cite with [[slug]] format.
-Draw from the Compiled Truth in each page — this is the current synthesized understanding.
+      content: `Answer this question using ONLY the wiki pages below, then perform a GBrain-style gap analysis.
+Draw the answer from the Compiled Truth in each page. Cite with [[slug]] format.
+
+The gap analysis is critical — be honest about what the brain does NOT know:
+- gaps: things the question asks about that the pages don't cover, or open questions worth filling
+- staleSlugs: slugs whose content looks outdated for this topic (use the "last updated" dates as a hint)
+- contradictions: any places where two pages disagree (empty array if none)
+- confidence: 0.0-1.0, how well the cited pages actually support the answer
 
 QUESTION: ${question}
 
@@ -305,7 +328,13 @@ ${pagesContext}
 Return JSON only:
 {
   "answer": "markdown answer with [[slug]] citations",
-  "citedSlugs": ["slug1", "slug2"]
+  "citedSlugs": ["slug1", "slug2"],
+  "gap": {
+    "gaps": ["what the brain doesn't know yet"],
+    "staleSlugs": ["slug-that-looks-old"],
+    "contradictions": ["page X says A but page Y says B"],
+    "confidence": 0.0
+  }
 }`,
     }],
   })
@@ -316,7 +345,20 @@ Return JSON only:
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Claude did not return valid JSON')
 
-  return { ...JSON.parse(jsonMatch[0]), tokensUsed }
+  const parsed = JSON.parse(jsonMatch[0]) as {
+    answer: string
+    citedSlugs?: string[]
+    gap?: Partial<GapAnalysis>
+  }
+
+  const gap: GapAnalysis = {
+    gaps: parsed.gap?.gaps ?? [],
+    staleSlugs: parsed.gap?.staleSlugs ?? [],
+    contradictions: parsed.gap?.contradictions ?? [],
+    confidence: typeof parsed.gap?.confidence === 'number' ? parsed.gap.confidence : 0.5,
+  }
+
+  return { answer: parsed.answer, citedSlugs: parsed.citedSlugs ?? [], gap, tokensUsed }
 }
 
 // ── URL Fetcher (Firecrawl-powered) ──────────────────────────────────────────

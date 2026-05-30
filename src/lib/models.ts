@@ -125,9 +125,68 @@ const UserPlanSchema = new Schema<IUserPlan>({
   periodStart:          { type: Date, default: Date.now },
 }, { timestamps: true })
 
+// ── Agent Token (Hermes / MCP agent access) ─────────────────
+// Lets an external autonomous agent (Hermes, OpenClaw, any MCP client) act on
+// a user's vault via bearer auth. We store ONLY a SHA-256 hash of the token —
+// the plaintext is shown once at creation and never persisted. Scopes gate
+// what the agent may do; lastUsedAt powers an activity indicator.
+export interface IAgentToken extends Document {
+  userId: string
+  name: string
+  tokenHash: string
+  prefix: string            // first 8 chars (sb_xxxx) for display, non-secret
+  scopes: Array<'read' | 'write'>
+  lastUsedAt: Date | null
+  revoked: boolean
+  createdAt: Date
+}
+
+const AgentTokenSchema = new Schema<IAgentToken>({
+  userId:     { type: String, required: true, index: true },
+  name:       { type: String, required: true, default: 'Agent token' },
+  tokenHash:  { type: String, required: true, unique: true, index: true },
+  prefix:     { type: String, required: true },
+  scopes:     { type: [String], default: ['read'] },
+  lastUsedAt: { type: Date, default: null },
+  revoked:    { type: Boolean, default: false },
+}, { timestamps: true })
+
+// ── User Agent (per-user Hermes instance) ───────────────────
+// Tracks one Hermes agent container per user. The web app is the control plane;
+// this records the container's lifecycle + the scoped brain token it uses.
+// BYO LLM key is NEVER stored here — it's injected into the container at start
+// and held only in the container's env.
+export interface IUserAgent extends Document {
+  userId: string
+  status: 'none' | 'provisioning' | 'running' | 'stopped' | 'error'
+  containerId: string | null
+  containerName: string | null
+  tokenId: string | null          // ref to the AgentToken minted for this agent
+  llmProvider: string | null      // e.g. 'openrouter', 'anthropic' (key NOT stored)
+  llmModel: string | null
+  lastActiveAt: Date | null
+  lastError: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+const UserAgentSchema = new Schema<IUserAgent>({
+  userId:        { type: String, required: true, unique: true, index: true },
+  status:        { type: String, enum: ['none', 'provisioning', 'running', 'stopped', 'error'], default: 'none' },
+  containerId:   { type: String, default: null },
+  containerName: { type: String, default: null },
+  tokenId:       { type: String, default: null },
+  llmProvider:   { type: String, default: null },
+  llmModel:      { type: String, default: null },
+  lastActiveAt:  { type: Date, default: null },
+  lastError:     { type: String, default: null },
+}, { timestamps: true })
+
 // ── Model exports (safe re-use in hot-reload) ───────────────
 export const Vault:    Model<IVault>    = mongoose.models.Vault    || mongoose.model('Vault',    VaultSchema)
 export const Source:   Model<ISource>   = mongoose.models.Source   || mongoose.model('Source',   SourceSchema)
 export const Page:     Model<IPage>     = mongoose.models.Page     || mongoose.model('Page',     PageSchema)
 export const Log:      Model<ILog>      = mongoose.models.Log      || mongoose.model('Log',      LogSchema)
 export const UserPlan: Model<IUserPlan> = mongoose.models.UserPlan || mongoose.model('UserPlan', UserPlanSchema)
+export const AgentToken: Model<IAgentToken> = mongoose.models.AgentToken || mongoose.model('AgentToken', AgentTokenSchema)
+export const UserAgent: Model<IUserAgent> = mongoose.models.UserAgent || mongoose.model('UserAgent', UserAgentSchema)

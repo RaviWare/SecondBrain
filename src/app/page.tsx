@@ -8,11 +8,13 @@ import { SiteFooter } from '@/components/footer/SiteFooter'
 import { Testimonials } from '@/components/testimonials/Testimonials'
 import { PrecisionGrid } from '@/components/features/PrecisionGrid'
 import { Hero } from '@/components/hero/Hero'
+import { AgentShowcase } from '@/components/demo/AgentShowcase'
 import { BrainMark } from '@/components/ui/BrainMark'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 const NAV_LINKS = [
+  { label: 'See it live', href: '#see-it' },
   { label: 'Features', href: '#features' },
   { label: 'How it works', href: '#how-it-works' },
   { label: 'Pricing', href: '#pricing' },
@@ -20,31 +22,31 @@ const NAV_LINKS = [
 ]
 
 const STEPS = [
-  { num: '01', title: 'Capture', desc: 'Save the sources, notes, and decisions worth remembering.' },
-  { num: '02', title: 'Structure', desc: 'SecondBrain organizes them into linked, searchable memory.' },
-  { num: '03', title: 'Recall', desc: 'Ask questions and get answers with the source trail attached.' },
+  { num: '01', title: 'Capture', desc: 'Drop in sources, notes, calls, and decisions — or let an agent ingest them for you.' },
+  { num: '02', title: 'Connect', desc: 'SecondBrain turns them into linked, cited memory that compounds over time.' },
+  { num: '03', title: 'Delegate', desc: 'Always-on agents recall, research, and act on that memory while you sleep.' },
 ]
 
 const PRINCIPLES = [
   {
-    label: 'SecondBrain Core',
+    label: 'Private Memory',
     title: 'Knowledge that compounds',
-    desc: 'Every saved source strengthens a private memory vault.',
+    desc: 'Every source you save strengthens a private vault only you can query.',
   },
   {
-    label: 'Always-On Memory',
-    title: 'Context stays clean',
-    desc: 'Important topics keep their current summary and evidence trail.',
+    label: '24/7 Agents',
+    title: 'A team that never clocks out',
+    desc: 'Specialized agents prep your calls, triage your inbox, and watch your numbers.',
   },
   {
-    label: 'Linked Thinking',
-    title: 'Ideas connect naturally',
-    desc: 'People, topics, sources, and decisions become linked pages.',
+    label: 'Grounded Answers',
+    title: 'Cited, never made up',
+    desc: 'Every answer traces back to your sources, and flags what it does not yet know.',
   },
   {
     label: 'Living Graph',
-    title: 'Memory becomes visible',
-    desc: 'Browse your knowledge as a graph, not a pile of files.',
+    title: 'Memory you can see',
+    desc: 'People, topics, sources, and decisions connect into a navigable graph.',
   },
 ]
 
@@ -52,31 +54,31 @@ const CAPABILITIES = [
   ['URL, text, PDF, DOCX, markdown, and transcript ingestion', 'Source intake'],
   ['Summaries, topics, entities, decisions, and synthesis pages', 'Memory schema'],
   ['Evidence trails and update history on every important page', 'Memory model'],
-  ['Private vault with pages, sources, activity logs, and dashboard stats', 'Storage'],
+  ['Always-on agents that research, draft, and act on a schedule', 'Agent runtime'],
   ['Expanded semantic search across connected knowledge', 'Retrieval'],
-  ['Cited answers that link back into your knowledge base', 'Answer engine'],
+  ['Cited answers with an honest map of what the brain is missing', 'Answer engine'],
 ]
 
 const FLOW = [
   {
-    code: 'SOURCE',
+    code: 'CAPTURE',
     title: 'Capture the signal',
-    desc: 'Save sources, notes, and files in one clean lane.',
+    desc: 'Sources, notes, files, and calls land in one clean lane.',
   },
   {
     code: 'VAULT',
     title: 'Build the vault',
-    desc: 'SecondBrain creates durable pages with summaries and links.',
+    desc: 'Durable pages with summaries, links, and evidence trails.',
   },
   {
     code: 'GRAPH',
     title: 'Map the meaning',
-    desc: 'Concepts, sources, and decisions become relationships.',
+    desc: 'Concepts, people, and decisions become a connected graph.',
   },
   {
-    code: 'ANSWER',
-    title: 'Answer with proof',
-    desc: 'Every answer can point back to its source trail.',
+    code: 'AGENT',
+    title: 'Put it to work',
+    desc: 'Agents answer, research, and act on your memory 24/7.',
   },
 ]
 
@@ -91,42 +93,46 @@ const VAULT_LAYERS = [
 const FAQS = [
   {
     q: 'What is SecondBrain Cloud?',
-    a: 'SecondBrain Cloud is a private AI memory workspace that turns your sources into searchable, connected knowledge with cited answers.',
+    a: 'It is a private AI operating system: a knowledge vault that turns your sources into cited, searchable memory, plus a team of always-on AI agents that work that memory for you 24/7.',
   },
   {
-    q: 'How is SecondBrain different from a chatbot with RAG?',
-    a: 'It keeps durable structure between sessions: summaries, links, evidence trails, and memory pages that improve as your vault grows.',
+    q: 'How is this different from a chatbot with RAG?',
+    a: 'A chatbot forgets between sessions. SecondBrain keeps durable, linked memory and runs autonomous agents on it around the clock, so the work continues even when you are offline.',
+  },
+  {
+    q: 'What can the agents actually do?',
+    a: 'Prep your meetings, research topics across the web and your vault, triage your inbox, monitor your metrics, and draft content in your voice, all grounded in your private knowledge with citations.',
+  },
+  {
+    q: 'Do the agents make things up?',
+    a: 'No. Every answer is grounded in your vault with source citations, and the agent explicitly flags what it does not know yet instead of guessing.',
   },
   {
     q: 'What can I ingest into SecondBrain?',
-    a: 'You can add URLs, text, markdown, PDFs, DOCX files, and TXT files, then turn them into searchable knowledge.',
+    a: 'URLs, text, markdown, PDFs, DOCX, and TXT files, plus call transcripts. You add them, or an agent ingests them for you.',
   },
   {
     q: 'Who is SecondBrain for?',
-    a: 'It is built for researchers, founders, operators, creators, students, and teams who need reliable recall from their own material.',
-  },
-  {
-    q: 'Does SecondBrain support wiki links and graph navigation?',
-    a: 'Yes. Memory pages, backlinks, node relationships, and graph navigation help you browse meaning, not just files.',
+    a: 'Founders, operators, researchers, creators, and teams who need reliable recall from their own material and a tireless agent to act on it.',
   },
 ]
 
 const USE_CASES = [
   {
-    title: 'Researchers and analysts',
-    desc: 'Turn papers, reports, transcripts, and notes into cited research memory.',
-  },
-  {
     title: 'Founders and operators',
-    desc: 'Keep strategy, customer calls, product notes, and market research queryable.',
+    desc: 'A chief-of-staff agent that preps every call, tracks decisions, and watches your numbers.',
   },
   {
-    title: 'Creators and students',
-    desc: 'Capture ideas, highlights, course material, and references that compound over time.',
+    title: 'Researchers and analysts',
+    desc: 'Turn papers, reports, and transcripts into cited research memory an agent keeps current.',
+  },
+  {
+    title: 'Creators and writers',
+    desc: 'A content agent that drafts in your voice, grounded only in what you actually know.',
   },
   {
     title: 'Product and engineering teams',
-    desc: 'Build a living memory layer for specs, decisions, docs, and architecture notes.',
+    desc: 'A living memory layer for specs, decisions, and docs, with agents that surface what matters.',
   },
 ]
 
@@ -176,7 +182,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] overflow-x-hidden">
+    <div className="site-ambient min-h-screen bg-[var(--bg)] text-[var(--text-primary)] overflow-x-hidden">
       <Script
         id="structured-data"
         type="application/ld+json"
@@ -280,6 +286,9 @@ export default function LandingPage() {
       {/* Ticker */}
       <Ticker />
 
+      {/* See it in action — live multi-agent demo (conversion driver) */}
+      <AgentShowcase />
+
       {/* Product thesis */}
       <section className="relative py-12 md:py-24 overflow-hidden">
         <div className="absolute inset-0 dot-bg opacity-30" />
@@ -296,11 +305,11 @@ export default function LandingPage() {
               </p>
               <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-[1.04] text-[var(--text-primary)]">
                 Your SecondBrain
-                <span className="block brushed-text">for work that matters.</span>
+                <span className="block brushed-text">runs itself.</span>
               </h2>
               <p className="mt-4 text-sm md:text-base text-[var(--text-secondary)] leading-6 md:leading-8 max-w-xl">
-                A calm, private layer for research, notes, files, calls, and decisions.
-                Everything stays searchable, connected, and ready to cite.
+                A private layer for research, notes, files, calls, and decisions, worked
+                by a team of autonomous agents. Searchable, connected, cited, and always-on.
               </p>
               <div className="mt-7 flex flex-wrap gap-2">
                 {['Ingest', 'Compile', 'Link', 'Query', 'Maintain'].map((item) => (
@@ -369,15 +378,16 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 mb-7 md:mb-14">
             <div>
               <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">
-                SECONDBRAIN LOOP
+                THE LOOP
               </p>
               <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-tight">
                 From source
-                <span className="block brushed-text">to trusted recall.</span>
+                <span className="block brushed-text">to autonomous action.</span>
               </h2>
             </div>
             <p className="max-w-md text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
-              Capture what matters, structure it into memory, then query it with citations.
+              Capture what matters, structure it into memory, then let agents query it,
+              research it, and act on it, with citations every step.
             </p>
           </div>
 
@@ -505,7 +515,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
           <div className="text-center mb-8 md:mb-16">
             <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">HOW IT WORKS</p>
-            <h2 className="type-h2">Three steps to an always-on memory</h2>
+            <h2 className="type-h2">Three steps to a second brain that works for you</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -546,11 +556,12 @@ export default function LandingPage() {
                 VAULT ANATOMY
               </p>
               <h2 className="text-[1.9rem] md:text-6xl font-semibold tracking-tight leading-tight">
-                A vault that
-                <span className="block brushed-text">understands context.</span>
+                A vault your
+                <span className="block brushed-text">agents understand.</span>
               </h2>
               <p className="mt-4 md:mt-6 text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)] max-w-xl">
-                SecondBrain keeps the source, summary, links, and latest context together.
+                Source, summary, links, and latest context stay together, so every agent
+                answer is grounded and traceable.
               </p>
             </div>
 
@@ -644,15 +655,15 @@ export default function LandingPage() {
                     className="w-2 h-2 rounded-full pulse-dot"
                     style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }}
                   />
-                  <span className="type-mono-xs text-[var(--text-muted)] tracking-widest">SECONDBRAIN ENGINE · LIVE</span>
+                  <span className="type-mono-xs text-[var(--text-muted)] tracking-widest">SECONDBRAIN OS · LIVE</span>
                 </div>
                 <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight">
                   One workspace,
-                  <span className="block brushed-text">built for recall.</span>
+                  <span className="block brushed-text">brain plus agents.</span>
                 </h2>
                 <p className="mt-4 md:mt-5 text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
-                  Capture sources, browse memory pages, search with citations, and inspect the graph
-                  from one focused workspace.
+                  Capture sources, browse cited memory, search the graph, and command a team
+                  of always-on agents, all from one focused workspace.
                 </p>
               </div>
 
@@ -699,13 +710,13 @@ export default function LandingPage() {
                 BUILT FOR REAL WORK
               </p>
               <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight">
-                One memory layer,
+                One operating system,
                 <span className="block brushed-text">for every knowledge workflow.</span>
               </h2>
             </div>
             <p className="max-w-2xl text-sm md:text-base leading-6 md:leading-8 text-[var(--text-secondary)]">
-              Built for research, founder notes, product decisions, study material,
-              meeting recall, and internal team knowledge.
+              Built for founder ops, research, content, product decisions, meeting recall,
+              and team knowledge, with an agent for each.
             </p>
           </div>
 

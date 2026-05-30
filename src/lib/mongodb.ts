@@ -1,9 +1,5 @@
 import mongoose from 'mongoose'
 
-const MONGODB_URI = process.env.MONGODB_URI!
-
-if (!MONGODB_URI) throw new Error('MONGODB_URI is not defined')
-
 // Reuse the connection across hot-reloads in dev and across serverless
 // invocations in prod by stashing it on the Node global.
 type MongooseCache = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null }
@@ -14,6 +10,13 @@ const cached: MongooseCache =
 
 export async function connectDB() {
   if (cached.conn) return cached.conn
+
+  // Read + validate the URI lazily, at first use — NOT at module load.
+  // Throwing at import time breaks `next build`, which imports every API route
+  // to collect page data before any env vars are guaranteed to be present.
+  const MONGODB_URI = process.env.MONGODB_URI
+  if (!MONGODB_URI) throw new Error('MONGODB_URI is not defined')
+
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {

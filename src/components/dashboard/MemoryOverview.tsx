@@ -1,39 +1,48 @@
+'use client'
+
 import Link from 'next/link'
-import { CheckCircle2, FileText, Sparkles } from 'lucide-react'
-import { aiAnswers, mostUsedSources, recentDecisions, topTopics } from '@/lib/dashboard-data'
+import { ArrowUpRight, CheckCircle2, FileText, Sparkles } from 'lucide-react'
+import { useDashboardData, useMemoryOverview } from '@/components/dashboard/DashboardData'
 
 export function MemoryOverview() {
+  const { loading } = useDashboardData()
+  const { mostUsedSources, topTopics, recentDecisions, aiAnswers } = useMemoryOverview()
+  const maxTopic = Math.max(1, ...topTopics.map(t => t.value))
+
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-[var(--dash-text)]">Your memory at a glance</h2>
-        <Link href="/app/log" className="text-sm text-[var(--dash-accent-2)] transition hover:opacity-80">
+      <div className="mb-2.5 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-[var(--dash-text-strong)] 2xl:text-[15px]">Your memory at a glance</h2>
+        <Link
+          href="/app/log"
+          className="dash-inset inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-[var(--dash-accent)] transition hover:-translate-y-0.5"
+        >
           This week
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <OverviewCard title="Most used sources" action="View all sources" href="/app/wiki?view=sources">
-          {mostUsedSources.map(([label, value]) => (
-            <ListRow key={label} icon={FileText} label={label} value={value} tone="blue" />
+      <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4 2xl:gap-3">
+        <OverviewCard title="Most used sources" action="View all" href="/app/wiki?view=sources" loading={loading} empty={mostUsedSources.length === 0} emptyText="No sources yet">
+          {mostUsedSources.map(s => (
+            <ListRow key={s.href} icon={FileText} label={s.label} value={s.value} tone="blue" href={s.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="Top topics" action="View all topics" href="/app/wiki?type=concept">
-          {topTopics.map(([label, value]) => (
-            <TopicRow key={label} label={label} value={value} />
+        <OverviewCard title="Top topics" action="View all" href="/app/wiki?type=concept" loading={loading} empty={topTopics.length === 0} emptyText="No topics yet">
+          {topTopics.map(t => (
+            <TopicRow key={t.href} label={t.label} value={t.value} max={maxTopic} href={t.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="Recent decisions" action="View decisions" href="/app/wiki?type=synthesis">
-          {recentDecisions.map(([label, value]) => (
-            <ListRow key={label} icon={CheckCircle2} label={label} value={value} tone="green" />
+        <OverviewCard title="Recent decisions" action="View all" href="/app/wiki?type=synthesis" loading={loading} empty={recentDecisions.length === 0} emptyText="No decisions yet">
+          {recentDecisions.map(d => (
+            <ListRow key={d.href} icon={CheckCircle2} label={d.label} value={d.value} tone="green" href={d.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="AI answers" action="View answers" href="/app/query?view=answers">
-          {aiAnswers.map(([label, value]) => (
-            <ListRow key={label} icon={Sparkles} label={label} value={value} tone="orange" />
+        <OverviewCard title="AI answers" action="View all" href="/app/query" loading={loading} empty={aiAnswers.length === 0} emptyText="No questions asked yet">
+          {aiAnswers.map((a, i) => (
+            <ListRow key={i} icon={Sparkles} label={a.label} value={a.value} tone="orange" href={a.href} />
           ))}
         </OverviewCard>
       </div>
@@ -41,16 +50,46 @@ export function MemoryOverview() {
   )
 }
 
-function OverviewCard({ title, action, href, children }: { title: string; action: string; href: string; children: React.ReactNode }) {
+function OverviewCard({
+  title,
+  action,
+  href,
+  loading,
+  empty,
+  emptyText,
+  children,
+}: {
+  title: string
+  action: string
+  href: string
+  loading: boolean
+  empty: boolean
+  emptyText: string
+  children: React.ReactNode
+}) {
   return (
-    <article className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-card)] p-4 shadow-[var(--dash-shadow-sm)]">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-[var(--dash-text)]">{title}</h3>
-        <Link href={href} className="text-xs font-medium text-[var(--dash-accent-2)] transition hover:opacity-80">
+    <article className="dash-panel dash-grain dash-interactive p-3.5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-[13px] font-semibold text-[var(--dash-text-strong)]">{title}</h3>
+        <Link href={href} className="group inline-flex items-center gap-0.5 text-[11px] font-medium text-[var(--dash-accent)] transition hover:opacity-80">
           {action}
+          <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className="space-y-2.5">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2.5">
+              <span className="h-7 w-7 shrink-0 animate-pulse rounded-lg bg-[var(--dash-soft)]" />
+              <span className="h-3 flex-1 animate-pulse rounded bg-[var(--dash-soft)]" />
+            </div>
+          ))
+        ) : empty ? (
+          <p className="py-3 text-center text-[11px] text-[var(--dash-subtle)]">{emptyText}</p>
+        ) : (
+          children
+        )}
+      </div>
     </article>
   )
 }
@@ -60,33 +99,45 @@ function ListRow({
   label,
   value,
   tone,
+  href,
 }: {
   icon: typeof FileText
   label: string
   value: string
   tone: 'blue' | 'green' | 'orange'
+  href: string
 }) {
-  const color = tone === 'green' ? 'text-emerald-500' : tone === 'blue' ? 'text-blue-500' : 'text-orange-500'
+  const color =
+    tone === 'green'
+      ? 'text-emerald-500 dark:text-emerald-400'
+      : tone === 'blue'
+        ? 'text-sky-500 dark:text-sky-400'
+        : 'text-orange-500 dark:text-orange-400'
 
   return (
-    <div className="flex items-center gap-2.5">
-      <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-      <span className="min-w-0 flex-1 truncate text-xs text-[var(--dash-text)]">{label}</span>
-      <span className="shrink-0 text-xs text-[var(--dash-muted)]">{value}</span>
-    </div>
+    <Link href={href} className="group flex items-center gap-2.5">
+      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[var(--dash-border)] bg-[var(--dash-soft)] ${color}`}>
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-xs text-[var(--dash-text)] transition-colors group-hover:text-[var(--dash-accent)]">{label}</span>
+      <span className="shrink-0 text-xs font-medium text-[var(--dash-muted)]">{value}</span>
+    </Link>
   )
 }
 
-function TopicRow({ label, value }: { label: string; value: number }) {
+function TopicRow({ label, value, max, href }: { label: string; value: number; max: number; href: string }) {
   return (
-    <div>
+    <Link href={href} className="group block">
       <div className="mb-1.5 flex items-center justify-between gap-3">
-        <span className="truncate text-xs text-[var(--dash-text)]">{label}</span>
-        <span className="text-xs text-[var(--dash-muted)]">{value}</span>
+        <span className="truncate text-xs text-[var(--dash-text)] transition-colors group-hover:text-[var(--dash-accent)]">{label}</span>
+        <span className="text-xs font-medium text-[var(--dash-muted)] [font-variant-numeric:tabular-nums]">{value}</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--dash-accent-2)_12%,transparent)]">
-        <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--dash-accent-2),var(--dash-accent))]" style={{ width: `${Math.min(100, (value / 30) * 100)}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--dash-soft)]">
+        <div
+          className="dash-accent-grad h-full rounded-full shadow-[0_0_10px_-2px_var(--dash-accent)]"
+          style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
+        />
       </div>
-    </div>
+    </Link>
   )
 }

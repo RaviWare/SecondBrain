@@ -21,9 +21,9 @@ const TELEMETRY = [
 ]
 
 const STACK = [
-  'Research memory',
+  'Private memory vault',
   'Cited answers',
-  'Private vault',
+  '24/7 agents',
   'Knowledge graph',
 ]
 
@@ -113,19 +113,21 @@ export function Hero() {
         <div className="max-w-[660px]">
           <div className="hero-reveal inline-flex max-w-full items-center gap-2 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_82%,transparent)] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur-xl">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_16px_var(--accent)]" />
-            AI memory for serious work
+            Your AI operating system
           </div>
 
           <h1
             id="hero-heading"
-            className="hero-title hero-reveal mt-5 max-w-[12ch] text-[clamp(3.65rem,8vw,7.7rem)] font-semibold leading-[0.9] tracking-[-0.055em] text-[var(--text-primary)] max-[720px]:text-[clamp(2.85rem,13vw,4rem)] max-[480px]:text-[clamp(2.35rem,12vw,3.05rem)] md:mt-7"
+            className="hero-title hero-reveal mt-5 max-w-[14ch] text-[clamp(3.1rem,7vw,6.4rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-[var(--text-primary)] max-[720px]:text-[clamp(2.6rem,12vw,3.7rem)] max-[480px]:text-[clamp(2.15rem,11vw,2.9rem)] md:mt-7"
           >
-            SecondBrain Cloud.
+            Your second brain,
+            <span className="block brushed-text">with a team that runs it.</span>
           </h1>
 
           <p className="hero-copy hero-reveal mt-5 max-w-xl text-[15px] leading-7 text-[var(--text-secondary)] md:text-lg md:leading-9">
-            A private AI workspace that captures what you read, write, and decide,
-            then turns it into trusted recall with citations.
+            Everything you read, write, and decide becomes a private, searchable memory.
+            Then a team of always-on AI agents works that memory for you, around the clock,
+            with cited answers and zero hallucinated facts.
           </p>
 
           <div className="hero-reveal mt-5 flex flex-wrap gap-2">
@@ -144,16 +146,16 @@ export function Hero() {
               href="/sign-up"
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--accent-bright),var(--accent))] px-5 text-sm font-semibold text-[var(--text-inverse)] shadow-[0_16px_42px_color-mix(in_srgb,var(--accent)_28%,transparent)] transition duration-300 hover:-translate-y-0.5"
             >
-              Start building memory
+              Build my second brain
               <ArrowRight size={16} strokeWidth={2.3} />
             </Link>
-            <a
-              href="#how-it-works"
+            <Link
+              href="/#see-it"
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_64%,transparent)] px-5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)]"
             >
-              See how it works
+              See the agents work
               <Sparkles size={15} strokeWidth={2.2} />
-            </a>
+            </Link>
           </div>
 
           <div className="hero-reveal mt-8 grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-5 sm:max-w-lg">

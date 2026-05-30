@@ -15,22 +15,22 @@ export const metadata: Metadata = {
     canonical: '/',
   },
 	  title: {
-	    default: 'SecondBrain Cloud | Private AI Memory Workspace',
+	    default: 'SecondBrain Cloud | Your Private AI Operating System',
 	    template: '%s | SecondBrain Cloud',
 	  },
 	  description:
-	    'SecondBrain Cloud captures sources, notes, files, and decisions in a private AI memory workspace with cited search and graph context.',
+	    'SecondBrain Cloud is a private AI operating system: a knowledge vault that turns your sources into cited memory, plus a team of always-on AI agents that work it for you 24/7.',
   keywords: [
+    'AI agent operating system',
+    'autonomous AI agents',
     'AI second brain',
     'personal knowledge base',
     'AI memory app',
-    'AI knowledge base',
-    'knowledge management software',
+    '24/7 AI agent',
     'knowledge graph',
-    'personal search engine',
+    'personal AI assistant',
     'AI note taking',
     'cited answers',
-    'research knowledge management',
   ],
   category: 'technology',
   robots: {
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: siteUrl,
     siteName: 'SecondBrain Cloud',
-	    title: 'SecondBrain Cloud | Private AI Memory Workspace',
+    title: 'SecondBrain Cloud | Your Private AI Operating System',
 	    description:
-	      'A private AI workspace for source-backed recall, cited answers, and connected knowledge.',
+	      'A private AI workspace for cited recall, plus a team of always-on agents that work your knowledge 24/7.',
     images: [
       {
         url: '/icon.svg',
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-	    title: 'SecondBrain Cloud | Private AI Memory Workspace',
+	    title: 'SecondBrain Cloud | Your Private AI Operating System',
 	    description:
-	      'Capture sources, organize memory, and search your own knowledge with citations.',
+	      'Turn what you know into cited memory, then let always-on AI agents work it for you 24/7.',
     images: ['/icon.svg'],
   },
 }

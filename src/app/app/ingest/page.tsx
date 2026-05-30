@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Link2, FileText, CheckCircle2, AlertCircle, Loader2, ArrowRight, Zap, Brain, Upload, X,
 } from 'lucide-react'
@@ -38,6 +38,15 @@ const STEPS = [
 ]
 
 export default function IngestPage() {
+  return (
+    <Suspense fallback={null}>
+      <IngestView />
+    </Suspense>
+  )
+}
+
+function IngestView() {
+  const searchParams = useSearchParams()
   const [tab, setTab] = useState<Tab>('url')
   const [url, setUrl] = useState('')
   const [text, setText] = useState('')
@@ -55,6 +64,14 @@ export default function IngestPage() {
   const [parsing, setParsing] = useState(false)
   const [parseError, setParseError] = useState('')
   const router = useRouter()
+
+  // Preselect the tab from the dashboard "Add" menu (?type=note|file|url|transcript).
+  useEffect(() => {
+    const t = searchParams.get('type')
+    if (t === 'file') setTab('file')
+    else if (t === 'url') setTab('url')
+    else if (t === 'note' || t === 'text' || t === 'transcript') setTab('text')
+  }, [searchParams])
 
   // ── File parsers ──────────────────────────────────────────────────────────
   // Client-side extraction avoids a multipart backend and any blob storage.

@@ -1,13 +1,22 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Send, Brain, Loader2, ExternalLink, Zap, MessageSquare } from 'lucide-react'
+import { Send, Brain, Loader2, ExternalLink, Zap, MessageSquare, AlertTriangle, Lightbulb, Clock, GitCompareArrows } from 'lucide-react'
+
+interface GapAnalysis {
+  gaps: string[]
+  staleSlugs: string[]
+  contradictions: string[]
+  confidence: number
+}
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
   citedPages?: Array<{ slug: string; title: string }>
+  gap?: GapAnalysis
   tokensUsed?: number
 }
 
@@ -27,15 +36,37 @@ const SUGGESTIONS = [
 ]
 
 export default function QueryPage() {
+  return (
+    <Suspense fallback={null}>
+      <QueryView />
+    </Suspense>
+  )
+}
+
+function QueryView() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('q')
+  const ranInitial = useRef(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
+
+  // Auto-run a query passed in via ?q= (from the dashboard Ask box / search).
+  useEffect(() => {
+    if (ranInitial.current) return
+    const q = initialQuery?.trim()
+    if (q) {
+      ranInitial.current = true
+      handleQuery(q)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery])
 
   async function handleQuery(question: string) {
     if (!question.trim() || loading) return
@@ -58,6 +89,7 @@ export default function QueryPage() {
           role: 'assistant',
           content: data.answer,
           citedPages: data.pages,
+          gap: data.gap,
           tokensUsed: data.tokensUsed,
         }])
       }
@@ -220,6 +252,8 @@ export default function QueryPage() {
                       </div>
                     )}
 
+                    {msg.gap && <GapPanel gap={msg.gap} citedPages={msg.citedPages} />}
+
                     {msg.tokensUsed && (
                       <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest">
                         {msg.tokensUsed.toLocaleString()} TOKENS USED
@@ -313,6 +347,134 @@ export default function QueryPage() {
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ── Gap Analysis panel (GBrain "think" differentiator) ─────────────────────────
+// Surfaces what the brain does NOT know yet: open gaps, stale pages, and
+// contradictions — plus an answer-confidence meter. This is the part that turns
+// a cited answer into a brain-style briefing.
+function GapPanel({
+  gap,
+  citedPages,
+}: {
+  gap: GapAnalysis
+  citedPages?: Array<{ slug: string; title: string }>
+}) {
+  const hasContent =
+    gap.gaps.length > 0 || gap.contradictions.length > 0 || gap.staleSlugs.length > 0
+  if (!hasContent && gap.confidence >= 0.85) return null
+
+  const slugTitle = Object.fromEntries((citedPages ?? []).map(p => [p.slug, p.title]))
+  const pct = Math.round((gap.confidence ?? 0) * 100)
+  const confTone =
+    pct >= 75 ? 'var(--accent-bright)' : pct >= 45 ? '#e0a106' : '#e0633c'
+
+  return (
+    <div
+      className="rounded-2xl p-4 space-y-3"
+      style={{
+        background: 'color-mix(in srgb, var(--accent) 5%, var(--surface))',
+        border: '1px solid color-mix(in srgb, var(--accent) 22%, transparent)',
+      }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className="mono text-[9px] tracking-widest flex items-center gap-1.5"
+          style={{ color: 'var(--accent-bright)' }}
+        >
+          <Brain className="w-3 h-3" />
+          WHAT THE BRAIN KNOWS — AND DOESN&apos;T
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="mono text-[9px] tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            CONFIDENCE
+          </span>
+          <span className="mono text-[10px] font-bold" style={{ color: confTone }}>
+            {pct}%
+          </span>
+        </span>
+      </div>
+
+      {/* confidence bar */}
+      <div
+        className="h-1.5 w-full overflow-hidden rounded-full"
+        style={{ background: 'color-mix(in srgb, var(--text-muted) 24%, transparent)' }}
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: confTone }}
+        />
+      </div>
+
+      {gap.gaps.length > 0 && (
+        <GapSection icon={<Lightbulb className="w-3 h-3" />} label="GAPS TO FILL" items={gap.gaps} />
+      )}
+      {gap.contradictions.length > 0 && (
+        <GapSection
+          icon={<GitCompareArrows className="w-3 h-3" />}
+          label="CONTRADICTIONS"
+          items={gap.contradictions}
+          tone="#e0633c"
+        />
+      )}
+      {gap.staleSlugs.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="mono text-[9px] tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+            <Clock className="w-3 h-3" />
+            POSSIBLY STALE
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {gap.staleSlugs.map(slug => (
+              <Link
+                key={slug}
+                href={`/app/wiki/${slug}`}
+                className="mono text-[9px] px-2 py-1 rounded tracking-wider transition-colors"
+                style={{
+                  color: 'var(--text-secondary)',
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                {(slugTitle[slug] ?? slug).slice(0, 28)}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function GapSection({
+  icon,
+  label,
+  items,
+  tone,
+}: {
+  icon: React.ReactNode
+  label: string
+  items: string[]
+  tone?: string
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p
+        className="mono text-[9px] tracking-widest flex items-center gap-1.5"
+        style={{ color: tone ?? 'var(--text-muted)' }}
+      >
+        {tone ? <AlertTriangle className="w-3 h-3" /> : icon}
+        {label}
+      </p>
+      <ul className="space-y-1">
+        {items.map((item, i) => (
+          <li key={i} className="text-[12px] leading-relaxed flex gap-2" style={{ color: 'var(--text-secondary)' }}>
+            <span style={{ color: tone ?? 'var(--accent-bright)' }}>·</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

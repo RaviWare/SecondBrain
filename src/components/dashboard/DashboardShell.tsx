@@ -1,48 +1,79 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Bell, Search } from 'lucide-react'
+import { Bell, Command, Search } from 'lucide-react'
 import { AskKnowledgeCard, TopActions } from '@/components/dashboard/AskKnowledgeCard'
 import { KnowledgeGraph } from '@/components/dashboard/KnowledgeGraph'
 import { MemoryOverview } from '@/components/dashboard/MemoryOverview'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { RecentSources } from '@/components/dashboard/RecentSources'
-import { StatCard } from '@/components/dashboard/StatCard'
-import { dashboardStats } from '@/lib/dashboard-data'
+import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
+import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
 
 export function DashboardShell() {
   return (
-    <main className="sb-dashboard min-h-full bg-[var(--dash-bg)] text-[var(--dash-text)]">
-      <div className="mx-auto grid max-w-[1640px] gap-5 p-4 sm:p-6 lg:p-7 min-[1180px]:grid-cols-[minmax(0,1fr)_300px] min-[1440px]:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:p-8">
-        <section className="min-w-0 space-y-6">
-          <DashboardHeader />
+    <DashboardDataProvider>
+      <main className="sb-dashboard min-h-full text-[var(--dash-text)]">
+        <div className="mx-auto grid max-w-[1640px] gap-4 p-4 sm:p-5 lg:p-6 min-[1180px]:grid-cols-[minmax(0,1fr)_300px] min-[1440px]:grid-cols-[minmax(0,1fr)_336px] 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-5 2xl:p-7">
+          <section className="min-w-0 space-y-4 2xl:space-y-5">
+            <DashboardHeader />
+            <StatRow />
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {dashboardStats.map(stat => (
-              <StatCard key={stat.label} {...stat} />
-            ))}
+            <div className="dash-rise" style={{ animationDelay: '0.4s' }}>
+              <AskKnowledgeCard />
+            </div>
+
+            <div className="dash-rise" style={{ animationDelay: '0.48s' }}>
+              <MemoryOverview />
+            </div>
+
+            <div className="dash-rise" style={{ animationDelay: '0.56s' }}>
+              <RecentSources />
+            </div>
           </section>
 
-          <AskKnowledgeCard />
+          <aside className="grid gap-4 lg:grid-cols-2 min-[1180px]:block min-[1180px]:space-y-4 min-[1180px]:pt-[78px] 2xl:gap-5 2xl:min-[1180px]:space-y-5">
+            <div className="dash-rise" style={{ animationDelay: '0.3s' }}>
+              <RecentActivity />
+            </div>
+            <div className="dash-rise" style={{ animationDelay: '0.44s' }}>
+              <KnowledgeGraph />
+            </div>
+          </aside>
+        </div>
+      </main>
+    </DashboardDataProvider>
+  )
+}
 
-          <MemoryOverview />
+function StatRow() {
+  const { loading } = useDashboardData()
+  const stats = useStatCards()
 
-          <RecentSources />
-        </section>
-
-        <aside className="grid gap-5 lg:grid-cols-2 min-[1180px]:block min-[1180px]:space-y-5 min-[1180px]:pt-[86px]">
-          <RecentActivity />
-          <KnowledgeGraph />
-        </aside>
-      </div>
-    </main>
+  return (
+    <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5 2xl:gap-3">
+      {loading
+        ? Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="dash-rise" style={{ animationDelay: `${0.05 + i * 0.06}s` }}>
+              <StatCardSkeleton />
+            </div>
+          ))
+        : stats.map((stat, i) => (
+            <div key={stat.label} className="dash-rise" style={{ animationDelay: `${0.05 + i * 0.06}s` }}>
+              <StatCard {...stat} />
+            </div>
+          ))}
+    </section>
   )
 }
 
 function DashboardHeader() {
   const [query, setQuery] = useState('')
   const router = useRouter()
+  const { data } = useDashboardData()
+  const vaultName = data?.vault?.name
 
   const submitSearch = () => {
     const q = query.trim()
@@ -50,15 +81,18 @@ function DashboardHeader() {
   }
 
   return (
-    <header className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+    <header className="dash-rise relative z-30 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between" style={{ animationDelay: '0s' }}>
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--dash-text)]">
-          Good morning, Alex 👋
+        <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight 2xl:text-2xl">
+          <span className="dash-metallic-text">{greeting()}</span>
+          <span className="text-xl 2xl:text-2xl">👋</span>
         </h1>
-        <p className="mt-1 text-sm text-[var(--dash-muted)]">Your memory vault is up to date.</p>
+        <p className="mt-0.5 text-[13px] text-[var(--dash-muted)]">
+          {vaultName ? `${vaultName} is up to date.` : 'Your memory vault is up to date.'}
+        </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:min-w-[560px] 2xl:min-w-[620px]">
+      <div className="flex items-center gap-2 xl:min-w-[540px] 2xl:min-w-[600px]">
         <form
           className="relative flex-1"
           onSubmit={event => {
@@ -69,31 +103,39 @@ function DashboardHeader() {
           <label className="sr-only" htmlFor="dashboard-search">
             Search your memory
           </label>
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--dash-muted)]" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-[var(--dash-muted)]" />
           <input
             id="dashboard-search"
             value={query}
             onChange={event => setQuery(event.target.value)}
             placeholder="Search your memory..."
-            className="h-12 w-full rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-card)] pl-11 pr-14 text-sm text-[var(--dash-text)] shadow-[var(--dash-shadow-sm)] outline-none transition focus:border-[var(--dash-accent)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--dash-accent)_18%,transparent)]"
+            className="dash-panel h-11 w-full !rounded-2xl pl-11 pr-16 text-sm text-[var(--dash-text)] outline-none transition focus:border-[var(--dash-border-glow)] focus:shadow-[var(--dash-shadow-md),0_0_0_3px_var(--dash-accent-soft)]"
           />
-          <span className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-lg border border-[var(--dash-border)] px-2 py-1 text-xs text-[var(--dash-muted)] sm:block">
-            ⌘ K
-          </span>
+          <kbd className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md border border-[var(--dash-border-bright)] bg-[var(--dash-soft)] px-1.5 py-0.5 font-sans text-[11px] font-medium text-[var(--dash-muted)] sm:flex">
+            <Command className="h-3 w-3" />K
+          </kbd>
         </form>
 
-        <button
-          type="button"
-          onClick={() => router.push('/app/log')}
+        <Link
+          href="/app/log"
           aria-label="Notifications"
-          className="relative grid h-12 w-12 place-items-center rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-card)] text-[var(--dash-text)] shadow-[var(--dash-shadow-sm)] transition hover:-translate-y-0.5 hover:shadow-[var(--dash-shadow-md)]"
+          className="dash-menu dash-interactive group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[var(--dash-text)]"
         >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[var(--dash-accent-2)]" />
-        </button>
+          <Bell className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" />
+          <span className="absolute right-[9px] top-[9px] flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--dash-accent)] opacity-60 dash-live-dot" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--dash-accent)]" />
+          </span>
+        </Link>
 
         <TopActions />
       </div>
     </header>
   )
+}
+
+function greeting() {
+  const h = new Date().getHours()
+  const part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+  return `Good ${part}`
 }
