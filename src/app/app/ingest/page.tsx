@@ -6,6 +6,7 @@ import {
   Link2, FileText, CheckCircle2, AlertCircle, Loader2, ArrowRight, Zap, Brain, Upload, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSpotlight } from '@/lib/use-spotlight'
 
 type Tab = 'url' | 'text' | 'file'
 
@@ -64,6 +65,7 @@ function IngestView() {
   const [parsing, setParsing] = useState(false)
   const [parseError, setParseError] = useState('')
   const router = useRouter()
+  const spotlight = useSpotlight<HTMLDivElement>()
 
   // Preselect the tab from the dashboard "Add" menu (?type=note|file|url|transcript).
   useEffect(() => {
@@ -174,6 +176,10 @@ function IngestView() {
   }
 
   async function handleIngest() {
+    // Guard (Req 5.9, 10.7): never act while not submittable or already loading,
+    // for pointer OR keyboard (Enter/Space) activation. Native `disabled` already
+    // blocks activation; this makes the contract robust regardless of caller.
+    if (!canSubmit || status === 'loading') return
     setStatus('loading')
     setResult(null)
     setError('')
@@ -232,423 +238,415 @@ function IngestView() {
     tab === 'text' ? text.trim().length > 50 :
     /* file */       fileMetas.length > 0 && text.trim().length > 50 && !parsing
 
+  // Glass-system input styling, synced with the dashboard's frosted controls.
+  // Dark inset wells (--dash-card-solid) read like the dashboard's deep panels,
+  // not light grey overlays.
+  const fieldClass =
+    'w-full rounded-xl px-4 py-3 text-sm bg-[var(--dash-card-solid)] border border-[var(--dash-border)] ' +
+    'text-[var(--dash-text)] outline-none transition placeholder:text-[var(--dash-subtle)] ' +
+    'focus:border-[var(--dash-border-glow)] focus:shadow-[0_0_0_3px_var(--dash-accent-soft)]'
+
+  const submitReady = canSubmit && status !== 'loading'
+  const submitGlow = submitReady || status === 'loading'
+
   return (
-    <div className="mx-auto max-w-2xl p-4 text-[var(--text-primary)] sm:p-6 md:p-8">
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-2">
-            INGEST ENGINE · READY
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight">Add to Knowledge Base</h1>
-          <p className="text-[var(--text-secondary)] text-sm mt-1">
-            Paste a URL or text — Claude reads, structures, and cross-links it automatically.
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <div
-          className="grid grid-cols-1 gap-1 rounded-xl p-1 sm:grid-cols-3"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-        >
-          {([
-            { key: 'url',  label: 'FROM URL',    Icon: Link2 },
-            { key: 'text', label: 'PASTE TEXT',  Icon: FileText },
-            { key: 'file', label: 'UPLOAD FILE', Icon: Upload },
-          ] as const).map(({ key, label, Icon }) => {
-            const on = tab === key
-            return (
-              <button
-                key={key}
-                onClick={() => { setTab(key); setStatus('idle'); setResult(null) }}
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all duration-200'
-                )}
-                style={
-                  on
-                    ? {
-                        background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
-                        color: '#0b0b0d',
-                        boxShadow: '0 8px 20px -8px color-mix(in srgb, var(--accent) 45%, transparent)',
-                      }
-                    : { color: 'var(--text-secondary)' }
-                }
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span className="mono tracking-wider">{label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Inputs */}
-        <div
-          className="rounded-xl p-6 space-y-4"
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border-bright)',
-            boxShadow: 'var(--shadow-1)',
-          }}
-        >
-          {tab === 'file' ? (
-            <Field label="UPLOAD FILE">
-              <label
-                className={cn(
-                  'block rounded-lg border-2 border-dashed px-5 py-7 text-center cursor-pointer transition-colors',
-                  parsing && 'opacity-60 cursor-wait',
-                )}
-                style={{
-                  background: 'var(--surface-2)',
-                  borderColor: parseError ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border)',
-                }}
-              >
-                <input
-                  type="file"
-                  multiple
-                  accept={ACCEPTED_EXT.join(',')}
-                  className="sr-only"
-                  disabled={parsing}
-                  onChange={e => {
-                    const fs = e.target.files
-                    if (fs && fs.length) parseFiles(fs)
-                    // reset so selecting same file again re-triggers onChange
-                    e.target.value = ''
-                  }}
-                />
-                {fileMetas.length > 0 ? (
-                  <div className="flex flex-col gap-2 text-left">
-                    {fileMetas.map(m => {
-                      const words = m.text.trim().split(/\s+/).filter(Boolean).length
-                      return (
-                        <div
-                          key={`${m.name}-${m.size}`}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg"
-                          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                        >
-                          <FileText className="w-4 h-4 shrink-0" style={{ color: 'var(--accent-bright)' }} />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs text-[var(--text-primary)] font-medium truncate">{m.name}</p>
-                            <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest">
-                              {(m.size / 1024).toFixed(1)} KB · {words} WORDS
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={e => { e.preventDefault(); e.stopPropagation(); removeFile(m.name, m.size) }}
-                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-[var(--surface-2)] transition-colors"
-                            style={{ color: 'var(--text-muted)' }}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )
-                    })}
-                    <div className="flex items-center justify-between mt-1 mono text-[10px] tracking-widest">
-                      <span style={{ color: 'var(--accent-bright)' }}>
-                        + ADD MORE FILES
-                      </span>
-                      <button
-                        type="button"
-                        onClick={e => { e.preventDefault(); e.stopPropagation(); clearAllFiles() }}
-                        className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                      >
-                        CLEAR ALL
-                      </button>
-                    </div>
-                  </div>
-                ) : parsing ? (
-                  <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="mono text-[10px] tracking-widest">PARSING…</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-2 text-[var(--text-secondary)]">
-                    <Upload className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-                    <p className="text-sm">
-                      Click to choose files
-                    </p>
-                    <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest">
-                      PDF · DOCX · MD · TXT · MULTI-SELECT · UP TO 50 MB EACH
-                    </p>
-                  </div>
-                )}
-              </label>
-              {parseError && (
-                <p className="mono text-[10px] mt-2 tracking-wider" style={{ color: 'var(--accent-bright)' }}>
-                  {parseError}
-                </p>
-              )}
-            </Field>
-          ) : tab === 'url' ? (
-            <Field label="SOURCE URL">
-              <div className="relative">
-                <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
-                <input
-                  type="url"
-                  value={url}
-                  onChange={e => setUrl(e.target.value)}
-                  placeholder="https://example.com/article"
-                  className="w-full rounded-lg pl-10 pr-4 py-3 text-sm transition-colors focus:outline-none"
-                  style={{
-                    background: 'var(--surface-2)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
-              </div>
-            </Field>
-          ) : (
-            <Field label="CONTENT">
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="Paste any text, notes, article content, or research…"
-                rows={8}
-                className="w-full rounded-lg px-4 py-3 text-sm transition-colors focus:outline-none resize-none leading-relaxed"
-                style={{
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                }}
-              />
-              <p className="mono text-[10px] text-[var(--text-muted)] mt-1.5">
-                {text.trim().split(/\s+/).filter(Boolean).length} WORDS
-              </p>
-            </Field>
-          )}
-
-          <Field label={<>TITLE <span className="text-[var(--text-muted)]">· OPTIONAL</span></>}>
-            <input
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder={tab === 'url' ? 'Auto-detected from page' : 'Give this a title'}
-              className="w-full rounded-lg px-4 py-3 text-sm transition-colors focus:outline-none"
-              style={{
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-primary)',
-              }}
-            />
-          </Field>
-
-          <button
-            onClick={handleIngest}
-            disabled={!canSubmit || status === 'loading'}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-opacity hover:opacity-95"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
-              color: '#0b0b0d',
-              boxShadow: '0 10px 24px -10px color-mix(in srgb, var(--accent) 50%, transparent)',
-            }}
-          >
-            {status === 'loading' ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="mono tracking-wider">{STEPS[currentStep]?.code}…</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-4 h-4" />
-                Initialize Ingest
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Progress Steps */}
-        {status === 'loading' && (
-          <div
-            className="rounded-xl p-5 relative overflow-hidden"
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
-              boxShadow: 'var(--shadow-1)',
-            }}
-          >
-            <p className="mono text-[10px] tracking-widest mb-4" style={{ color: 'var(--accent-bright)' }}>
-              PROCESSING PIPELINE
+    <main className="sb-dashboard min-h-full text-[var(--dash-text)]">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <header className="dash-rise" style={{ animationDelay: '0s' }}>
+            <p className="mono text-[10px] uppercase tracking-widest text-[var(--dash-subtle)] mb-2">
+              Ingest engine · Ready
             </p>
-            <div className="space-y-3">
-              {STEPS.map((step, i) => {
-                const done = i < currentStep
-                const active = i === currentStep
-                return (
-                  <div
-                    key={step.code}
-                    className={cn('flex items-center gap-3 transition-all duration-500', done || active ? 'opacity-100' : 'opacity-35')}
-                  >
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all"
-                      style={
-                        done
-                          ? {
-                              background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
-                              border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-                            }
-                          : active
-                            ? {
-                                background: 'color-mix(in srgb, var(--accent) 18%, transparent)',
-                                border: '1px solid color-mix(in srgb, var(--accent) 50%, transparent)',
-                              }
-                            : {
-                                background: 'var(--surface-2)',
-                                border: '1px solid var(--border)',
-                              }
-                      }
-                    >
-                      {done ? (
-                        <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--accent-bright)' }} />
-                      ) : active ? (
-                        <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent-bright)' }} />
-                      ) : (
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--text-muted)' }} />
-                      )}
-                    </div>
-                    <span
-                      className="mono text-[10px] tracking-wider flex-1"
-                      style={{
-                        color: done
-                          ? 'var(--accent-bright)'
-                          : active
-                            ? 'var(--text-primary)'
-                            : 'var(--text-muted)',
-                      }}
-                    >
-                      {step.label.toUpperCase()}
-                    </span>
-                    {done && (
-                      <span
-                        className="mono text-[9px]"
-                        style={{ color: 'var(--accent-bright)' }}
-                      >
-                        DONE
-                      </span>
-                    )}
-                    {active && (
-                      <span
-                        className="w-1.5 h-1.5 rounded-full pulse-dot"
-                        style={{ background: 'var(--accent)' }}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            {/* Progress bar */}
-            <div className="mt-5 h-px rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-              <div
-                className="h-full transition-all duration-700"
-                style={{
-                  width: `${((currentStep + 1) / STEPS.length) * 100}%`,
-                  background: 'linear-gradient(90deg, var(--accent-bright), var(--accent))',
-                }}
-              />
-            </div>
-          </div>
-        )}
+            <h1 className="text-2xl font-semibold tracking-tight">
+              <span className="dash-metallic-text">Add to Knowledge Base</span>
+            </h1>
+            <p className="mt-1 text-[13px] text-[var(--dash-muted)]">
+              Paste a URL or text — Claude reads, structures, and cross-links it automatically.
+            </p>
+          </header>
 
-        {/* Error */}
-        {status === 'error' && (
+          {/* Tabs — glass segmented control */}
           <div
-            className="rounded-xl p-5"
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
-            }}
+            className="dash-rise grid grid-cols-1 gap-1 rounded-2xl p-1.5 sm:grid-cols-3"
+            style={{ animationDelay: '0.06s', background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}
           >
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--accent-bright)' }} />
-              <div>
-                <p className="mono text-[10px] tracking-widest mb-1" style={{ color: 'var(--accent-bright)' }}>
-                  ERROR · INGEST FAILED
-                </p>
-                <p className="text-sm text-[var(--text-primary)]">{error}</p>
-              </div>
-            </div>
+            {([
+              { key: 'url',  label: 'FROM URL',    Icon: Link2 },
+              { key: 'text', label: 'PASTE TEXT',  Icon: FileText },
+              { key: 'file', label: 'UPLOAD FILE', Icon: Upload },
+            ] as const).map(({ key, label, Icon }) => {
+              const on = tab === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => { setTab(key); setStatus('idle'); setResult(null) }}
+                  className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all duration-200"
+                  style={
+                    on
+                      ? {
+                          background: 'var(--dash-accent-soft)',
+                          color: 'var(--dash-accent)',
+                          border: '1px solid var(--dash-border-glow)',
+                        }
+                      : { color: 'var(--dash-muted)', border: '1px solid transparent' }
+                  }
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="mono tracking-wider">{label}</span>
+                </button>
+              )
+            })}
           </div>
-        )}
 
-        {/* Success */}
-        {status === 'success' && result && (
+          {/* Inputs — frosted glass panel with the dashboard's signature FX:
+              grain texture + cursor spotlight + drifting warm aura */}
           <div
-            className="rounded-xl p-5 relative overflow-hidden"
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)',
-              boxShadow: 'var(--shadow-1)',
-            }}
+            ref={spotlight.ref}
+            onMouseMove={spotlight.onMouseMove}
+            className="dash-panel dash-grain dash-spotlight dash-rise relative overflow-hidden rounded-2xl p-6 space-y-4"
+            style={{ animationDelay: '0.12s' }}
           >
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+            <span className="dash-spotlight-glow" aria-hidden />
+            {/* warm aura glow — gentle drift, mirrors the dashboard hero */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full blur-2xl"
+              style={{ background: 'radial-gradient(circle, var(--dash-accent-soft), transparent 70%)' }}
+            />
+            <div className="relative space-y-4">
+            {tab === 'file' ? (
+              <Field label="UPLOAD FILE">
+                <label
+                  className={cn(
+                    'block rounded-xl border-2 border-dashed px-5 py-7 text-center cursor-pointer transition-colors',
+                    parsing && 'opacity-60 cursor-wait',
+                  )}
                   style={{
-                    background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
-                    border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)',
+                    background: 'var(--dash-card-solid)',
+                    borderColor: parseError ? 'var(--dash-border-glow)' : 'var(--dash-border)',
                   }}
                 >
-                  <Brain className="w-4 h-4" style={{ color: 'var(--accent-bright)' }} />
-                </div>
-                <div>
-                  <p className="mono text-[10px] tracking-widest" style={{ color: 'var(--accent-bright)' }}>
-                    INGEST COMPLETE
+                  <input
+                    type="file"
+                    multiple
+                    accept={ACCEPTED_EXT.join(',')}
+                    className="sr-only"
+                    disabled={parsing}
+                    onChange={e => {
+                      const fs = e.target.files
+                      if (fs && fs.length) parseFiles(fs)
+                      // reset so selecting same file again re-triggers onChange
+                      e.target.value = ''
+                    }}
+                  />
+                  {fileMetas.length > 0 ? (
+                    <div className="flex flex-col gap-2 text-left">
+                      {fileMetas.map(m => {
+                        const words = m.text.trim().split(/\s+/).filter(Boolean).length
+                        return (
+                          <div
+                            key={`${m.name}-${m.size}`}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                            style={{ background: 'var(--dash-card-strong)', border: '1px solid var(--dash-border)' }}
+                          >
+                            <FileText className="w-4 h-4 shrink-0" style={{ color: 'var(--dash-accent)' }} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs text-[var(--dash-text)] font-medium truncate">{m.name}</p>
+                              <p className="mono text-[10px] text-[var(--dash-subtle)] tracking-widest">
+                                {(m.size / 1024).toFixed(1)} KB · {words} WORDS
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={e => { e.preventDefault(); e.stopPropagation(); removeFile(m.name, m.size) }}
+                              className="w-6 h-6 flex items-center justify-center rounded-md transition-colors hover:bg-[var(--dash-soft)]"
+                              style={{ color: 'var(--dash-subtle)' }}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )
+                      })}
+                      <div className="flex items-center justify-between mt-1 mono text-[10px] tracking-widest">
+                        <span style={{ color: 'var(--dash-accent)' }}>
+                          + ADD MORE FILES
+                        </span>
+                        <button
+                          type="button"
+                          onClick={e => { e.preventDefault(); e.stopPropagation(); clearAllFiles() }}
+                          className="text-[var(--dash-subtle)] hover:text-[var(--dash-text)] transition-colors"
+                        >
+                          CLEAR ALL
+                        </button>
+                      </div>
+                    </div>
+                  ) : parsing ? (
+                    <div className="flex items-center justify-center gap-2 text-[var(--dash-muted)]">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="mono text-[10px] tracking-widest">PARSING…</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-[var(--dash-muted)]">
+                      <Upload className="w-5 h-5" style={{ color: 'var(--dash-subtle)' }} />
+                      <p className="text-sm">
+                        Click to choose files
+                      </p>
+                      <p className="mono text-[10px] text-[var(--dash-subtle)] tracking-widest">
+                        PDF · DOCX · MD · TXT · MULTI-SELECT · UP TO 50 MB EACH
+                      </p>
+                    </div>
+                  )}
+                </label>
+                {parseError && (
+                  <p className="mono text-[10px] mt-2 tracking-wider" style={{ color: 'var(--dash-accent)' }}>
+                    {parseError}
                   </p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {result.pages.length} pages · {result.tokensUsed.toLocaleString()} tokens
-                  </p>
+                )}
+              </Field>
+            ) : tab === 'url' ? (
+              <Field label="SOURCE URL">
+                <div className="relative">
+                  <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--dash-subtle)]" />
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={e => setUrl(e.target.value)}
+                    placeholder="https://example.com/article"
+                    className={cn(fieldClass, 'pl-10')}
+                  />
                 </div>
-              </div>
+              </Field>
+            ) : (
+              <Field label="CONTENT">
+                <textarea
+                  value={text}
+                  onChange={e => setText(e.target.value)}
+                  placeholder="Paste any text, notes, article content, or research…"
+                  rows={8}
+                  className={cn(fieldClass, 'resize-none leading-relaxed')}
+                />
+                <p className="mono text-[10px] text-[var(--dash-subtle)] mt-1.5">
+                  {text.trim().split(/\s+/).filter(Boolean).length} WORDS
+                </p>
+              </Field>
+            )}
 
-              <div className="space-y-2 mb-4">
-                {result.pages.map(p => {
-                  const tone = TYPE_TONE[p.type] ?? 'silver'
-                  const chipStyle =
-                    tone === 'accent'
-                      ? {
-                          color: 'var(--accent-bright)',
-                          background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-                          borderColor: 'color-mix(in srgb, var(--accent) 28%, transparent)',
-                        }
-                      : {
-                          color: SILVER,
-                          background: 'color-mix(in srgb, #ffffff 4%, transparent)',
-                          borderColor: 'var(--border)',
-                        }
+            <Field label={<>TITLE <span className="text-[var(--dash-subtle)]">· OPTIONAL</span></>}>
+              <input
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder={tab === 'url' ? 'Auto-detected from page' : 'Give this a title'}
+                className={fieldClass}
+              />
+            </Field>
+
+            <button
+              onClick={handleIngest}
+              disabled={!canSubmit || status === 'loading'}
+              aria-busy={status === 'loading'}
+              className={cn(
+                'relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-sm font-semibold transition',
+                submitGlow
+                  ? 'dash-accent-grad text-white shadow-[0_16px_36px_-10px_rgba(255,102,0,0.6)]'
+                  : 'cursor-not-allowed',
+                submitReady && 'hover:-translate-y-0.5',
+              )}
+              style={submitGlow ? undefined : { background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-subtle)' }}
+            >
+              {submitGlow && (
+                <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.35),transparent_45%)]" />
+              )}
+              {status === 'loading' ? (
+                <>
+                  <Loader2 className="relative w-4 h-4 animate-spin" />
+                  <span className="relative mono tracking-wider">{STEPS[currentStep]?.code}…</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="relative w-4 h-4" />
+                  <span className="relative">Initialize Ingest</span>
+                </>
+              )}
+            </button>
+            </div>
+          </div>
+
+          {/* Progress Steps */}
+          {status === 'loading' && (
+            <div className="dash-panel dash-rise relative rounded-2xl p-5">
+              <p className="mono text-[10px] tracking-widest mb-4" style={{ color: 'var(--dash-accent)' }}>
+                PROCESSING PIPELINE
+              </p>
+              <div className="space-y-3">
+                {STEPS.map((step, i) => {
+                  const done = i < currentStep
+                  const active = i === currentStep
                   return (
-                    <button
-                      key={p.slug}
-                      onClick={() => router.push(`/app/wiki/${p.slug}`)}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg transition-all group text-left"
-                      style={{
-                        background: 'var(--surface-2)',
-                        border: '1px solid var(--border)',
-                      }}
+                    <div
+                      key={step.code}
+                      className={cn('flex items-center gap-3 transition-all duration-500', done || active ? 'opacity-100' : 'opacity-35')}
                     >
-                      <span
-                        className="mono text-[9px] px-2 py-0.5 rounded border font-medium shrink-0 tracking-wider"
-                        style={chipStyle}
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all"
+                        style={
+                          done
+                            ? {
+                                background: 'var(--dash-accent-soft)',
+                                border: '1px solid var(--dash-border-glow)',
+                              }
+                            : active
+                              ? {
+                                  background: 'var(--dash-accent-soft)',
+                                  border: '1px solid var(--dash-border-glow)',
+                                }
+                              : {
+                                  background: 'var(--dash-card-solid)',
+                                  border: '1px solid var(--dash-border)',
+                                }
+                        }
                       >
-                        {p.type?.toUpperCase().slice(0, 8)}
+                        {done ? (
+                          <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
+                        ) : active ? (
+                          <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--dash-accent)' }} />
+                        ) : (
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--dash-subtle)' }} />
+                        )}
+                      </div>
+                      <span
+                        className="mono text-[10px] tracking-wider flex-1"
+                        style={{
+                          color: done
+                            ? 'var(--dash-accent)'
+                            : active
+                              ? 'var(--dash-text)'
+                              : 'var(--dash-subtle)',
+                        }}
+                      >
+                        {step.label.toUpperCase()}
                       </span>
-                      <span className="text-xs text-[var(--text-primary)] flex-1 truncate">{p.title}</span>
-                      <ArrowRight className="w-3 h-3 shrink-0" style={{ color: 'var(--text-muted)' }} />
-                    </button>
+                      {done && (
+                        <span
+                          className="mono text-[9px]"
+                          style={{ color: 'var(--dash-accent)' }}
+                        >
+                          DONE
+                        </span>
+                      )}
+                      {active && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full pulse-dot"
+                          style={{ background: 'var(--dash-accent)' }}
+                        />
+                      )}
+                    </div>
                   )
                 })}
               </div>
-
-              <button
-                onClick={() => { setStatus('idle'); setResult(null) }}
-                className="w-full mono text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] tracking-widest transition-colors py-2"
-              >
-                INGEST ANOTHER SOURCE
-              </button>
+              {/* Progress bar */}
+              <div className="mt-5 h-px rounded-full overflow-hidden" style={{ background: 'var(--dash-border)' }}>
+                <div
+                  className="h-full transition-all duration-700"
+                  style={{
+                    width: `${((currentStep + 1) / STEPS.length) * 100}%`,
+                    background: 'linear-gradient(90deg, var(--dash-accent-2), var(--dash-accent))',
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Error */}
+          {status === 'error' && (
+            <div className="dash-panel dash-rise rounded-2xl p-5">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--dash-accent)' }} />
+                <div>
+                  <p className="mono text-[10px] tracking-widest mb-1" style={{ color: 'var(--dash-accent)' }}>
+                    ERROR · INGEST FAILED
+                  </p>
+                  <p className="text-sm text-[var(--dash-text)]">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success */}
+          {status === 'success' && result && (
+            <div className="dash-panel dash-panel-strong dash-rise relative rounded-2xl p-5">
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{
+                      background: 'var(--dash-accent-soft)',
+                      border: '1px solid var(--dash-border-glow)',
+                    }}
+                  >
+                    <Brain className="w-4 h-4" style={{ color: 'var(--dash-accent)' }} />
+                  </div>
+                  <div>
+                    <p className="mono text-[10px] tracking-widest" style={{ color: 'var(--dash-accent)' }}>
+                      INGEST COMPLETE
+                    </p>
+                    <p className="text-xs text-[var(--dash-muted)]">
+                      {result.pages.length} pages · {result.tokensUsed.toLocaleString()} tokens
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  {result.pages.map(p => {
+                    const tone = TYPE_TONE[p.type] ?? 'silver'
+                    const chipStyle =
+                      tone === 'accent'
+                        ? {
+                            color: 'var(--dash-accent)',
+                            background: 'var(--dash-accent-soft)',
+                            borderColor: 'var(--dash-border-glow)',
+                          }
+                        : {
+                            color: SILVER,
+                            background: 'color-mix(in srgb, #ffffff 4%, transparent)',
+                            borderColor: 'var(--dash-border)',
+                          }
+                    return (
+                      <button
+                        key={p.slug}
+                        onClick={() => router.push(`/app/wiki/${p.slug}`)}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg transition-all group text-left"
+                        style={{
+                          background: 'var(--dash-card-solid)',
+                          border: '1px solid var(--dash-border)',
+                        }}
+                      >
+                        <span
+                          className="mono text-[9px] px-2 py-0.5 rounded border font-medium shrink-0 tracking-wider"
+                          style={chipStyle}
+                        >
+                          {p.type?.toUpperCase().slice(0, 8)}
+                        </span>
+                        <span className="text-xs text-[var(--dash-text)] flex-1 truncate">{p.title}</span>
+                        <ArrowRight className="w-3 h-3 shrink-0" style={{ color: 'var(--dash-subtle)' }} />
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <button
+                  onClick={() => { setStatus('idle'); setResult(null) }}
+                  className="w-full mono text-[10px] text-[var(--dash-subtle)] hover:text-[var(--dash-text)] tracking-widest transition-colors py-2"
+                >
+                  INGEST ANOTHER SOURCE
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -656,7 +654,7 @@ function IngestView() {
 function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mono text-[10px] text-[var(--text-muted)] tracking-widest block mb-2">
+      <label className="mono text-[10px] text-[var(--dash-subtle)] tracking-widest block mb-2">
         {label}
       </label>
       {children}

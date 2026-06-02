@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
   if (type) query.type = type
   if (search) query.$text = { $search: search }
 
-  const pages = await Page.find(query, 'slug title type summary tags confidence createdAt updatedAt')
-    .sort({ updatedAt: -1 })
+  const pages = await Page.find(query, 'slug title type summary tags confidence pinned createdAt updatedAt')
+    .sort({ pinned: -1, updatedAt: -1 })
     .limit(50)
     .lean()
 

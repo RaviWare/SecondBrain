@@ -34,7 +34,7 @@ function reciprocalRankFusion(
 }
 
 const PAGE_TYPES = ['source-summary', 'concept', 'entity', 'synthesis', 'pattern', 'query-answer'] as const
-type PageType = (typeof PAGE_TYPES)[number]
+export type PageType = (typeof PAGE_TYPES)[number]
 const PAGE_TYPE_ALIAS: Record<string, PageType> = {
   framework: 'concept', method: 'concept', theory: 'concept', idea: 'concept',
   technique: 'concept', principle: 'concept',
@@ -162,8 +162,87 @@ export type IngestResult = {
   tokensUsed: number
 }
 
-/** Ingest a source: generate wiki pages, enrich entities, wire the graph. */
-export async function runIngest(userId: string, input: IngestInput): Promise<IngestResult> {
+// ── Ingest planning types ─────────────────────────────────────────────────────
+// `runIngest` is split into a pure planner (`planIngest`) and an applier
+// (`applyIngestPlan`). The plan captures everything needed to perform the writes
+// later, fully resolved against the current vault at plan time, so agents and
+// dry-runs can plan WITHOUT writing. See design "Refactoring runIngest".
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A create/update operation for a wiki page, fully resolved at plan time. */
+export type IngestPageOp =
+  | {
+      op: 'create'
+      slug: string
+      title: string
+      type: PageType
+      content: string
+      summary: string
+      relatedSlugs: string[]
+      tags: string[]
+      confidence: 'high' | 'medium' | 'low'
+    }
+  | {
+      op: 'update'
+      slug: string
+      /** result of updatePageWithNewEvidence — captured at plan time (costs LLM tokens). */
+      mergedContent: string
+      summary: string
+      confidence: 'high' | 'medium' | 'low'
+      addSources: true
+      addTags: string[]
+      addRelated: string[]
+    }
+
+/** A create/update operation for an entity page, fully resolved at plan time. */
+export type IngestEntityOp =
+  | {
+      op: 'create'
+      slug: string
+      title: string
+      type: PageType
+      content: string
+      summary: string
+      relatedSlugs: string[]
+      tags: string[]
+      confidence: 'high' | 'medium' | 'low'
+    }
+  | {
+      op: 'update'
+      slug: string
+      /** result of updatePageWithNewEvidence — captured at plan time (costs LLM tokens). */
+      mergedContent: string
+      addSources: true
+    }
+
+/** Everything needed to perform an ingest's writes later, resolved at plan time. */
+export type IngestPlan = {
+  source: {
+    type: 'url' | 'text'
+    title: string
+    url: string | null
+    /** full cleaned content; sliced to 50k chars when the Source doc is written. */
+    rawContent: string
+    wordCount: number
+  }
+  pageOps: IngestPageOp[]
+  entityOps: IngestEntityOp[]
+  /** raw (un-normalized) page descriptors returned in IngestResult.pages. */
+  resultPages: Array<{ slug: string; title: string; type: string }>
+  /** slugs fed to wireGraphBatch on apply (created entity slugs + all page slugs). */
+  expectedGraphSlugs: string[]
+  /** all planning-phase LLM tokens (ingest + entity extraction + update merges). */
+  tokensUsed: number
+  ingestedAt: string
+}
+
+/**
+ * PURE-ish: runs the LLM + reads the vault to compute what an ingest WOULD write.
+ * Performs NO Page/Source/Vault/Log writes and does NOT increment UserPlan, so it
+ * is safe for dry-runs and agents. The free-plan limit check is kept here (it is
+ * read-only) so `runIngest` still throws before any work is done.
+ */
+export async function planIngest(userId: string, input: IngestInput): Promise<IngestPlan> {
   const plan = await UserPlan.findOne({ userId })
   if (plan?.plan === 'free' && (plan?.ingestsThisMonth ?? 0) >= FREE_INGEST_LIMIT) {
     throw new VaultOpError('Free plan limit reached. Upgrade to Pro.', 403)
@@ -198,58 +277,58 @@ export async function runIngest(userId: string, input: IngestInput): Promise<Ing
   const existingIndex = existingPages.map(p => `- [[${p.slug}]] (${p.type}): ${p.summary}`).join('\n')
 
   let totalTokens = 0
-  const [ingestResult, entityResult, source] = await Promise.all([
+  const [ingestResult, entityResult] = await Promise.all([
     ingestSource(sourceTitle, rawContent, existingIndex, ingestedAt),
     extractEntities(sourceTitle, rawContent, ingestedAt),
-    Source.create({
-      userId, vaultId: vault._id, type: input.type, title: sourceTitle, url: sourceUrl,
-      rawContent: rawContent.slice(0, 50000), wordCount: wordCount(rawContent),
-    }),
   ])
   const { pages: generatedPages, tokensUsed: ingestTokens } = ingestResult
   const { entities, tokensUsed: entityTokens } = entityResult
   totalTokens += ingestTokens + entityTokens
 
-  const savedSlugs = await Promise.all(generatedPages.map(async (p) => {
+  // Resolve create-vs-update for each generated page against the current vault.
+  const pageOps: IngestPageOp[] = await Promise.all(generatedPages.map(async (p): Promise<IngestPageOp> => {
     const slug = slugify(p.slug || p.title)
     const existing = await Page.findOne({ userId, vaultId: vault._id, slug })
     if (existing) {
       const { updatedContent, tokensUsed } = await updatePageWithNewEvidence(existing.content, sourceTitle, p.content, ingestedAt)
       totalTokens += tokensUsed
-      await Page.updateOne(
-        { userId, vaultId: vault._id, slug },
-        {
-          content: updatedContent,
-          summary: p.summary || existing.summary,
-          confidence: normalizeConfidence(p.confidence) || existing.confidence,
-          $addToSet: { sources: source._id, tags: { $each: p.tags || [] }, relatedSlugs: { $each: p.relatedSlugs || [] } },
-          $inc: { timelineEntries: 1 },
-        }
-      )
-    } else {
-      await Page.create({
-        userId, vaultId: vault._id, slug, title: p.title, type: normalizePageType(p.type),
-        content: p.content, summary: p.summary, sources: [source._id],
-        relatedSlugs: p.relatedSlugs || [], tags: p.tags || [],
-        confidence: normalizeConfidence(p.confidence), timelineEntries: 1,
-      })
+      return {
+        op: 'update',
+        slug,
+        mergedContent: updatedContent,
+        summary: p.summary || existing.summary,
+        confidence: normalizeConfidence(p.confidence),
+        addSources: true,
+        addTags: p.tags || [],
+        addRelated: p.relatedSlugs || [],
+      }
     }
-    return slug
+    return {
+      op: 'create',
+      slug,
+      title: p.title,
+      type: normalizePageType(p.type),
+      content: p.content,
+      summary: p.summary,
+      relatedSlugs: p.relatedSlugs || [],
+      tags: p.tags || [],
+      confidence: normalizeConfidence(p.confidence),
+    }
   }))
 
+  const savedSlugs = pageOps.map(op => op.slug)
   const savedSet = new Set(savedSlugs)
-  const entityResults = await Promise.all(entities.map(async (entity) => {
+
+  // Resolve create-vs-update for each detected entity, skipping slugs already
+  // covered by a page op (matches the original entity-loop semantics exactly).
+  const entityOpResults = await Promise.all(entities.map(async (entity): Promise<IngestEntityOp | null> => {
     const slug = slugify(entity.slug || entity.name)
     if (savedSet.has(slug)) return null
     const existing = await Page.findOne({ userId, vaultId: vault._id, slug })
     if (existing) {
       const { updatedContent, tokensUsed } = await updatePageWithNewEvidence(existing.content, sourceTitle, entity.evidence, ingestedAt)
       totalTokens += tokensUsed
-      await Page.updateOne(
-        { userId, vaultId: vault._id, slug },
-        { content: updatedContent, $addToSet: { sources: source._id }, $inc: { timelineEntries: 1 } }
-      )
-      return null
+      return { op: 'update', slug, mergedContent: updatedContent, addSources: true }
     }
     const entityContent = `---
 title: ${entity.name}
@@ -266,31 +345,134 @@ ${entity.summary}
 
 ### ${ingestedAt} | Source: ${sourceTitle}
 ${entity.evidence}`
-    await Page.create({
-      userId, vaultId: vault._id, slug, title: entity.name, type: 'entity',
-      content: entityContent, summary: entity.summary, sources: [source._id],
-      relatedSlugs: [], tags: [entity.type], confidence: 'medium', timelineEntries: 1,
-    })
-    return slug
+    return {
+      op: 'create',
+      slug,
+      title: entity.name,
+      type: 'entity',
+      content: entityContent,
+      summary: entity.summary,
+      relatedSlugs: [],
+      tags: [entity.type],
+      confidence: 'medium',
+    }
   }))
-  const enrichedSlugs = entityResults.filter((s): s is string => s !== null)
+  const entityOps = entityOpResults.filter((op): op is IngestEntityOp => op !== null)
 
-  const allSlugs = [...savedSlugs, ...enrichedSlugs]
+  // Only newly-created entity pages count as "enriched" and join the graph batch
+  // (entity updates write content but are not added to allSlugs), matching the
+  // original behavior precisely.
+  const enrichedSlugs = entityOps.filter(op => op.op === 'create').map(op => op.slug)
+  const expectedGraphSlugs = [...savedSlugs, ...enrichedSlugs]
+
+  return {
+    source: {
+      type: input.type,
+      title: sourceTitle,
+      url: sourceUrl,
+      rawContent,
+      wordCount: wordCount(rawContent),
+    },
+    pageOps,
+    entityOps,
+    resultPages: generatedPages.map(p => ({ slug: slugify(p.slug || p.title), title: p.title, type: p.type })),
+    expectedGraphSlugs,
+    tokensUsed: totalTokens,
+    ingestedAt,
+  }
+}
+
+/**
+ * Persists a previously-computed `IngestPlan`. The ONLY ingest write path: it
+ * creates the Source, creates/updates Page + entity docs in the same order as the
+ * legacy `runIngest`, runs wireGraphBatch, bumps Vault counts, writes a Log
+ * (attributed to an agent when `opts.logActor` is present), and increments
+ * UserPlan.ingestsThisMonth. Returns the unchanged `IngestResult` shape.
+ */
+export async function applyIngestPlan(
+  userId: string,
+  plan: IngestPlan,
+  opts?: { logActor?: { agentId: string; runId: string } }
+): Promise<IngestResult> {
+  const vault = await Vault.findOne({ userId })
+  if (!vault) throw new VaultOpError('Vault not found', 404)
+
+  const source = await Source.create({
+    userId, vaultId: vault._id, type: plan.source.type, title: plan.source.title, url: plan.source.url,
+    rawContent: plan.source.rawContent.slice(0, 50000), wordCount: plan.source.wordCount,
+  })
+
+  // Write the generated wiki pages (creates + evidence merges).
+  for (const op of plan.pageOps) {
+    if (op.op === 'update') {
+      await Page.updateOne(
+        { userId, vaultId: vault._id, slug: op.slug },
+        {
+          content: op.mergedContent,
+          summary: op.summary,
+          confidence: op.confidence,
+          $addToSet: { sources: source._id, tags: { $each: op.addTags }, relatedSlugs: { $each: op.addRelated } },
+          $inc: { timelineEntries: 1 },
+        }
+      )
+    } else {
+      await Page.create({
+        userId, vaultId: vault._id, slug: op.slug, title: op.title, type: op.type,
+        content: op.content, summary: op.summary, sources: [source._id],
+        relatedSlugs: op.relatedSlugs, tags: op.tags,
+        confidence: op.confidence, timelineEntries: 1,
+      })
+    }
+  }
+
+  // Write the entity pages (creates + evidence merges) after the wiki pages.
+  for (const op of plan.entityOps) {
+    if (op.op === 'update') {
+      await Page.updateOne(
+        { userId, vaultId: vault._id, slug: op.slug },
+        { content: op.mergedContent, $addToSet: { sources: source._id }, $inc: { timelineEntries: 1 } }
+      )
+    } else {
+      await Page.create({
+        userId, vaultId: vault._id, slug: op.slug, title: op.title, type: op.type,
+        content: op.content, summary: op.summary, sources: [source._id],
+        relatedSlugs: op.relatedSlugs, tags: op.tags, confidence: op.confidence, timelineEntries: 1,
+      })
+    }
+  }
+
+  const enrichedSlugs = plan.entityOps.filter(op => op.op === 'create').map(op => op.slug)
+  const allSlugs = plan.expectedGraphSlugs
   const graphStats = await wireGraphBatch(userId, vault._id as mongoose.Types.ObjectId, allSlugs)
 
-  await Vault.updateOne({ _id: vault._id }, { $inc: { pageCount: generatedPages.length + enrichedSlugs.length, sourceCount: 1 } })
+  const wikiPageCount = plan.pageOps.length
+  await Vault.updateOne({ _id: vault._id }, { $inc: { pageCount: wikiPageCount + enrichedSlugs.length, sourceCount: 1 } })
+
+  const logActor = opts?.logActor
   await Log.create({
-    userId, vaultId: vault._id, operation: 'ingest',
-    summary: `Ingested "${sourceTitle}" → ${generatedPages.length} wiki pages + ${enrichedSlugs.length} entity pages enriched (${graphStats.resolved} links wired)`,
-    pagesAffected: allSlugs, tokensUsed: totalTokens,
+    userId, vaultId: vault._id, operation: logActor ? 'agent' : 'ingest',
+    ...(logActor ? { agentId: logActor.agentId } : {}),
+    summary: `Ingested "${plan.source.title}" → ${wikiPageCount} wiki pages + ${enrichedSlugs.length} entity pages enriched (${graphStats.resolved} links wired)`,
+    pagesAffected: allSlugs, tokensUsed: plan.tokensUsed,
   })
   await UserPlan.updateOne({ userId }, { $inc: { ingestsThisMonth: 1 } }, { upsert: true })
 
   return {
     success: true,
-    pages: generatedPages.map(p => ({ slug: slugify(p.slug || p.title), title: p.title, type: p.type })),
+    pages: plan.resultPages,
     entitiesEnriched: enrichedSlugs.length,
     graph: graphStats,
-    tokensUsed: totalTokens,
+    tokensUsed: plan.tokensUsed,
   }
+}
+
+/**
+ * Ingest a source: generate wiki pages, enrich entities, wire the graph.
+ * UNCHANGED PUBLIC CONTRACT — now implemented as plan-then-apply so the Clerk UI
+ * and `/api/agent/ingest` keep calling it with identical signature, result shape,
+ * error behavior, and observable side effects.
+ */
+export async function runIngest(userId: string, input: IngestInput): Promise<IngestResult> {
+  const plan = await planIngest(userId, input)
+  return applyIngestPlan(userId, plan)
 }
