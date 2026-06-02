@@ -1,0 +1,433 @@
+/* ============================================================================
+   QUIET INSTRUMENT — FOUNDATION TOKEN LAYER (Wave 1, Phase 1)
+
+   GENERATED ARTIFACT — do not hand-edit token values.
+   This file is produced by mechanically TRANSFORMING the compiled source of
+   truth at .kiro/specs/quiet-instrument-design-system/design-system.css per the
+   integration plan in design.md (§Architecture "namespace + scope + opt-in",
+   §Components and Interfaces #1, §Data Models token namespace map). Token VALUES
+   are carried verbatim from that file; only names and selectors are transformed.
+
+   Transform contract:
+   - Every custom property `--x` is namespaced to `--qi-x` (radius `--r-*` -> `--qi-radius-*`).
+     The emitted `--qi-*` token set is DISJOINT from every existing globals.css /
+     .sb-dashboard token name (Req 9.6, 1.12).
+   - Tokens are SCOPED to the opt-in `.qi` container, NEVER declared on bare :root.
+     The dark set is the default (lives on `.qi`, applies whenever data-theme is
+     absent/unrecognized — Req 1.11); the light fork is gated on
+     `[data-theme="light"] .qi` (Req 1.10, 6.x).
+   - Component classes are prefixed `qi-` (`.btn` -> `.qi-btn`, etc.) and reference
+     only `--qi-*` tokens.
+   - Global resets are STRIPPED (the Google-Fonts @import, `* {}`, `body {}`,
+     `a {}`, `::selection`). Base/global styling stays owned by globals.css.
+
+   Surface_Skin decision: hybrid (see design.md). Existing .sb-dashboard glass
+   tokens/surfaces are untouched; this layer is additive and opt-in.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   TOKENS — DARK (default; scoped to .qi, applies when data-theme is absent
+   or unrecognized — Req 1.11)
+   ---------------------------------------------------------------------------- */
+.qi {
+  /* — Neutral spine (cool, near-black with a faint blue undertone) — */
+  --qi-canvas:#0A0B0D;
+  --qi-base:#0F1013;
+  --qi-surface-1:#16181C;          /* resting cards / panels (elevation 1) */
+  --qi-surface-2:#1D2024;          /* raised / hover (elevation 2) */
+  --qi-surface-3:#262A2F;          /* inputs / overlays (elevation 3) */
+  --qi-border-subtle:#23262B;
+  --qi-border-default:#2F3338;
+  --qi-border-strong:#3D424A;
+
+  /* — Text levels — */
+  --qi-text-1:#F3F5F7;             /* primary */
+  --qi-text-2:#A2A8B0;             /* secondary / body */
+  --qi-text-3:#6A707A;             /* tertiary / metadata only (never body) */
+  --qi-text-disabled:#474C54;
+
+  /* — Ember: the one hero accent, used scarcely (3 roles/screen max) — */
+  --qi-ember-300:#FF9D57;
+  --qi-ember-400:#FB8138;
+  --qi-ember:#F26F28;              /* 500 — core */
+  --qi-ember-hover:#FB8138;        /* lighter = toward user */
+  --qi-ember-press:#DC5C18;        /* deeper = pressed */
+  --qi-ember-700:#A8430F;
+  --qi-ember-ink:#1B1205;          /* dark ink ON ember (white fails contrast) */
+  --qi-ember-ring:rgba(242,111,40,0.40);
+  --qi-ember-tint:rgba(242,111,40,0.14);   /* selected nav, active chip, citations */
+  --qi-ember-text:var(--qi-ember);         /* forks in light mode only */
+
+  /* — Knowledge types (type = color; worn at low saturation) — */
+  --qi-type-source:#3B8FE0;
+  --qi-type-concept:#8A7CF0;
+  --qi-type-pattern:#2FB39C;
+  --qi-type-synthesis:#E368A6;
+  --qi-type-entity:#7C8694;        /* muted — most common type, shouldn't shout */
+  --qi-type-person:#35C07A;
+  --qi-type-topic:var(--qi-ember);
+  --qi-type-decision:#F5B341;
+
+  /* — Semantic status — */
+  --qi-success:#2FB87A;
+  --qi-warning:#F5B341;
+  --qi-error:#F0524B;
+  --qi-error-ring:rgba(240,82,75,0.35);
+  --qi-info:#3B8FE0;
+
+  /* — Agent states (Hermes) — */
+  --qi-agent-live:var(--qi-type-person);   /* running, healthy */
+  --qi-agent-review:var(--qi-ember);        /* awaits YOUR sign-off — the exception */
+  --qi-agent-idle:var(--qi-text-3);         /* scheduled / sleeping */
+  --qi-agent-paused:var(--qi-text-disabled);
+  --qi-agent-error:var(--qi-error);
+
+  /* — Spacing (4px rhythm) — */
+  --qi-space-1:4px;  --qi-space-2:8px;  --qi-space-3:12px; --qi-space-4:16px;
+  --qi-space-5:24px; --qi-space-6:32px; --qi-space-7:48px; --qi-space-8:64px;
+
+  /* — Radius (scales with element size) — */
+  --qi-radius-sm:6px;     /* tags, badges, chips */
+  --qi-radius-md:8px;     /* buttons, inputs, small cards */
+  --qi-radius-lg:12px;    /* cards, panels, popovers */
+  --qi-radius-xl:16px;    /* hero panels, modals */
+  --qi-radius-full:9999px;/* avatars, toggles only */
+
+  /* — Elevation: the ONE permitted shadow (overlays only) — */
+  --qi-shadow-overlay:0 16px 40px -12px rgba(0,0,0,0.7);
+  --qi-scrim:rgba(10,11,13,0.6);
+
+  /* — Motion: two curves, nothing over 240ms — */
+  --qi-ease-out:cubic-bezier(0.16,1,0.3,1);
+  --qi-ease-in-out:cubic-bezier(0.45,0,0.2,1);
+  --qi-t-instant:80ms; --qi-t-fast:120ms; --qi-t-base:180ms; --qi-t-slow:240ms;
+
+  /* — Type families — Phase 2 prepends the next/font Geist variables
+     (--font-geist / --font-geist-mono, exposed document-wide by layout.tsx
+     with display:swap) ahead of the spec fallback chain, so Geist is primary
+     and the fallbacks render while/if it is unavailable (Req 3.7, 3.8). — */
+  --qi-font-sans: var(--font-geist), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --qi-font-mono: var(--font-geist-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  /* — Layout — */
+  --qi-nav-w:240px; --qi-nav-w-rail:64px;
+}
+
+/* ----------------------------------------------------------------------------
+   TOKENS — LIGHT (a cool tint of the dark system; never cream).
+   Gated on [data-theme="light"] .qi so only opted-in subtrees fork (Req 6.x).
+   ---------------------------------------------------------------------------- */
+[data-theme="light"] .qi {
+  --qi-canvas:#F6F7F9;
+  --qi-base:#FFFFFF;
+  --qi-surface-1:#FFFFFF;
+  --qi-surface-2:#F1F3F6;
+  --qi-surface-3:#E8EBEF;
+  --qi-border-subtle:#E9ECF0;
+  --qi-border-default:#DCE0E6;
+  --qi-border-strong:#C8CDD6;
+  --qi-text-1:#14161A;
+  --qi-text-2:#565C66;
+  --qi-text-3:#878D97;
+  --qi-text-disabled:#B4B9C2;
+  /* AA fix (user-authorized brand-color change): the light primary button keeps
+     DARK ink (#1B1205) on ember — same as the dark theme and the design's own
+     "dark ink on ember" button rule — because white-on-ember measured only 2.97:1
+     (sub-3:1). Dark ink on ember = 6.24:1 (clears AA). */
+  --qi-ember-ink:#1B1205;
+  /* AA fix: ember-as-text on light uses the darker brand step ember-700 (#A8430F).
+     The previously-specified #DC5C18 measured 3.76:1 on white — clears AA-large
+     (3:1) but FAILS AA normal text (4.5:1). #A8430F = 6.04:1 on white (clears AA). */
+  --qi-ember-text:#A8430F;
+  --qi-ember-tint:rgba(242,111,40,0.10);
+  --qi-shadow-overlay:0 16px 40px -12px rgba(20,22,26,0.14);
+  --qi-scrim:rgba(20,22,26,0.32);
+}
+
+/* ----------------------------------------------------------------------------
+   ACCESSIBILITY HELPERS (prefixed; the global resets from the source file are
+   intentionally NOT carried — base styling stays owned by globals.css)
+   ---------------------------------------------------------------------------- */
+.qi-skip-link { position:absolute; left:-999px; top:8px; z-index:100;
+  background:var(--qi-surface-3); color:var(--qi-text-1); padding:8px 14px; border-radius:var(--qi-radius-md); }
+.qi-skip-link:focus { left:8px; }
+
+.qi-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* ----------------------------------------------------------------------------
+   TYPOGRAPHY  (three weights: 400 / 500 / 600)
+   ---------------------------------------------------------------------------- */
+.qi-t-stat     { font:600 30px/1 var(--qi-font-sans); letter-spacing:-0.02em; font-feature-settings:'tnum'; }
+.qi-t-title    { font:600 28px/1.15 var(--qi-font-sans); letter-spacing:-0.02em; }
+.qi-t-section  { font:600 18px/1.3 var(--qi-font-sans); letter-spacing:-0.01em; }
+.qi-t-card     { font:600 15px/1.35 var(--qi-font-sans); letter-spacing:-0.005em; }
+.qi-t-body     { font:400 14px/1.55 var(--qi-font-sans); }
+.qi-t-small    { font:400 13px/1.5 var(--qi-font-sans); }
+.qi-t-read     { font:400 16px/1.7 var(--qi-font-sans); }   /* long-form reading view */
+/* mono = the machine register: status, metadata, badges, shortcuts, IDs only */
+.qi-t-label    { font:500 12px/1.2 var(--qi-font-mono); letter-spacing:0.08em; text-transform:uppercase; color:var(--qi-text-3); }
+.qi-t-meta     { font:500 11px/1.2 var(--qi-font-mono); letter-spacing:0.06em; text-transform:uppercase; color:var(--qi-text-3); }
+
+/* ----------------------------------------------------------------------------
+   BUTTONS  (exactly one .qi-btn-primary per view)
+   ---------------------------------------------------------------------------- */
+.qi-btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  height:38px; padding:0 16px; border-radius:var(--qi-radius-md);
+  font:500 14px/1 var(--qi-font-sans); letter-spacing:0.01em;
+  border:0.5px solid transparent; cursor:pointer;
+  transition:background var(--qi-t-fast) var(--qi-ease-out),
+    border-color var(--qi-t-fast) var(--qi-ease-out),
+    transform var(--qi-t-instant) var(--qi-ease-out);
+}
+.qi-btn:active { transform:scale(0.98); }
+.qi-btn:focus-visible { outline:none; box-shadow:0 0 0 3px var(--qi-ember-ring); }
+.qi-btn-primary   { background:var(--qi-ember); color:var(--qi-ember-ink); }
+.qi-btn-primary:hover  { background:var(--qi-ember-hover); }
+.qi-btn-primary:active { background:var(--qi-ember-press); }
+.qi-btn-secondary { background:var(--qi-surface-2); color:var(--qi-text-1); border-color:var(--qi-border-default); }
+.qi-btn-secondary:hover { background:var(--qi-surface-3); border-color:var(--qi-border-strong); }
+.qi-btn-ghost { background:transparent; color:var(--qi-text-2); }
+.qi-btn-ghost:hover { background:var(--qi-surface-1); color:var(--qi-text-1); }
+.qi-btn-danger { background:transparent; color:var(--qi-error); border-color:rgba(240,82,75,0.3); }
+.qi-btn-danger:hover { background:rgba(240,82,75,0.1); }
+.qi-btn:disabled, .qi-btn[aria-disabled="true"] {
+  background:var(--qi-surface-2); color:var(--qi-text-disabled);
+  border-color:var(--qi-border-subtle); cursor:not-allowed; transform:none;
+}
+.qi-btn-sm { height:32px; padding:0 12px; font-size:13px; }
+.qi-btn-lg { height:44px; padding:0 20px; font-size:15px; }
+
+/* ----------------------------------------------------------------------------
+   INPUTS & FIELDS
+   ---------------------------------------------------------------------------- */
+.qi-field-label {
+  display:block; font:500 11px/1 var(--qi-font-mono);
+  letter-spacing:0.08em; text-transform:uppercase; color:var(--qi-text-3); margin-bottom:8px;
+}
+.qi-input, .qi-textarea {
+  width:100%; background:var(--qi-surface-1); color:var(--qi-text-1);
+  border:0.5px solid var(--qi-border-subtle); border-radius:var(--qi-radius-md);
+  padding:0 12px; height:38px; font:400 14px/1 var(--qi-font-sans);
+  transition:border-color var(--qi-t-fast), background var(--qi-t-fast), box-shadow var(--qi-t-fast);
+}
+.qi-textarea { height:auto; min-height:104px; padding:10px 12px; line-height:1.55; resize:vertical; }
+.qi-input::placeholder, .qi-textarea::placeholder { color:var(--qi-text-3); }
+.qi-input:hover, .qi-textarea:hover { border-color:var(--qi-border-default); }
+.qi-input:focus, .qi-textarea:focus {
+  outline:none; background:var(--qi-surface-2);
+  border-color:var(--qi-ember); box-shadow:0 0 0 3px var(--qi-ember-ring);
+}
+.qi-input[aria-invalid="true"] { border-color:var(--qi-error); box-shadow:0 0 0 3px var(--qi-error-ring); }
+.qi-input:disabled { color:var(--qi-text-disabled); background:var(--qi-canvas); cursor:not-allowed; }
+
+/* ----------------------------------------------------------------------------
+   SEARCH  +  FILTER CHIPS
+   ---------------------------------------------------------------------------- */
+.qi-search-bar {
+  display:flex; align-items:center; gap:10px;
+  background:var(--qi-surface-1); border:0.5px solid var(--qi-border-subtle);
+  border-radius:var(--qi-radius-md); padding:0 14px; height:44px;
+  transition:border-color var(--qi-t-fast), box-shadow var(--qi-t-fast);
+}
+.qi-search-bar:focus-within { border-color:var(--qi-ember); box-shadow:0 0 0 3px var(--qi-ember-ring); }
+.qi-search-bar svg { width:18px; color:var(--qi-text-3); flex:none; }
+.qi-search-bar input { flex:1; background:none; border:none; outline:none; color:var(--qi-text-1); font:400 14px var(--qi-font-sans); }
+.qi-search-hint {
+  font:500 11px var(--qi-font-mono); color:var(--qi-text-3);
+  background:var(--qi-surface-3); border:0.5px solid var(--qi-border-default);
+  border-radius:var(--qi-radius-sm); padding:3px 7px; flex:none;
+}
+.qi-filter-chip {
+  font:500 12px var(--qi-font-mono); color:var(--qi-text-2);
+  background:transparent; border:0.5px solid var(--qi-border-default);
+  border-radius:var(--qi-radius-sm); padding:5px 12px; cursor:pointer;
+}
+.qi-filter-chip[aria-pressed="true"] {          /* tint, never full fill */
+  background:var(--qi-ember-tint); border-color:var(--qi-ember); color:var(--qi-ember-hover);
+}
+
+/* ----------------------------------------------------------------------------
+   KNOWLEDGE CARD  (three encoding channels: confidence / type / recency)
+   ---------------------------------------------------------------------------- */
+.qi-kcard {
+  position:relative; background:var(--qi-surface-1);
+  border:0.5px solid var(--qi-border-subtle); border-radius:var(--qi-radius-lg);
+  padding:16px 18px; cursor:pointer;
+  transition:background var(--qi-t-fast) var(--qi-ease-out),
+    border-color var(--qi-t-fast) var(--qi-ease-out),
+    transform var(--qi-t-fast) var(--qi-ease-out);
+}
+.qi-kcard:hover { background:var(--qi-surface-2); border-color:var(--qi-border-default); transform:translateY(-1px); }
+.qi-kcard:focus-visible { outline:none; box-shadow:0 0 0 3px var(--qi-ember-ring); }
+/* confidence = a quiet left edge. Only HIGH earns warmth. */
+.qi-kcard[data-confidence="high"]   { border-left:3px solid var(--qi-ember);        border-radius:0 var(--qi-radius-lg) var(--qi-radius-lg) 0; }
+.qi-kcard[data-confidence="medium"] { border-left:3px solid var(--qi-border-strong); border-radius:0 var(--qi-radius-lg) var(--qi-radius-lg) 0; }
+.qi-kcard-title { font:600 15px/1.35 var(--qi-font-sans); letter-spacing:-0.005em; color:var(--qi-text-1); margin:12px 0 6px; }
+.qi-kcard-desc  { font:400 14px/1.55 var(--qi-font-sans); color:var(--qi-text-2);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.qi-kcard-footer{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:16px; }
+
+/* ----------------------------------------------------------------------------
+   BADGES (type, low saturation) · TAGS (a tier quieter) · META
+   ---------------------------------------------------------------------------- */
+.qi-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font:500 11px/1 var(--qi-font-mono); letter-spacing:0.04em;
+  padding:4px 8px; border-radius:var(--qi-radius-sm);
+  color:var(--qi-c);
+  background:color-mix(in srgb, var(--qi-c) 14%, transparent);
+  border:0.5px solid color-mix(in srgb, var(--qi-c) 35%, transparent);
+}
+.qi-badge svg { width:12px; height:12px; }
+.qi-badge[data-type="source"]    { --qi-c:var(--qi-type-source); }
+.qi-badge[data-type="concept"]   { --qi-c:var(--qi-type-concept); }
+.qi-badge[data-type="pattern"]   { --qi-c:var(--qi-type-pattern); }
+.qi-badge[data-type="synthesis"] { --qi-c:var(--qi-type-synthesis); }
+.qi-badge[data-type="entity"]    { --qi-c:var(--qi-type-entity); }
+.qi-badge[data-type="person"]    { --qi-c:var(--qi-type-person); }
+.qi-badge[data-type="decision"]  { --qi-c:var(--qi-type-decision); }
+.qi-tag  { font:400 11px/1 var(--qi-font-mono); color:var(--qi-text-3); background:none; border:none; cursor:pointer; transition:color var(--qi-t-fast); }
+.qi-tag:hover { color:var(--qi-text-2); }
+.qi-meta { font:500 11px/1 var(--qi-font-mono); letter-spacing:0.06em; text-transform:uppercase; color:var(--qi-text-3); }
+
+/* ----------------------------------------------------------------------------
+   COMPACT ROW + TABLE (density toggle for power users)
+   ---------------------------------------------------------------------------- */
+.qi-krow { display:flex; align-items:center; gap:12px; padding:9px 14px; border-radius:var(--qi-radius-md); cursor:pointer; transition:background var(--qi-t-fast); }
+.qi-krow:hover { background:var(--qi-surface-1); }
+.qi-krow .dot { width:8px; height:8px; border-radius:50%; background:var(--qi-c); flex:none; }
+.qi-krow .title { font:400 14px var(--qi-font-sans); color:var(--qi-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qi-krow .spacer { flex:1; }
+.qi-ktable { width:100%; border-collapse:collapse; }
+.qi-ktable th { text-align:left; padding:10px 14px; font:500 11px var(--qi-font-mono);
+  letter-spacing:0.08em; text-transform:uppercase; color:var(--qi-text-3); border-bottom:0.5px solid var(--qi-border-subtle); }
+.qi-ktable td { padding:12px 14px; border-bottom:0.5px solid var(--qi-border-subtle); font:400 14px var(--qi-font-sans); color:var(--qi-text-2); }
+.qi-ktable tr:hover td { background:var(--qi-surface-1); }
+.qi-ktable td:first-child { color:var(--qi-text-1); }
+
+/* ----------------------------------------------------------------------------
+   METRIC CARD (honest by construction — see render rules in Phase 8/11)
+   ---------------------------------------------------------------------------- */
+.qi-metric { background:var(--qi-surface-1); border:0.5px solid var(--qi-border-subtle); border-radius:var(--qi-radius-md); padding:16px 18px; }
+.qi-metric .label { display:flex; align-items:center; gap:8px; font:500 12px var(--qi-font-mono); letter-spacing:0.06em; text-transform:uppercase; color:var(--qi-text-3); }
+.qi-metric .value { font:600 30px/1 var(--qi-font-sans); letter-spacing:-0.02em; color:var(--qi-text-1); font-feature-settings:'tnum'; margin-top:12px; }
+.qi-metric .delta { font:500 12px var(--qi-font-mono); margin-top:6px; }
+.qi-metric .delta.up   { color:var(--qi-type-person); }
+.qi-metric .delta.flat { color:var(--qi-text-3); }
+
+/* ----------------------------------------------------------------------------
+   OVERLAYS — MODAL · MENU · TOAST · TOOLTIP (the one place shadow lives)
+   ---------------------------------------------------------------------------- */
+.qi-modal-scrim { position:fixed; inset:0; background:var(--qi-scrim); display:flex; align-items:center; justify-content:center; padding:24px; animation:qi-scrim-in var(--qi-t-fast) ease both; }
+.qi-modal { width:min(480px,100%); background:var(--qi-surface-3); border:0.5px solid var(--qi-border-strong);
+  border-radius:var(--qi-radius-xl); box-shadow:var(--qi-shadow-overlay); overflow:hidden; animation:qi-modal-in var(--qi-t-base) var(--qi-ease-out) both; }
+.qi-modal-title { font:600 18px/1.3 var(--qi-font-sans); letter-spacing:-0.01em; color:var(--qi-text-1); }
+.qi-modal-desc  { font:400 14px/1.55 var(--qi-font-sans); color:var(--qi-text-2); margin-top:6px; }
+.qi-menu { min-width:200px; background:var(--qi-surface-3); border:0.5px solid var(--qi-border-strong);
+  border-radius:var(--qi-radius-lg); box-shadow:var(--qi-shadow-overlay); padding:6px; animation:qi-modal-in var(--qi-t-fast) var(--qi-ease-out) both; }
+.qi-menu-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--qi-radius-md);
+  cursor:pointer; font:400 14px var(--qi-font-sans); color:var(--qi-text-2); }
+.qi-menu-item svg { width:16px; color:var(--qi-text-3); }
+.qi-menu-item:hover, .qi-menu-item[aria-selected="true"] { background:var(--qi-ember-tint); color:var(--qi-text-1); }
+.qi-menu-item:hover svg { color:var(--qi-ember); }
+.qi-menu-item.danger { color:var(--qi-error); }
+.qi-menu-item.danger:hover { background:rgba(240,82,75,0.1); }
+.qi-menu-sep { height:0.5px; background:var(--qi-border-subtle); margin:6px 4px; }
+
+.qi-toast-region { position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; gap:8px; z-index:60; }
+.qi-toast { position:relative; display:flex; align-items:center; gap:12px; min-width:300px; max-width:440px;
+  padding:12px 14px; background:var(--qi-surface-3); border:0.5px solid var(--qi-border-strong);
+  border-radius:var(--qi-radius-md); box-shadow:var(--qi-shadow-overlay); overflow:hidden;
+  animation:qi-toast-in var(--qi-t-base) var(--qi-ease-out) both; }
+.qi-toast .msg { font:400 14px var(--qi-font-sans); color:var(--qi-text-1); flex:1; }
+.qi-toast .action { font:500 13px var(--qi-font-sans); color:var(--qi-ember); background:none; border:none; cursor:pointer; flex:none; }
+.qi-toast .action:hover { color:var(--qi-ember-hover); }
+.qi-toast .timer { position:absolute; bottom:0; left:0; height:2px; background:var(--qi-ember); animation:qi-drain 6s linear forwards; }
+.qi-toast.success .icon { color:var(--qi-type-person); }
+.qi-toast.error   .icon { color:var(--qi-error); }
+.qi-toast.info    .icon { color:var(--qi-type-source); }
+
+.qi-tooltip { background:var(--qi-surface-3); border:0.5px solid var(--qi-border-strong); border-radius:var(--qi-radius-sm);
+  padding:5px 9px; font:400 12px var(--qi-font-sans); color:var(--qi-text-1); box-shadow:var(--qi-shadow-overlay);
+  white-space:nowrap; animation:qi-fade-in var(--qi-t-fast) ease both; }
+.qi-tooltip .key { font:500 11px var(--qi-font-mono); color:var(--qi-text-3); margin-left:6px; }
+
+/* ----------------------------------------------------------------------------
+   SIDEBAR & NAV  (exactly one active item — tint + left bar, never six pills)
+   ---------------------------------------------------------------------------- */
+.qi-sidebar { width:var(--qi-nav-w); transition:width var(--qi-t-base) var(--qi-ease-out); }
+.qi-sidebar[data-collapsed="true"] { width:var(--qi-nav-w-rail); }
+.qi-nav-item {
+  display:flex; align-items:center; gap:12px; height:38px; padding:0 12px;
+  border-radius:var(--qi-radius-md); font:500 14px var(--qi-font-sans); color:var(--qi-text-2);
+  position:relative; cursor:pointer; transition:background var(--qi-t-fast), color var(--qi-t-fast);
+}
+.qi-nav-item svg { width:18px; flex:none; color:var(--qi-text-3); transition:color var(--qi-t-fast); }
+.qi-nav-item:hover { background:var(--qi-surface-1); color:var(--qi-text-1); }
+.qi-nav-item:hover svg { color:var(--qi-text-2); }
+.qi-nav-item[aria-current="page"] { background:var(--qi-ember-tint); color:var(--qi-text-1); }
+.qi-nav-item[aria-current="page"] svg { color:var(--qi-ember); }
+.qi-nav-item[aria-current="page"]::before {
+  content:""; position:absolute; left:-12px; top:50%; transform:translateY(-50%);
+  width:3px; height:18px; border-radius:0 2px 2px 0; background:var(--qi-ember);
+}
+.qi-nav-item:focus-visible { outline:none; box-shadow:0 0 0 3px var(--qi-ember-ring); }
+.qi-nav-section-label { font:500 11px var(--qi-font-mono); letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--qi-text-3); padding:0 12px; margin:20px 0 6px; }
+.qi-nav-badge { margin-left:auto; min-width:20px; height:18px; padding:0 6px;
+  display:flex; align-items:center; justify-content:center; font:500 11px var(--qi-font-mono);
+  color:var(--qi-ember-ink); background:var(--qi-ember); border-radius:var(--qi-radius-full); }
+
+/* ----------------------------------------------------------------------------
+   AGENT STATUS DOT (Hermes) — only "review" runs warm
+   ---------------------------------------------------------------------------- */
+.qi-status-dot { width:9px; height:9px; border-radius:50%; flex:none; }
+[data-state="live"]   .qi-status-dot { background:var(--qi-agent-live); animation:qi-pulse 2s infinite; }
+[data-state="idle"]   .qi-status-dot { background:var(--qi-agent-idle); }
+[data-state="review"] .qi-status-dot { background:var(--qi-agent-review); }
+[data-state="paused"] .qi-status-dot { background:var(--qi-agent-paused); }
+[data-state="error"]  .qi-status-dot { background:var(--qi-agent-error); }
+
+/* ----------------------------------------------------------------------------
+   SKELETON (mirror real geometry; ~200ms delay before showing)
+   ---------------------------------------------------------------------------- */
+.qi-skeleton { background:linear-gradient(90deg, var(--qi-surface-1) 0%, var(--qi-surface-2) 50%, var(--qi-surface-1) 100%);
+  background-size:200% 100%; border-radius:var(--qi-radius-sm); animation:qi-shimmer 1.4s ease-in-out infinite; }
+
+/* ----------------------------------------------------------------------------
+   EMPTY STATE (name the value, point at the next action)
+   ---------------------------------------------------------------------------- */
+.qi-empty { display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:48px 24px; max-width:340px; margin:0 auto; }
+.qi-empty .glyph { width:48px; height:48px; margin-bottom:10px; opacity:0.5; }
+.qi-empty .title { font:600 15px var(--qi-font-sans); color:var(--qi-text-1); }
+.qi-empty .body  { font:400 14px/1.55 var(--qi-font-sans); color:var(--qi-text-3); }
+
+/* ----------------------------------------------------------------------------
+   KEYFRAMES (qi- prefixed)
+   ---------------------------------------------------------------------------- */
+@keyframes qi-scrim-in { from{opacity:0} to{opacity:1} }
+@keyframes qi-modal-in { from{opacity:0; transform:translateY(8px) scale(.98)} to{opacity:1; transform:none} }
+@keyframes qi-toast-in { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+@keyframes qi-fade-in  { from{opacity:0} to{opacity:1} }
+@keyframes qi-drain    { from{width:100%} to{width:0%} }
+@keyframes qi-shimmer  { from{background-position:200% 0} to{background-position:-200% 0} }
+@keyframes qi-view-in  { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+@keyframes qi-pulse    { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* ----------------------------------------------------------------------------
+   REDUCED MOTION (replace, don't remove — never lose information).
+   Scoped to .qi descendants. Zeroes the four duration tokens (Req 2.1),
+   preserves end states (Req 2.2), and collapses looping animations
+   (status-dot pulse, skeleton shimmer) to a single static state (Req 2.3).
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion:reduce) {
+  .qi { --qi-t-instant:0ms; --qi-t-fast:0ms; --qi-t-base:0ms; --qi-t-slow:0ms; }
+  .qi *, .qi *::before, .qi *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  /* collapse looping animations to a single static state that still conveys status */
+  [data-state="live"] .qi-status-dot { animation:none; opacity:1; }
+  .qi-skeleton { background:var(--qi-surface-2); animation:none; }
+}

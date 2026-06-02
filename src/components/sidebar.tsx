@@ -1,30 +1,36 @@
 'use client'
 
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
   BookOpen,
   Bot,
+  Blocks,
   ClipboardCheck,
   FileText,
   Folder,
   Inbox,
+  KanbanSquare,
   LayoutDashboard,
   Network,
+  Radar,
   Search,
   ShieldCheck,
   Sparkles,
   Tags,
   Users,
+  Wallet,
 } from 'lucide-react'
 import { BrainMark } from '@/components/ui/BrainMark'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import { resolveActiveIndex, formatBadge } from '@/components/sidebar-nav'
 
 const nav = [
   { href: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/query', label: 'Search', icon: Search },
-  { href: '/app/ingest', label: 'Inbox', icon: Inbox, badge: '12' },
+  { href: '/app/ingest', label: 'Inbox', icon: Inbox },
   { href: '/app/wiki?view=sources', label: 'Sources', icon: FileText },
   { href: '/app/wiki', label: 'Memory', icon: BookOpen },
   { href: '/app/dashboard#knowledge-graph', label: 'Graph', icon: Network },
@@ -32,9 +38,18 @@ const nav = [
   { href: '/app/wiki?type=entity', label: 'People', icon: Users },
   { href: '/app/wiki?type=synthesis', label: 'Decisions', icon: ClipboardCheck },
   { href: '/app/wiki?view=collections', label: 'Collections', icon: Folder },
+  { href: '/app/agents', label: 'Squad', icon: Radar },
+  { href: '/app/agents/board', label: 'Board', icon: KanbanSquare },
+  { href: '/app/agents/skills', label: 'Skills', icon: Blocks },
+  { href: '/app/agents/cost', label: 'Cost', icon: Wallet },
   { href: '/app/agent', label: 'AI Agent', icon: Bot },
   { href: '/app/query', label: 'AI Assistant', icon: Sparkles },
 ]
+
+// Real unread count drives the Inbox badge. No data source is wired yet, so it
+// is 0 → no badge renders (honest-by-construction; never a fake "12"). Wire this
+// to the real inbox/ingest-queue count when that endpoint exists.
+const inboxUnread = 0
 
 const mobileNav = nav.filter(item => ['Dashboard', 'Search', 'Inbox', 'AI Agent', 'AI Assistant'].includes(item.label))
 
@@ -54,7 +69,30 @@ const userButtonAppearance = {
 }
 
 export function Sidebar() {
+  return (
+    <Suspense fallback={<SidebarView activeIndex={null} mobileActiveIndex={null} />}>
+      <SidebarWithActive />
+    </Suspense>
+  )
+}
+
+function SidebarWithActive() {
   const path = usePathname()
+  const searchParams = useSearchParams()
+  const search = searchParams.toString()
+  const activeIndex = resolveActiveIndex(path, search, nav)
+  const mobileActiveIndex = resolveActiveIndex(path, search, mobileNav)
+  return <SidebarView activeIndex={activeIndex} mobileActiveIndex={mobileActiveIndex} />
+}
+
+function SidebarView({
+  activeIndex,
+  mobileActiveIndex,
+}: {
+  activeIndex: number | null
+  mobileActiveIndex: number | null
+}) {
+  const badgeText = formatBadge(inboxUnread)
 
   return (
     <>
@@ -94,12 +132,14 @@ export function Sidebar() {
 
         {/* Nav */}
         <nav className="relative flex-1 space-y-0.5 overflow-y-auto px-3 pb-3">
-          {nav.map(({ href, label, icon: Icon, badge }) => {
-            const active = isActiveNav(label, path)
+          {nav.map(({ href, label, icon: Icon }, idx) => {
+            const active = idx === activeIndex
+            const badge = label === 'Inbox' ? badgeText : null
             return (
               <Link
                 key={`${href}-${label}`}
                 href={href}
+                aria-current={active ? 'page' : undefined}
                 className="group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[13px] transition-all duration-200"
                 style={
                   active
@@ -195,13 +235,14 @@ export function Sidebar() {
         style={{ background: 'var(--app-bar-bg)', borderColor: 'var(--app-sidebar-border)' }}
       >
         <div className="grid grid-cols-5 gap-1">
-          {mobileNav.map(({ href, label, icon: Icon }) => {
-            const active = isActiveNav(label, path)
+          {mobileNav.map(({ href, label, icon: Icon }, idx) => {
+            const active = idx === mobileActiveIndex
             return (
               <Link
                 key={`${href}-${label}-mobile`}
                 href={href}
                 aria-label={label}
+                aria-current={active ? 'page' : undefined}
                 className="flex h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[9px] font-medium transition-colors"
                 style={
                   active
@@ -224,18 +265,6 @@ export function Sidebar() {
       </nav>
     </>
   )
-}
-
-function isActiveNav(label: string, path: string) {
-  if (label === 'Dashboard') return path === '/app/dashboard'
-  if (label === 'Search' || label === 'AI Assistant') return path === '/app/query'
-  if (label === 'AI Agent') return path === '/app/agent'
-  if (label === 'Inbox') return path === '/app/ingest'
-  if (['Sources', 'Memory', 'Topics', 'People', 'Decisions', 'Collections'].includes(label)) {
-    return path === '/app/wiki'
-  }
-
-  return false
 }
 
 function BrandMark() {

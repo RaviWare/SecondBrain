@@ -101,31 +101,24 @@ function QueryView() {
   }
 
   return (
-    <div className="flex h-full min-h-[calc(100dvh-160px)] flex-col text-[var(--text-primary)] md:min-h-screen">
+    <main className="sb-dashboard flex h-full min-h-[calc(100dvh-160px)] flex-col text-[var(--dash-text)] md:min-h-screen">
       {/* Header */}
-      <div
-        className="relative shrink-0 px-4 py-4 sm:px-6 md:px-8 md:py-5"
-        style={{
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--surface)',
-        }}
-      >
+      <div className="relative shrink-0 px-4 py-4 sm:px-6 md:px-8 md:py-5" style={{ borderBottom: '1px solid var(--dash-border)' }}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-1">
-              QUERY ENGINE · CLAUDE HAIKU
+            <p className="mono text-[10px] uppercase text-[var(--dash-subtle)] tracking-widest mb-1">
+              Query engine · Cited responses
             </p>
-            <h1 className="text-lg font-bold tracking-tight">Query Your Wiki</h1>
+            <h1 className="text-lg font-semibold tracking-tight">
+              <span className="dash-metallic-text">Ask your brain</span>
+            </h1>
           </div>
           <div className="flex items-center gap-2">
             <span
               className="w-1.5 h-1.5 rounded-full pulse-dot"
-              style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent)' }}
+              style={{ background: 'var(--dash-accent)', boxShadow: '0 0 6px var(--dash-accent)' }}
             />
-            <span
-              className="mono text-[9px] tracking-widest"
-              style={{ color: 'var(--accent-bright)' }}
-            >
+            <span className="mono text-[9px] tracking-widest" style={{ color: 'var(--dash-accent)' }}>
               ONLINE
             </span>
           </div>
@@ -141,17 +134,17 @@ function QueryView() {
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative"
                 style={{
-                  background: 'var(--surface)',
-                  border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)',
+                  background: 'var(--dash-card-solid)',
+                  border: '1px solid var(--dash-border-glow)',
                 }}
               >
-                <Brain className="w-7 h-7" style={{ color: 'var(--accent-bright)' }} />
+                <Brain className="w-7 h-7" style={{ color: 'var(--dash-accent)' }} />
               </div>
-              <p className="mono text-[10px] text-[var(--text-muted)] tracking-widest mb-2">
+              <p className="mono text-[10px] text-[var(--dash-subtle)] tracking-widest mb-2">
                 READY TO QUERY
               </p>
-              <p className="text-[var(--text-secondary)] text-sm">
-                Ask anything about your knowledge base
+              <p className="text-[var(--dash-muted)] text-sm">
+                Ask anything about your knowledge — answers cite their sources.
               </p>
             </div>
 
@@ -161,17 +154,10 @@ function QueryView() {
                 <button
                   key={s}
                   onClick={() => handleQuery(s)}
-                  className="text-left p-4 rounded-xl text-xs transition-colors group"
-                  style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border-bright)',
-                    color: 'var(--text-secondary)',
-                  }}
+                  className="dash-panel dash-interactive text-left p-4 rounded-2xl text-xs transition group"
+                  style={{ color: 'var(--dash-muted)' }}
                 >
-                  <MessageSquare
-                    className="w-3 h-3 mb-2"
-                    style={{ color: 'var(--text-muted)' }}
-                  />
+                  <MessageSquare className="w-3 h-3 mb-2" style={{ color: 'var(--dash-accent)' }} />
                   {s}
                 </button>
               ))}
@@ -185,8 +171,8 @@ function QueryView() {
                   <div
                     className="max-w-[88%] rounded-2xl rounded-tr-sm px-4 py-3 text-sm sm:max-w-[80%]"
                     style={{
-                      background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
-                      color: '#0b0b0d',
+                      background: 'linear-gradient(135deg, var(--dash-accent-2), var(--dash-accent))',
+                      color: '#fff',
                       fontWeight: 500,
                     }}
                   >
@@ -198,29 +184,20 @@ function QueryView() {
                       <div
                         className="w-5 h-5 rounded-lg flex items-center justify-center"
                         style={{
-                          background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-                          border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)',
+                          background: 'var(--dash-accent-soft)',
+                          border: '1px solid var(--dash-border-glow)',
                         }}
                       >
-                        <Brain className="w-3 h-3" style={{ color: 'var(--accent-bright)' }} />
+                        <Brain className="w-3 h-3" style={{ color: 'var(--dash-accent)' }} />
                       </div>
-                      <span
-                        className="mono text-[9px] tracking-widest"
-                        style={{ color: 'var(--accent-bright)' }}
-                      >
-                        CLAUDE HAIKU · RESPONSE
+                      <span className="mono text-[9px] tracking-widest" style={{ color: 'var(--dash-accent)' }}>
+                        CITED RESPONSE
                       </span>
                     </div>
-                    <div
-                      className="rounded-2xl rounded-tl-sm p-5 relative"
-                      style={{
-                        background: 'var(--surface)',
-                        border: '1px solid var(--border-bright)',
-                      }}
-                    >
+                    <div className="dash-panel rounded-2xl rounded-tl-sm p-5 relative">
                       <div
                         className="wiki-content text-sm"
-                        style={{ color: 'var(--text-primary)' }}
+                        style={{ color: 'var(--dash-text)' }}
                         dangerouslySetInnerHTML={{
                           __html: `<p>${renderAnswer(msg.content, msg.citedPages)}</p>`,
                         }}
@@ -229,7 +206,7 @@ function QueryView() {
 
                     {msg.citedPages && msg.citedPages.length > 0 && (
                       <div>
-                        <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest mb-2">
+                        <p className="mono text-[9px] text-[var(--dash-subtle)] tracking-widest mb-2">
                           CITED FROM WIKI
                         </p>
                         <div className="flex flex-wrap gap-1.5">
@@ -239,9 +216,9 @@ function QueryView() {
                               href={`/app/wiki/${p.slug}`}
                               className="flex items-center gap-1 mono text-[9px] px-2 py-1 rounded tracking-wider transition-colors"
                               style={{
-                                color: 'var(--accent-bright)',
-                                background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
-                                border: '1px solid color-mix(in srgb, var(--accent) 24%, transparent)',
+                                color: 'var(--dash-accent)',
+                                background: 'var(--dash-accent-soft)',
+                                border: '1px solid var(--dash-border-glow)',
                               }}
                             >
                               <ExternalLink className="w-2.5 h-2.5" />
@@ -255,7 +232,7 @@ function QueryView() {
                     {msg.gap && <GapPanel gap={msg.gap} citedPages={msg.citedPages} />}
 
                     {msg.tokensUsed && (
-                      <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest">
+                      <p className="mono text-[9px] text-[var(--dash-subtle)] tracking-widest">
                         {msg.tokensUsed.toLocaleString()} TOKENS USED
                       </p>
                     )}
@@ -265,13 +242,7 @@ function QueryView() {
             ))}
 
             {loading && (
-              <div
-                className="rounded-2xl rounded-tl-sm p-5"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-bright)',
-                }}
-              >
+              <div className="dash-panel rounded-2xl rounded-tl-sm p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1">
                     {[0, 1, 2].map(i => (
@@ -279,16 +250,13 @@ function QueryView() {
                         key={i}
                         className="w-1.5 h-1.5 rounded-full animate-bounce"
                         style={{
-                          background: 'var(--accent-bright)',
+                          background: 'var(--dash-accent)',
                           animationDelay: `${i * 150}ms`,
                         }}
                       />
                     ))}
                   </div>
-                  <span
-                    className="mono text-[10px] tracking-widest"
-                    style={{ color: 'var(--accent-bright)' }}
-                  >
+                  <span className="mono text-[10px] tracking-widest" style={{ color: 'var(--dash-accent)' }}>
                     SEARCHING KNOWLEDGE BASE...
                   </span>
                 </div>
@@ -301,53 +269,52 @@ function QueryView() {
       </div>
 
       {/* Input */}
-      <div
-        className="px-8 py-5 shrink-0"
-        style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}
-      >
+      <div className="px-8 py-5 shrink-0" style={{ borderTop: '1px solid var(--dash-border)' }}>
         <div className="max-w-2xl mx-auto">
           <div
-            className="rounded-xl flex items-center gap-3 px-4 py-3 transition-colors"
+            className="rounded-2xl flex items-center gap-3 px-4 py-3 transition-colors focus-within:border-[var(--dash-border-glow)]"
             style={{
-              background: 'var(--surface-2)',
-              border: '1px solid var(--border-bright)',
+              background: 'var(--dash-card-solid)',
+              border: '1px solid var(--dash-border)',
             }}
           >
-            <Zap className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+            <Zap className="w-3.5 h-3.5 text-[var(--dash-subtle)] shrink-0" />
             <input
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleQuery(input)}
-              placeholder="Ask your wiki anything..."
+              placeholder="Ask your brain anything..."
               disabled={loading}
-              className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
-              style={{ color: 'var(--text-primary)' }}
+              className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50 placeholder:text-[var(--dash-subtle)]"
+              style={{ color: 'var(--dash-text)' }}
             />
             <button
               onClick={() => handleQuery(input)}
               disabled={!input.trim() || loading}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0 disabled:opacity-40"
-              style={{
-                background: !input.trim() || loading
-                  ? 'var(--surface)'
-                  : 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
-                color: !input.trim() || loading ? 'var(--text-muted)' : '#0b0b0d',
-                border: '1px solid var(--border)',
-              }}
+              aria-label="Send"
+              className="relative w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 overflow-hidden disabled:opacity-40"
+              style={
+                !input.trim() || loading
+                  ? { background: 'var(--dash-soft)', color: 'var(--dash-subtle)', border: '1px solid var(--dash-border)' }
+                  : { color: '#fff' }
+              }
             >
+              {!(!input.trim() || loading) && (
+                <span className="dash-accent-grad absolute inset-0" aria-hidden />
+              )}
               {loading
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <Send className="w-3.5 h-3.5" />
+                ? <Loader2 className="relative w-3.5 h-3.5 animate-spin" />
+                : <Send className="relative w-3.5 h-3.5" />
               }
             </button>
           </div>
-          <p className="mono text-[9px] text-[var(--text-muted)] tracking-widest text-center mt-2">
-            PRESS ENTER TO SEND · CLAUDE HAIKU · CITED RESPONSES
+          <p className="mono text-[9px] text-[var(--dash-subtle)] tracking-widest text-center mt-2">
+            PRESS ENTER TO SEND · CITED RESPONSES
           </p>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -369,26 +336,26 @@ function GapPanel({
   const slugTitle = Object.fromEntries((citedPages ?? []).map(p => [p.slug, p.title]))
   const pct = Math.round((gap.confidence ?? 0) * 100)
   const confTone =
-    pct >= 75 ? 'var(--accent-bright)' : pct >= 45 ? '#e0a106' : '#e0633c'
+    pct >= 75 ? 'var(--dash-accent)' : pct >= 45 ? '#e0a106' : '#e0633c'
 
   return (
     <div
       className="rounded-2xl p-4 space-y-3"
       style={{
-        background: 'color-mix(in srgb, var(--accent) 5%, var(--surface))',
-        border: '1px solid color-mix(in srgb, var(--accent) 22%, transparent)',
+        background: 'color-mix(in srgb, var(--dash-accent) 5%, var(--dash-card-solid))',
+        border: '1px solid var(--dash-border-glow)',
       }}
     >
       <div className="flex items-center justify-between gap-2">
         <span
           className="mono text-[9px] tracking-widest flex items-center gap-1.5"
-          style={{ color: 'var(--accent-bright)' }}
+          style={{ color: 'var(--dash-accent)' }}
         >
           <Brain className="w-3 h-3" />
           WHAT THE BRAIN KNOWS — AND DOESN&apos;T
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="mono text-[9px] tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          <span className="mono text-[9px] tracking-widest" style={{ color: 'var(--dash-subtle)' }}>
             CONFIDENCE
           </span>
           <span className="mono text-[10px] font-bold" style={{ color: confTone }}>
@@ -400,7 +367,7 @@ function GapPanel({
       {/* confidence bar */}
       <div
         className="h-1.5 w-full overflow-hidden rounded-full"
-        style={{ background: 'color-mix(in srgb, var(--text-muted) 24%, transparent)' }}
+        style={{ background: 'color-mix(in srgb, var(--dash-subtle) 24%, transparent)' }}
       >
         <div
           className="h-full rounded-full transition-all"
@@ -421,7 +388,7 @@ function GapPanel({
       )}
       {gap.staleSlugs.length > 0 && (
         <div className="space-y-1.5">
-          <p className="mono text-[9px] tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+          <p className="mono text-[9px] tracking-widest flex items-center gap-1.5" style={{ color: 'var(--dash-subtle)' }}>
             <Clock className="w-3 h-3" />
             POSSIBLY STALE
           </p>
@@ -432,9 +399,9 @@ function GapPanel({
                 href={`/app/wiki/${slug}`}
                 className="mono text-[9px] px-2 py-1 rounded tracking-wider transition-colors"
                 style={{
-                  color: 'var(--text-secondary)',
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
+                  color: 'var(--dash-muted)',
+                  background: 'var(--dash-card-solid)',
+                  border: '1px solid var(--dash-border)',
                 }}
               >
                 {(slugTitle[slug] ?? slug).slice(0, 28)}
@@ -462,15 +429,15 @@ function GapSection({
     <div className="space-y-1.5">
       <p
         className="mono text-[9px] tracking-widest flex items-center gap-1.5"
-        style={{ color: tone ?? 'var(--text-muted)' }}
+        style={{ color: tone ?? 'var(--dash-subtle)' }}
       >
         {tone ? <AlertTriangle className="w-3 h-3" /> : icon}
         {label}
       </p>
       <ul className="space-y-1">
         {items.map((item, i) => (
-          <li key={i} className="text-[12px] leading-relaxed flex gap-2" style={{ color: 'var(--text-secondary)' }}>
-            <span style={{ color: tone ?? 'var(--accent-bright)' }}>·</span>
+          <li key={i} className="text-[12px] leading-relaxed flex gap-2" style={{ color: 'var(--dash-muted)' }}>
+            <span style={{ color: tone ?? 'var(--dash-accent)' }}>·</span>
             <span>{item}</span>
           </li>
         ))}

@@ -84,10 +84,24 @@ Pro lever could gate *concurrent agents* or *always-on* mode — not the feature
 - Run `/cso` (gstack) against the control plane before exposing it.
 
 ## Build status
-- [ ] Phase 2 — `UserAgent` model + provisioner + control API (in repo)
-- [ ] Phase 3 — Hermes sandbox Dockerfile
-- [ ] Phase 4 — `/app/agent` chat UI
-- [ ] Phase 5 — Guardrails + audit + idle-stop
+- [x] Phase 2 — `UserAgent` model + provisioner + control API (in repo:
+  `src/lib/agent-service.ts`, `src/lib/agent-provisioner.ts`,
+  `/api/agent-instance/{provision,start,stop,status}`)
+- [x] Phase 3 — Hermes sandbox Dockerfile (`docker/hermes/`, brain connector +
+  idle-watchdog + entrypoint)
+- [x] `/app/agent` chat UI (`src/app/app/agent/page.tsx`)
+- [x] Guardrails + idle-stop — provisioner enforces non-root / CapDrop ALL /
+  no-new-privileges / resource caps / no host socket (test-pinned in
+  `agent-provisioner.test.ts`); idle auto-stop via `idle-watchdog.sh`
+- [ ] Container audit log of every provision/start/stop + agent tool call (deferred)
+- [ ] `HermesContainerRunner` live wire-protocol — the driver exists behind the
+  `AgentRunner` interface (`AGENT_RUNNER=hermes`) and is read-only-scoped so
+  propose-never-write holds, but the live container round-trip is `TODO(hermes-live)`.
+  See `50-AGENTS-OS.md` and `DEFERRED-WORK.md`.
+
+> The multi-agent orchestration layer that sits ON TOP of this per-user container
+> (squad, Aegis gate, trust, budget, scheduler) is **Hermes Agents OS** — built and
+> documented in [`50-AGENTS-OS.md`](./50-AGENTS-OS.md).
 
 ## Full reference
 - README: https://github.com/NousResearch/hermes-agent
