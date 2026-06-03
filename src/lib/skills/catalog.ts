@@ -93,7 +93,11 @@ export const SKILLS: SkillDef[] = [
     objectivePlaceholder: 'e.g. What did we learn about pricing across all customer calls?',
     tools: ['search', 'query'],
     schedules: ['manual', 'weekly'],
-    writesToVault: true,
+    // Read-only: search+query tools only (no `ingest`); briefs are emitted as
+    // Proposals through the Aegis gate, never written directly (propose-never-write).
+    // So writesToVault is false and the declared blast radius is `vault-read` — which
+    // must match observed behavior or the Security_Scan blocks install (Req 9.9).
+    writesToVault: false,
     promptTemplate:
       'You are a Research Analyst working from the user\'s private knowledge vault. Objective: "{{objective}}". Search the vault, synthesize a structured, cited brief, and end with an explicit "What the brain does not know yet" section listing gaps and stale areas. Be concise and factual. Cite pages with [[slug]].',
     exampleOutcomes: ['Cited research brief', 'Gap analysis', 'Saved synthesis page'],
@@ -116,7 +120,10 @@ export const SKILLS: SkillDef[] = [
     objectivePlaceholder: 'e.g. Prep me for tomorrow\'s renewal call with Northwind',
     tools: ['search', 'query'],
     schedules: ['manual', 'daily'],
-    writesToVault: true,
+    // Read-only: search+query only (no `ingest`); the prep brief is proposed via
+    // the Aegis gate, not written directly. writesToVault false ⇒ declared
+    // `vault-read` matches observed behavior (Req 9.9).
+    writesToVault: false,
     promptTemplate:
       'You are a Meeting Prep agent using the user\'s vault. Objective: "{{objective}}". Pull all related pages, summarize the relationship and last interactions, list open commitments and unanswered items, then propose 3-5 sharp questions to ask. End with a confidence note and what context might be missing.',
     exampleOutcomes: ['Relationship summary', 'Open threads', 'Questions to ask'],
@@ -182,7 +189,10 @@ export const SKILLS: SkillDef[] = [
     objectivePlaceholder: 'e.g. Draft a LinkedIn post about what we learned from 50 calls',
     tools: ['search', 'query'],
     schedules: ['manual'],
-    writesToVault: true,
+    // Read-only: search+query only (no `ingest`); the draft is proposed for the
+    // user to accept, never written directly. writesToVault false ⇒ declared
+    // `vault-read` matches observed behavior (Req 9.9).
+    writesToVault: false,
     promptTemplate:
       'You are a Content Engine that drafts in the user\'s voice using ONLY their vault. Objective: "{{objective}}". Pull supporting material, draft the piece, and attach source citations. Do not invent statistics or claims the vault cannot support; note where you deliberately held back.',
     exampleOutcomes: ['Grounded draft', 'Source citations', 'Honesty notes'],
