@@ -15,6 +15,7 @@ import {
   Inbox,
   KanbanSquare,
   LayoutDashboard,
+  LifeBuoy,
   Network,
   Radar,
   Search,
@@ -72,7 +73,7 @@ const userButtonAppearance = {
 
 export function Sidebar() {
   return (
-    <Suspense fallback={<SidebarView activeIndex={null} mobileActiveIndex={null} isAdmin={false} adminActive={false} />}>
+    <Suspense fallback={<SidebarView activeIndex={null} mobileActiveIndex={null} isAdmin={false} adminPath="" />}>
       <SidebarWithActive />
     </Suspense>
   )
@@ -98,13 +99,12 @@ function SidebarWithActive() {
   const activeIndex = resolveActiveIndex(path, search, nav)
   const mobileActiveIndex = resolveActiveIndex(path, search, mobileNav)
   const isAdmin = useIsAdmin()
-  const adminActive = path === '/app/admin/updates'
   return (
     <SidebarView
       activeIndex={activeIndex}
       mobileActiveIndex={mobileActiveIndex}
       isAdmin={isAdmin}
-      adminActive={adminActive}
+      adminPath={path}
     />
   )
 }
@@ -113,12 +113,12 @@ function SidebarView({
   activeIndex,
   mobileActiveIndex,
   isAdmin,
-  adminActive,
+  adminPath,
 }: {
   activeIndex: number | null
   mobileActiveIndex: number | null
   isAdmin: boolean
-  adminActive: boolean
+  adminPath: string
 }) {
   const badgeText = formatBadge(inboxUnread)
 
@@ -216,41 +216,48 @@ function SidebarView({
             )
           })}
 
-          {/* Admin-only: Updates feed (upstream monitor alerts). Hidden for
-              non-admins (gated by /api/admin/me + the API's own allow-list). */}
-          {isAdmin && (
-            <Link
-              href="/app/admin/updates"
-              aria-current={adminActive ? 'page' : undefined}
-              className="group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[13px] transition-all duration-200"
-              style={
-                adminActive
-                  ? {
-                      background: 'var(--app-sidebar-active)',
-                      color: '#ffffff',
-                      boxShadow: '0 12px 26px -10px rgba(255, 102, 0, 0.7)',
-                    }
-                  : { color: 'var(--app-sidebar-muted)' }
-              }
-            >
-              {!adminActive && (
-                <span
-                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                  style={{ background: 'var(--app-sidebar-hover)' }}
-                />
-              )}
-              <BellRing
-                className="relative h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-[var(--app-sidebar-text)]"
-                style={adminActive ? { color: '#ffffff' } : undefined}
-              />
-              <span
-                className="relative flex-1 font-medium transition-colors group-hover:text-[var(--app-sidebar-text)]"
-                style={adminActive ? { color: '#ffffff' } : undefined}
+          {/* Admin-only links (upstream monitor + support desk). Hidden for
+              non-admins (gated by /api/admin/me + each API's own allow-list). */}
+          {isAdmin && [
+            { href: '/app/admin/updates', label: 'Updates', icon: BellRing },
+            { href: '/app/admin/support', label: 'Support', icon: LifeBuoy },
+          ].map(({ href, label, icon: Icon }) => {
+            const active = adminPath === href
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                className="group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[13px] transition-all duration-200"
+                style={
+                  active
+                    ? {
+                        background: 'var(--app-sidebar-active)',
+                        color: '#ffffff',
+                        boxShadow: '0 12px 26px -10px rgba(255, 102, 0, 0.7)',
+                      }
+                    : { color: 'var(--app-sidebar-muted)' }
+                }
               >
-                Updates
-              </span>
-            </Link>
-          )}
+                {!active && (
+                  <span
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    style={{ background: 'var(--app-sidebar-hover)' }}
+                  />
+                )}
+                <Icon
+                  className="relative h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-[var(--app-sidebar-text)]"
+                  style={active ? { color: '#ffffff' } : undefined}
+                />
+                <span
+                  className="relative flex-1 font-medium transition-colors group-hover:text-[var(--app-sidebar-text)]"
+                  style={active ? { color: '#ffffff' } : undefined}
+                >
+                  {label}
+                </span>
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Privacy card */}
