@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
+  BellRing,
   BookOpen,
   Bot,
   Blocks,
@@ -23,6 +24,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { BrainMark } from '@/components/ui/BrainMark'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { resolveActiveIndex, formatBadge } from '@/components/sidebar-nav'
@@ -70,10 +72,23 @@ const userButtonAppearance = {
 
 export function Sidebar() {
   return (
-    <Suspense fallback={<SidebarView activeIndex={null} mobileActiveIndex={null} />}>
+    <Suspense fallback={<SidebarView activeIndex={null} mobileActiveIndex={null} isAdmin={false} adminActive={false} />}>
       <SidebarWithActive />
     </Suspense>
   )
+}
+
+function useIsAdmin(): boolean {
+  const [isAdmin, setIsAdmin] = useState(false)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/admin/me')
+      .then(r => (r.ok ? r.json() : { isAdmin: false }))
+      .then(d => { if (!cancelled) setIsAdmin(Boolean(d?.isAdmin)) })
+      .catch(() => { /* non-admin / not signed in */ })
+    return () => { cancelled = true }
+  }, [])
+  return isAdmin
 }
 
 function SidebarWithActive() {
@@ -82,15 +97,28 @@ function SidebarWithActive() {
   const search = searchParams.toString()
   const activeIndex = resolveActiveIndex(path, search, nav)
   const mobileActiveIndex = resolveActiveIndex(path, search, mobileNav)
-  return <SidebarView activeIndex={activeIndex} mobileActiveIndex={mobileActiveIndex} />
+  const isAdmin = useIsAdmin()
+  const adminActive = path === '/app/admin/updates'
+  return (
+    <SidebarView
+      activeIndex={activeIndex}
+      mobileActiveIndex={mobileActiveIndex}
+      isAdmin={isAdmin}
+      adminActive={adminActive}
+    />
+  )
 }
 
 function SidebarView({
   activeIndex,
   mobileActiveIndex,
+  isAdmin,
+  adminActive,
 }: {
   activeIndex: number | null
   mobileActiveIndex: number | null
+  isAdmin: boolean
+  adminActive: boolean
 }) {
   const badgeText = formatBadge(inboxUnread)
 
@@ -187,6 +215,42 @@ function SidebarView({
               </Link>
             )
           })}
+
+          {/* Admin-only: Updates feed (upstream monitor alerts). Hidden for
+              non-admins (gated by /api/admin/me + the API's own allow-list). */}
+          {isAdmin && (
+            <Link
+              href="/app/admin/updates"
+              aria-current={adminActive ? 'page' : undefined}
+              className="group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[13px] transition-all duration-200"
+              style={
+                adminActive
+                  ? {
+                      background: 'var(--app-sidebar-active)',
+                      color: '#ffffff',
+                      boxShadow: '0 12px 26px -10px rgba(255, 102, 0, 0.7)',
+                    }
+                  : { color: 'var(--app-sidebar-muted)' }
+              }
+            >
+              {!adminActive && (
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                  style={{ background: 'var(--app-sidebar-hover)' }}
+                />
+              )}
+              <BellRing
+                className="relative h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-[var(--app-sidebar-text)]"
+                style={adminActive ? { color: '#ffffff' } : undefined}
+              />
+              <span
+                className="relative flex-1 font-medium transition-colors group-hover:text-[var(--app-sidebar-text)]"
+                style={adminActive ? { color: '#ffffff' } : undefined}
+              >
+                Updates
+              </span>
+            </Link>
+          )}
         </nav>
 
         {/* Privacy card */}
