@@ -490,6 +490,63 @@ const SquadBudgetSchema = new Schema<ISquadBudget>({
   periodStart:      { type: Date, default: Date.now },
 }, { timestamps: true })
 
+// ── UpstreamWatch (one row per watched repo) ────────────────
+// Persists the "last seen" marker for an upstream GitHub repo the admin monitor
+// tracks (default: NousResearch/hermes-agent). The pure `diffUpstream` core
+// compares a fresh fetch against this marker to decide whether to alert. One row
+// per `repo`. No code is ever pulled — this only records what we last saw so the
+// scheduled check is stateful and idempotent.
+export interface IUpstreamWatch extends Document {
+  repo: string                    // "owner/name"
+  releaseTag: string | null       // last-seen latest release tag
+  commitSha: string | null        // last-seen latest default-branch commit
+  lastCheckedAt: Date | null      // when the cron last polled
+  lastChangedAt: Date | null      // when an advance was last detected
+  lastError: string | null        // last fetch error (secret-safe), if any
+  createdAt: Date
+  updatedAt: Date
+}
+
+const UpstreamWatchSchema = new Schema<IUpstreamWatch>({
+  repo:          { type: String, required: true, unique: true, index: true },
+  releaseTag:    { type: String, default: null },
+  commitSha:     { type: String, default: null },
+  lastCheckedAt: { type: Date, default: null },
+  lastChangedAt: { type: Date, default: null },
+  lastError:     { type: String, default: null },
+}, { timestamps: true })
+
+// ── AdminNotification (admin-facing alerts) ─────────────────
+// A simple admin alert feed. The upstream monitor writes a row here when it
+// detects a new release/commit; the admin reads + acknowledges them in the
+// Admin → Updates page. Not tied to a Clerk user (system-generated); visibility
+// is gated by the admin allow-list, not ownership.
+export interface IAdminNotification extends Document {
+  kind: string                    // e.g. 'upstream-update'
+  source: string                  // e.g. the repo "owner/name"
+  title: string                   // one-line summary
+  body: string                    // longer detail (markdown-ish plain text)
+  url: string | null              // deep link (release/commit page)
+  severity: 'info' | 'warning'    // info by default
+  acknowledged: boolean           // admin marked as seen
+  acknowledgedAt: Date | null
+  dedupeKey: string               // unique per logical event (prevents dupes)
+  createdAt: Date
+  updatedAt: Date
+}
+
+const AdminNotificationSchema = new Schema<IAdminNotification>({
+  kind:           { type: String, required: true, index: true },
+  source:         { type: String, default: '' },
+  title:          { type: String, required: true },
+  body:           { type: String, default: '' },
+  url:            { type: String, default: null },
+  severity:       { type: String, enum: ['info', 'warning'], default: 'info' },
+  acknowledged:   { type: Boolean, default: false, index: true },
+  acknowledgedAt: { type: Date, default: null },
+  dedupeKey:      { type: String, required: true, unique: true, index: true },
+}, { timestamps: true })
+
 // ── Model exports (safe re-use in hot-reload) ───────────────
 export const Vault:    Model<IVault>    = mongoose.models.Vault    || mongoose.model('Vault',    VaultSchema)
 export const Source:   Model<ISource>   = mongoose.models.Source   || mongoose.model('Source',   SourceSchema)
@@ -503,3 +560,5 @@ export const Proposal: Model<IProposal> = mongoose.models.Proposal || mongoose.m
 export const AgentRun: Model<IAgentRun> = mongoose.models.AgentRun || mongoose.model('AgentRun', AgentRunSchema)
 export const InstalledSkill: Model<IInstalledSkill> = mongoose.models.InstalledSkill || mongoose.model('InstalledSkill', InstalledSkillSchema)
 export const SquadBudget: Model<ISquadBudget> = mongoose.models.SquadBudget || mongoose.model('SquadBudget', SquadBudgetSchema)
+export const UpstreamWatch: Model<IUpstreamWatch> = mongoose.models.UpstreamWatch || mongoose.model('UpstreamWatch', UpstreamWatchSchema)
+export const AdminNotification: Model<IAdminNotification> = mongoose.models.AdminNotification || mongoose.model('AdminNotification', AdminNotificationSchema)
