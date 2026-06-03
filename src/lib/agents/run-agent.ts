@@ -43,6 +43,7 @@ import { classifyStakes } from '@/lib/agents/aegis/classify'
 import { scanContent } from '@/lib/agents/scanner'
 import { agentLog } from '@/lib/agents/redact'
 import { recordTrustEvents, runOutcomeTrustEvents } from '@/lib/agents/trust-events'
+import { openOrUpdateTicketForRun, resolveTicketsOnSuccess } from '@/lib/support/tickets'
 import { summarizeDryRun, isCleanDryRunCompletion } from '@/lib/agents/dry-run'
 import { runQuery, planIngest, type IngestInput } from '@/lib/vault-ops'
 import { fetchAndCleanUrl } from '@/lib/claude'
@@ -308,7 +309,29 @@ export async function runAgentOnce(agent: IAgent, trigger: RunTrigger): Promise<
     }
     await run.save()
 
-    // 5a. Accumulate token usage across the per-Agent and Squad Budget levels and
+    // 5·support. Auto support workforce (best-effort, never changes run result).
+    //   • A non-clean REAL run opens (or appends to) a support ticket capturing
+    //     the failure, diagnosis, and a remediation plan — documented timeline.
+    //   • A clean REAL run auto-resolves any open tickets for this agent and
+    //     documents the recovery. Dry-runs are excluded (previews, not live work).
+    if (!dryRun) {
+      if (status !== 'completed') {
+        await openOrUpdateTicketForRun({
+          userId,
+          agentId: String(agent._id),
+          agentName: agent.name,
+          runId: String(run._id),
+          runStatus: status,
+          failureReason: run.failureReason ?? output.failureReason ?? null,
+        })
+      } else {
+        await resolveTicketsOnSuccess({
+          agentId: String(agent._id),
+          agentName: agent.name,
+          runId: String(run._id),
+        })
+      }
+    }
     //     enforce the per-Agent cap (Req 10.6, 10.8). BEST-EFFORT: a persistence
     //     error here must NOT change the Run's result. A dry-run consumes tokens
     //     too, so this runs for both dry-runs and real runs.
@@ -441,6 +464,18 @@ export async function runAgentOnce(agent: IAgent, trigger: RunTrigger): Promise<
       await run.save()
     } catch {
       // Swallow secondary persistence errors — the primary failure is reported below.
+    }
+    // Auto support workforce (best-effort): an exception path is a real failure
+    // too — open/append a ticket so it is captured + worked on. Dry-runs excluded.
+    if (!dryRun) {
+      await openOrUpdateTicketForRun({
+        userId,
+        agentId: String(agent._id),
+        agentName: agent.name,
+        runId: String(run._id),
+        runStatus: 'failed',
+        failureReason: run.failureReason,
+      })
     }
     return { status: 'error', run, message: 'Agent run failed' }
   }

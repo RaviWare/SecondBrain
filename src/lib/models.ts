@@ -547,6 +547,82 @@ const AdminNotificationSchema = new Schema<IAdminNotification>({
   dedupeKey:      { type: String, required: true, unique: true, index: true },
 }, { timestamps: true })
 
+// ── SupportTicket (agent self-service support workforce) ────
+// When an Agent run fails, the support system opens a ticket here, a worker
+// diagnoses + (for transient/timeout classes) retries the agent, and every step
+// is appended to `timeline` — a documented audit trail like a workforce ticket.
+// One OPEN ticket per (agentId, category) via `dedupeKey`; repeated identical
+// failures append to the same ticket's timeline rather than spawning new ones.
+export interface ITicketEvent {
+  at: Date
+  /** machine label: 'opened' | 'diagnosed' | 'retry-scheduled' | 'retry-result' | 'escalated' | 'resolved' | 'comment' | 'status-change' */
+  type: string
+  /** human-facing line describing what happened */
+  message: string
+  /** optional structured detail (run id, attempt #, outcome, etc.) */
+  meta?: Record<string, unknown>
+}
+
+export interface ISupportTicket extends Document {
+  userId: string
+  agentId: string
+  agentName: string
+  category: 'budget' | 'timeout' | 'transient' | 'scope' | 'injection' | 'unknown'
+  severity: 'low' | 'medium' | 'high'
+  status: 'open' | 'investigating' | 'in-progress' | 'awaiting-admin' | 'resolved' | 'wont-fix'
+  title: string
+  diagnosis: string
+  recommendedAction: string
+  /** the run that first opened the ticket + the most recent related run */
+  firstRunId: string | null
+  lastRunId: string | null
+  /** how many automated retries the worker has attempted */
+  retryCount: number
+  autoRemediable: boolean
+  /** documented audit trail — every action captured, workforce-style */
+  timeline: ITicketEvent[]
+  resolvedAt: Date | null
+  resolutionNote: string | null
+  dedupeKey: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+const TicketEventSchema = new Schema<ITicketEvent>({
+  at:      { type: Date, default: Date.now },
+  type:    { type: String, required: true },
+  message: { type: String, required: true },
+  meta:    { type: Schema.Types.Mixed, default: undefined },
+}, { _id: false })
+
+const SupportTicketSchema = new Schema<ISupportTicket>({
+  userId:            { type: String, required: true, index: true },
+  agentId:           { type: String, required: true, index: true },
+  agentName:         { type: String, default: 'Agent' },
+  category:          { type: String, enum: ['budget', 'timeout', 'transient', 'scope', 'injection', 'unknown'], required: true },
+  severity:          { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+  status:            { type: String, enum: ['open', 'investigating', 'in-progress', 'awaiting-admin', 'resolved', 'wont-fix'], default: 'open', index: true },
+  title:             { type: String, required: true },
+  diagnosis:         { type: String, default: '' },
+  recommendedAction: { type: String, default: '' },
+  firstRunId:        { type: String, default: null },
+  lastRunId:         { type: String, default: null },
+  retryCount:        { type: Number, default: 0 },
+  autoRemediable:    { type: Boolean, default: false },
+  timeline:          { type: [TicketEventSchema], default: [] },
+  resolvedAt:        { type: Date, default: null },
+  resolutionNote:    { type: String, default: null },
+  dedupeKey:         { type: String, required: true, index: true },
+}, { timestamps: true })
+
+// One ACTIVE ticket per dedupeKey: a partial unique index over only the
+// non-terminal statuses lets a NEW ticket open after an old one is resolved,
+// while preventing duplicate concurrently-open tickets for the same issue.
+SupportTicketSchema.index(
+  { dedupeKey: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ['open', 'investigating', 'in-progress', 'awaiting-admin'] } } },
+)
+
 // ── Model exports (safe re-use in hot-reload) ───────────────
 export const Vault:    Model<IVault>    = mongoose.models.Vault    || mongoose.model('Vault',    VaultSchema)
 export const Source:   Model<ISource>   = mongoose.models.Source   || mongoose.model('Source',   SourceSchema)
@@ -562,3 +638,4 @@ export const InstalledSkill: Model<IInstalledSkill> = mongoose.models.InstalledS
 export const SquadBudget: Model<ISquadBudget> = mongoose.models.SquadBudget || mongoose.model('SquadBudget', SquadBudgetSchema)
 export const UpstreamWatch: Model<IUpstreamWatch> = mongoose.models.UpstreamWatch || mongoose.model('UpstreamWatch', UpstreamWatchSchema)
 export const AdminNotification: Model<IAdminNotification> = mongoose.models.AdminNotification || mongoose.model('AdminNotification', AdminNotificationSchema)
+export const SupportTicket: Model<ISupportTicket> = mongoose.models.SupportTicket || mongoose.model('SupportTicket', SupportTicketSchema)
