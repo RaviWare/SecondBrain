@@ -40,6 +40,8 @@ import type {
   RunOutput,
 } from '@/lib/agents/runner/types'
 import { classifyStakes } from '@/lib/agents/aegis/classify'
+import { applyProposal } from '@/lib/agents/aegis/apply-proposal'
+import { isAutoApplyEligible } from '@/lib/support/autofix'
 import { scanContent } from '@/lib/agents/scanner'
 import { agentLog } from '@/lib/agents/redact'
 import { recordTrustEvents, runOutcomeTrustEvents } from '@/lib/agents/trust-events'
@@ -288,7 +290,32 @@ export async function runAgentOnce(agent: IAgent, trigger: RunTrigger): Promise<
       proposalIds.push(proposal._id)
     }
 
-    // 5. Finalize the run record.
+    // 4·auto-fix. Opt-in auto-apply of LOW-REVERSIBLE proposals (Tier: skip the
+    //   Aegis queue). ONLY when the agent enabled `autoFix.autoApplyLowStakes`,
+    //   and ONLY for proposals the PURE stakes classifier already marked
+    //   `low-reversible` (reversible + low stakes, with an undo window).
+    //   `sign-off-required` proposals are NEVER touched here. The write still
+    //   goes through the single `applyProposal` choke point (undo + trust +
+    //   atomicity preserved). Real runs only; never on a dry-run. Best-effort —
+    //   a failure here never changes the run result (the proposal just stays
+    //   pending for the user to review).
+    if (!dryRun && agent.autoFix?.enabled === true && agent.autoFix?.autoApplyLowStakes === true) {
+      const cfg = { enabled: true, autoApplyLowStakes: true }
+      for (let i = 0; i < proposalIds.length; i++) {
+        const pid = String(proposalIds[i])
+        const stakes = classifyStakes(output.proposals[i] as DraftProposal, {
+          trustScore: agent.trustScore,
+          signOffPolicy: agent.signOffPolicy,
+        })
+        if (!isAutoApplyEligible({ cfg, proposalStatus: 'pending', stakes })) continue
+        try {
+          await applyProposal(pid, { userId })
+        } catch (autoErr) {
+          // Never break the run — the proposal remains pending for manual review.
+          agentLog.error('[agents/run] auto-apply of low-stakes proposal failed', autoErr)
+        }
+      }
+    }
     const status = output.outcome === 'completed' ? 'completed' : output.outcome
     run.status = status
     run.tokensUsed = output.tokensUsed
