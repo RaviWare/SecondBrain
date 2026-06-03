@@ -177,7 +177,7 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <p className="font-semibold" style={{ color: 'var(--dash-accent)' }}>Pro Plan · Active</p>
-                      <p className="mono text-[10px] text-[var(--dash-subtle)] tracking-wider mt-0.5">UNLIMITED INGESTS · UNLIMITED QUERIES · HERMES AGENTS</p>
+                      <p className="mono text-[10px] text-[var(--dash-subtle)] tracking-wider mt-0.5">UNLIMITED INGESTS · UNLIMITED QUERIES · AI AGENTS</p>
                     </div>
                     <button className="ml-auto mono text-[9px] tracking-widest px-3 py-2 rounded-lg" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-muted)' }}>
                       MANAGE BILLING
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                       </div>
                       <p className="text-3xl font-bold text-[var(--dash-text)] mb-4">$18<span className="text-sm font-normal text-[var(--dash-subtle)]">/mo</span></p>
                       <ul className="space-y-2 mb-5">
-                        {['Unlimited ingests', 'Unlimited queries', '3 vaults', 'Hermes agents', 'Priority support'].map(f => (
+                        {['Unlimited ingests', 'Unlimited queries', '3 vaults', 'AI agents', 'Priority support'].map(f => (
                           <li key={f} className="flex items-center gap-2 text-xs text-[var(--dash-text)]"><Check className="w-3 h-3 shrink-0" style={{ color: 'var(--dash-accent)' }} /> {f}</li>
                         ))}
                       </ul>
@@ -481,12 +481,12 @@ function DangerZoneSection() {
 }
 
 /* ═══════════════════════════════════════════════════════ */
-/* Agent Access — Hermes / OpenClaw / MCP bearer tokens     */
+/* Agent Access — OpenClaw / MCP bearer tokens              */
 function AgentAccessSection() {
   const [tokens, setTokens] = useState<AgentTokenMeta[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [name, setName] = useState('Hermes agent')
+  const [name, setName] = useState('Agent token')
   const [writeScope, setWriteScope] = useState(false)
   const [freshToken, setFreshToken] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -515,7 +515,7 @@ function AgentAccessSection() {
     try {
       const r = await fetch('/api/agent/tokens', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || 'Hermes agent', scopes: writeScope ? ['read', 'write'] : ['read'] }),
+        body: JSON.stringify({ name: name.trim() || 'Agent token', scopes: writeScope ? ['read', 'write'] : ['read'] }),
       })
       const d = await r.json()
       if (!r.ok) { setError(d.error || 'Failed to create token'); return }
@@ -533,9 +533,9 @@ function AgentAccessSection() {
   }
 
   return (
-    <Section id="agents" icon={<Bot className="w-3.5 h-3.5" />} label="AGENT ACCESS · HERMES / MCP">
+    <Section id="agents" icon={<Bot className="w-3.5 h-3.5" />} label="AGENT ACCESS · MCP">
       <p className="text-xs text-[var(--dash-muted)] mb-4 leading-relaxed">
-        Connect an autonomous agent (Hermes, OpenClaw, or any MCP client) to this vault. It can query
+        Connect an autonomous agent (OpenClaw or any MCP client) to this vault. It can query
         with synthesis + gap analysis, search, and optionally ingest. Tokens are shown once — store them securely.
       </p>
 
@@ -549,7 +549,7 @@ function AgentAccessSection() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end mb-4">
         <div className="flex-1">
           <p className="mono text-[9px] text-[var(--dash-subtle)] tracking-widest mb-1.5">TOKEN NAME</p>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Hermes agent"
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Agent token"
             className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
             style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-text)' }} />
         </div>

@@ -104,7 +104,7 @@ export default function AgentPage() {
         {/* Header */}
         <header className="dash-rise">
           <span className="dash-inset inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--dash-accent)]">
-            <Sparkles className="h-3 w-3" /> Hermes · your agent
+            <Sparkles className="h-3 w-3" /> Personal AI agent
           </span>
           <h1 className="mt-2.5 flex items-center gap-2 text-xl font-semibold tracking-tight text-[var(--dash-text-strong)] 2xl:text-2xl">
             <Bot className="h-6 w-6 text-[var(--dash-accent)]" />
