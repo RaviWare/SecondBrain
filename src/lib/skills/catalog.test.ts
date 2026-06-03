@@ -7,6 +7,10 @@ describe('skill catalog', () => {
     expect(SKILLS.length).toBeGreaterThanOrEqual(5)
   })
 
+  it('ships a large library (100+ skills) for the Skills Library', () => {
+    expect(SKILLS.length).toBeGreaterThanOrEqual(100)
+  })
+
   // REGRESSION (prod bug, 2025): three first-party skills shipped with
   // `writesToVault: true` but `touches: ['vault-read']` and no `ingest` tool, so
   // the Security_Scan flagged a capability-mismatch and BLOCKED their install in
