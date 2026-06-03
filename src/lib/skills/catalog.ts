@@ -7,7 +7,24 @@
 // Phase 1: definitions only. The runner (Phase 2) reads `promptTemplate` +
 // `tools` to actually execute a skill against Claude + the user's vault.
 
-export type SkillCategory = 'research' | 'sales' | 'productivity' | 'ops' | 'content'
+import { SKILL_LIBRARY_SPECS } from './catalog-library'
+
+export type SkillCategory =
+  | 'research'
+  | 'sales'
+  | 'productivity'
+  | 'ops'
+  | 'content'
+  | 'knowledge'
+  | 'planning'
+  | 'communication'
+  | 'finance'
+  | 'engineering'
+  | 'marketing'
+  | 'people'
+  | 'legal'
+  | 'personal'
+  | 'learning'
 
 /** Tools a skill is allowed to use against the vault (maps to /api/agent/*). */
 export type SkillTool = 'search' | 'query' | 'ingest'
@@ -79,7 +96,7 @@ export interface SkillDef {
  */
 const CURATED_SCANNED_AT = '2024-01-01T00:00:00.000Z'
 
-export const SKILLS: SkillDef[] = [
+const CORE_SKILLS: SkillDef[] = [
   {
     id: 'research-analyst',
     name: 'Research Analyst',
@@ -203,12 +220,110 @@ export const SKILLS: SkillDef[] = [
   },
 ]
 
+// ── Generated catalog (100+ skills) ───────────────────────────────────────────
+// Each entry is a compact spec; `buildSkill` derives the full SkillDef from it.
+// CRITICAL: `touches` and `writesToVault` are DERIVED FROM `tools`, never declared
+// by hand — read-only tools (search/query) ⇒ ['vault-read']; an `ingest` tool ⇒
+// adds 'vault-write'. Prompt templates come from a vetted builder that avoids
+// every injection/network/exfiltration/credential pattern the Security_Scan flags.
+// This makes a capability-mismatch (the prod bug) structurally impossible: every
+// generated skill passes its own scan by construction (guarded by catalog.test).
+
+export type SkillSpec = {
+  id: string
+  name: string
+  category: SkillCategory
+  icon: string
+  accent: string
+  /** true ⇒ skill writes back via the `ingest` tool (adds vault-write radius) */
+  writes?: boolean
+  tagline: string
+  /** what the skill does, plain prose (NO urls / "web" / "send external" / secrets) */
+  does: string
+  objectiveLabel: string
+  objectivePlaceholder: string
+  schedules?: SkillSchedule[]
+  exampleOutcomes: [string, string, string]
+}
+
+const ACCENTS: Record<SkillCategory, string> = {
+  research: '#38bdf8',
+  sales: '#ff7a1f',
+  productivity: '#34d399',
+  ops: '#a78bfa',
+  content: '#fb923c',
+  knowledge: '#22d3ee',
+  planning: '#60a5fa',
+  communication: '#f472b6',
+  finance: '#4ade80',
+  engineering: '#818cf8',
+  marketing: '#fb7185',
+  people: '#c084fc',
+  legal: '#94a3b8',
+  personal: '#facc15',
+  learning: '#2dd4bf',
+}
+
+/**
+ * Build a full SkillDef from a compact spec. Read-only by default (search+query);
+ * when `writes` is set the skill gains the `ingest` tool and a vault-write radius.
+ * The prompt template is assembled from safe, scanner-clean fragments and always
+ * contains the required `{{objective}}` placeholder.
+ */
+function buildSkill(spec: SkillSpec): SkillDef {
+  const writes = spec.writes === true
+  const tools: SkillTool[] = writes ? ['search', 'query', 'ingest'] : ['search', 'query']
+  const touches: SkillTouches[] = writes ? ['vault-read', 'vault-write'] : ['vault-read']
+  const closing = writes
+    ? 'Propose any new captures for the user to approve; never alter the vault directly. End with a short confidence note and what context may be missing.'
+    : 'Return your findings for the user to review; do not change the vault. End with a short confidence note and what context may be missing.'
+  const promptTemplate =
+    `You are ${spec.name}, working only from the user's private knowledge vault. ` +
+    `Objective: "{{objective}}". Pull the most relevant pages from the vault, ${spec.does}. ` +
+    `Ground every claim in vault pages and cite them with [[slug]]. Do not invent facts the vault cannot support. ` +
+    closing
+  return {
+    id: spec.id,
+    name: spec.name,
+    tagline: spec.tagline,
+    description: spec.does.charAt(0).toUpperCase() + spec.does.slice(1) + '.',
+    category: spec.category,
+    icon: spec.icon,
+    accent: spec.accent || ACCENTS[spec.category],
+    objectiveLabel: spec.objectiveLabel,
+    objectivePlaceholder: spec.objectivePlaceholder,
+    tools,
+    schedules: spec.schedules ?? ['manual'],
+    writesToVault: writes,
+    promptTemplate,
+    exampleOutcomes: spec.exampleOutcomes,
+    version: '1.0.0',
+    touches,
+    scanned: { status: 'passed', lastScannedAt: CURATED_SCANNED_AT },
+  }
+}
+
+const SKILL_SPECS: SkillSpec[] = SKILL_LIBRARY_SPECS
+
+/** Full catalog: the 5 hand-tuned core skills + the generated library. */
+export const SKILLS: SkillDef[] = [...CORE_SKILLS, ...SKILL_SPECS.map(buildSkill)]
+
 export const SKILL_CATEGORIES: { id: SkillCategory; label: string }[] = [
   { id: 'research', label: 'Research' },
   { id: 'sales', label: 'Sales' },
   { id: 'productivity', label: 'Productivity' },
   { id: 'ops', label: 'Operations' },
   { id: 'content', label: 'Content' },
+  { id: 'knowledge', label: 'Knowledge' },
+  { id: 'planning', label: 'Planning' },
+  { id: 'communication', label: 'Communication' },
+  { id: 'finance', label: 'Finance' },
+  { id: 'engineering', label: 'Engineering' },
+  { id: 'marketing', label: 'Marketing' },
+  { id: 'people', label: 'People' },
+  { id: 'legal', label: 'Legal' },
+  { id: 'personal', label: 'Personal' },
+  { id: 'learning', label: 'Learning' },
 ]
 
 export function getSkill(id: string): SkillDef | undefined {
