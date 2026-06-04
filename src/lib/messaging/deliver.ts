@@ -10,6 +10,9 @@ import { connectDB } from '@/lib/mongodb'
 import { MessagingLink } from '@/lib/models'
 import { agentLog } from '@/lib/agents/redact'
 import { sendTelegramMessage } from './telegram'
+import { sendDiscordDM } from './discord'
+import { sendWhatsAppMessage } from './whatsapp'
+import { sendEmail } from './email'
 
 export type AlertKind = 'proposals' | 'runs' | 'support'
 
@@ -37,12 +40,51 @@ export async function deliverToUser(userId: string, kind: AlertKind, text: strin
       if (link.channel === 'telegram') {
         const res = await sendTelegramMessage(link.chatId, text)
         if (res.ok) delivered += 1
+      } else if (link.channel === 'discord') {
+        const res = await sendDiscordDM(link.chatId, text)
+        if (res.ok) delivered += 1
+      } else if (link.channel === 'whatsapp') {
+        const res = await sendWhatsAppMessage(link.chatId, stripHtml(text))
+        if (res.ok) delivered += 1
+      } else if (link.channel === 'email') {
+        const res = await sendEmail(link.chatId, emailSubject(kind), htmlBody(text))
+        if (res.ok) delivered += 1
       }
-      // Future channels (whatsapp, …) branch here behind their own client.
+      // Future channels branch here behind their own client.
     }
     return delivered
   } catch (err) {
     agentLog.error('[messaging/deliver] delivery failed', err)
     return 0
   }
+}
+
+/** Strip the tiny HTML subset from an alert for plain-text channels (WhatsApp). */
+function stripHtml(text: string): string {
+  return text
+    .replace(/<a[^>]*>(.*?)<\/a>/gi, '$1')
+    .replace(/<\/?[^>]+>/g, '')
+    .trim()
+}
+
+/** Subject line per alert class for the email channel. */
+function emailSubject(kind: AlertKind): string {
+  switch (kind) {
+    case 'proposals': return 'Your SecondBrain squad needs a decision'
+    case 'support': return 'A SecondBrain agent needs your attention'
+    case 'runs': return 'SecondBrain agent run update'
+  }
+}
+
+/** Wrap an alert body in a minimal, safe HTML email shell. */
+function htmlBody(text: string): string {
+  // The alert text already uses <b>/<a>; wrap it in a simple branded shell.
+  return [
+    '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1c1c1f">',
+    '<p style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#ff6600;margin:0 0 12px">SecondBrain</p>',
+    `<div style="font-size:15px;line-height:1.6">${text}</div>`,
+    '<hr style="border:none;border-top:1px solid #eee;margin:20px 0" />',
+    '<p style="font-size:12px;color:#888;margin:0">Manage alerts in your SecondBrain dashboard → Integrations.</p>',
+    '</div>',
+  ].join('')
 }

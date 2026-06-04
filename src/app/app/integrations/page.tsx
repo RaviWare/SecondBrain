@@ -277,31 +277,65 @@ export default function IntegrationsPage() {
 
 // ── Chat channels: Telegram (live when configured) + WhatsApp (roadmap) ────────
 
-type TgStatus = {
+type ChannelStatus = {
   configured: boolean
   status: 'unconfigured' | 'none' | 'pending' | 'linked'
   handle?: string | null
   code?: string | null
   deepLink?: string | null
-  botUsername?: string | null
   notify?: { proposals: boolean; runs: boolean; support: boolean }
-  linkedAt?: string | null
 }
 
+type ChannelKey = 'telegram' | 'whatsapp' | 'discord' | 'email'
+
+const CHANNELS: Array<{
+  key: ChannelKey
+  name: string
+  blurb: string
+  /** how the user proves ownership */
+  mode: 'deeplink' | 'code-to-number' | 'slash-command' | 'email-code'
+}> = [
+  { key: 'telegram', name: 'Telegram', blurb: 'Tap to open the bot, press Start — done.', mode: 'deeplink' },
+  { key: 'whatsapp', name: 'WhatsApp', blurb: 'Message our number with your code to link.', mode: 'code-to-number' },
+  { key: 'discord', name: 'Discord', blurb: 'Run /link with your code in a DM to the bot.', mode: 'slash-command' },
+  { key: 'email', name: 'Email', blurb: 'Get a code by email, paste it back to confirm.', mode: 'email-code' },
+]
+
 function MessagingSection() {
-  const [tg, setTg] = useState<TgStatus | null>(null)
+  return (
+    <section className="dash-panel dash-grain dash-interactive dash-rise p-5" style={{ animationDelay: '0.02s' }}>
+      <div className="mb-3 flex items-center gap-2">
+        <MessageCircle className="h-4 w-4 text-[var(--dash-accent)]" />
+        <h2 className="text-sm font-semibold text-[var(--dash-text-strong)]">Chat with your squad</h2>
+      </div>
+      <p className="mb-4 text-xs leading-relaxed text-[var(--dash-muted)]">
+        Get pinged the moment your squad needs a decision — on whichever channel you live in. Connect one or several.
+      </p>
+      <div className="space-y-3">
+        {CHANNELS.map((c) => (
+          <ChannelCard key={c.key} channel={c} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ChannelCard({ channel }: { channel: (typeof CHANNELS)[number] }) {
+  const api = `/api/messaging/${channel.key}`
+  const [st, setSt] = useState<ChannelStatus | null>(null)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailCode, setEmailCode] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch('/api/messaging/telegram', { cache: 'no-store' })
-      const d = await r.json()
-      setTg(d)
+      const r = await fetch(api, { cache: 'no-store' })
+      setSt(await r.json())
     } catch {
-      setTg({ configured: false, status: 'unconfigured' })
+      setSt({ configured: false, status: 'unconfigured' })
     }
-  }, [])
+  }, [api])
 
   useEffect(() => {
     let cancelled = false
@@ -309,19 +343,30 @@ function MessagingSection() {
     return () => { cancelled = true }
   }, [load])
 
-  // While pending, poll for the webhook to flip us to "linked".
+  // Poll while pending for webhook-based channels (not email — it's code-confirm).
   useEffect(() => {
-    if (tg?.status !== 'pending') return
+    if (st?.status !== 'pending' || channel.mode === 'email-code') return
     const id = setInterval(load, 4000)
     return () => clearInterval(id)
-  }, [tg?.status, load])
+  }, [st?.status, channel.mode, load])
 
   async function connect() {
     setBusy(true)
     try {
-      const r = await fetch('/api/messaging/telegram', { method: 'POST' })
+      const body = channel.mode === 'email-code' ? JSON.stringify({ address: email.trim() }) : undefined
+      const r = await fetch(api, { method: 'POST', headers: body ? { 'Content-Type': 'application/json' } : undefined, body })
       const d = await r.json()
-      if (r.ok) setTg((prev) => ({ ...(prev ?? { configured: true }), ...d }))
+      if (r.ok) setSt((prev) => ({ ...(prev ?? { configured: true }), ...d }))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function confirmEmail() {
+    setBusy(true)
+    try {
+      const r = await fetch(api, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: emailCode.trim() }) })
+      if (r.ok) { setEmailCode(''); await load() }
     } finally {
       setBusy(false)
     }
@@ -329,149 +374,161 @@ function MessagingSection() {
 
   async function disconnect() {
     setBusy(true)
-    try {
-      await fetch('/api/messaging/telegram', { method: 'DELETE' })
-      await load()
-    } finally {
-      setBusy(false)
-    }
+    try { await fetch(api, { method: 'DELETE' }); await load() } finally { setBusy(false) }
   }
 
   async function setNotify(next: { proposals: boolean; runs: boolean; support: boolean }) {
-    setTg((prev) => (prev ? { ...prev, notify: next } : prev))
-    await fetch('/api/messaging/telegram', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notify: next }),
-    })
+    setSt((prev) => (prev ? { ...prev, notify: next } : prev))
+    await fetch(api, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notify: next }) })
   }
 
-  const notify = tg?.notify ?? { proposals: true, runs: false, support: true }
+  const notify = st?.notify ?? { proposals: true, runs: false, support: true }
+  const unconfigured = st?.configured === false
 
   return (
-    <section className="dash-panel dash-grain dash-interactive dash-rise p-5" style={{ animationDelay: '0.02s' }}>
-      <div className="mb-3 flex items-center gap-2">
-        <MessageCircle className="h-4 w-4 text-[var(--dash-accent)]" />
-        <h2 className="text-sm font-semibold text-[var(--dash-text-strong)]">Chat with your squad</h2>
-        {tg?.status === 'linked' && (
-          <span className="ml-auto inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ color: '#34d399', borderColor: 'rgba(52,211,153,0.30)', background: 'rgba(52,211,153,0.10)' }}>
-            <Check className="h-3 w-3" /> Connected
-          </span>
-        )}
-      </div>
-      <p className="mb-4 text-xs leading-relaxed text-[var(--dash-muted)]">
-        Get pinged on Telegram when your squad needs a decision, and talk to it from anywhere — just like having your
-        team in your pocket.
-      </p>
-
-      {/* Telegram row */}
-      <div className="rounded-xl p-4" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
-        <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ color: 'var(--dash-accent)', borderColor: 'var(--dash-border-glow)', background: 'var(--dash-accent-soft)' }}>
-            <Send className="h-4 w-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">Telegram</p>
-            <p className="text-[11px] text-[var(--dash-subtle)]">
-              {tg?.status === 'linked'
-                ? `Connected${tg.handle ? ` as ${tg.handle}` : ''}`
-                : tg?.configured === false
-                  ? 'Not available on this server yet'
-                  : 'Connect your Telegram in two taps'}
-            </p>
-          </div>
-          {tg?.status === 'linked' ? (
-            <button onClick={disconnect} disabled={busy} className="inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium text-[var(--dash-text)] transition hover:border-[var(--dash-border-glow)] disabled:opacity-50" style={{ borderColor: 'var(--dash-border)' }}>
-              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Disconnect
-            </button>
-          ) : tg?.configured === false ? (
-            <span className="mono rounded-full px-2 py-0.5 text-[9px] tracking-widest text-[var(--dash-subtle)]" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
-              COMING SOON
-            </span>
-          ) : (
-            <button onClick={connect} disabled={busy} className="dash-accent-grad inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold text-white disabled:opacity-50">
-              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-              {tg?.status === 'pending' ? 'Restart' : 'Connect'}
-            </button>
-          )}
-        </div>
-
-        {/* Pending: show the deep link / code */}
-        {tg?.status === 'pending' && (
-          <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
-            <p className="mb-2 text-[11px] text-[var(--dash-muted)]">
-              {tg.deepLink ? (
-                <>Tap the button to open Telegram, then press <strong>Start</strong> — that links this account.</>
-              ) : (
-                <>Open the bot in Telegram and send it this code:</>
-              )}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              {tg.deepLink && (
-                <a href={tg.deepLink} target="_blank" rel="noopener noreferrer" className="dash-accent-grad inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold text-white">
-                  <Send className="h-3.5 w-3.5" /> Open Telegram
-                </a>
-              )}
-              {tg.code && (
-                <button
-                  onClick={() => { navigator.clipboard?.writeText(tg.code!); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium text-[var(--dash-text)]"
-                  style={{ borderColor: 'var(--dash-border)', background: 'var(--dash-card-solid)' }}
-                >
-                  {copied ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--dash-accent)' }} /> : <Copy className="h-3.5 w-3.5" />}
-                  <code className="mono">{tg.code}</code>
-                </button>
-              )}
-              <span className="inline-flex items-center gap-1 text-[11px] text-[var(--dash-subtle)]">
-                <RefreshCw className="h-3 w-3 animate-spin" /> waiting…
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Linked: notification preferences */}
-        {tg?.status === 'linked' && (
-          <div className="mt-3 space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
-            <p className="mono mb-1 text-[9px] tracking-widest text-[var(--dash-subtle)]">NOTIFY ME ABOUT</p>
-            {([
-              ['proposals', 'Proposals awaiting my sign-off'],
-              ['support', 'Support tickets & escalations'],
-              ['runs', 'Run completions & failures'],
-            ] as const).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setNotify({ ...notify, [key]: !notify[key] })}
-                className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 transition"
-                style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}
-              >
-                <span className="text-[12px] text-[var(--dash-text)]">{label}</span>
-                <span className="relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition" style={{ background: notify[key] ? 'var(--dash-accent)' : 'var(--dash-border)' }}>
-                  <span className="inline-block h-3 w-3 rounded-full bg-white transition" style={{ transform: notify[key] ? 'translateX(calc(100% + 2px))' : 'translateX(2px)' }} />
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* WhatsApp — honest about the Business API requirement */}
-      <div className="mt-3 flex items-start gap-3 rounded-xl p-4" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ color: 'var(--dash-muted)', borderColor: 'var(--dash-border)', background: 'var(--dash-soft)' }}>
-          <MessageCircle className="h-4 w-4" />
+    <div className="rounded-xl p-4" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
+      <div className="flex items-center gap-3">
+        <span
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border"
+          style={st?.status === 'linked'
+            ? { color: 'var(--dash-accent)', borderColor: 'var(--dash-border-glow)', background: 'var(--dash-accent-soft)' }
+            : { color: 'var(--dash-muted)', borderColor: 'var(--dash-border)', background: 'var(--dash-soft)' }}
+        >
+          {channel.key === 'email' ? <MessageCircle className="h-4 w-4" /> : <Send className="h-4 w-4" />}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">WhatsApp</p>
-            <span className="mono shrink-0 rounded-full px-2 py-0.5 text-[9px] tracking-widest text-[var(--dash-subtle)]" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
-              COMING SOON
-            </span>
-          </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-[var(--dash-muted)]">
-            WhatsApp requires the WhatsApp Business API (Meta verification or a provider like Twilio). It plugs into the
-            same alerts as Telegram — we&apos;ll enable it here once the business number is approved.
+          <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">{channel.name}</p>
+          <p className="text-[11px] text-[var(--dash-subtle)]">
+            {st?.status === 'linked'
+              ? `Connected${st.handle ? ` · ${st.handle}` : ''}`
+              : unconfigured
+                ? 'Coming soon on this server'
+                : channel.blurb}
           </p>
         </div>
+        {st?.status === 'linked' ? (
+          <button onClick={disconnect} disabled={busy} className="inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium text-[var(--dash-text)] transition hover:border-[var(--dash-border-glow)] disabled:opacity-50" style={{ borderColor: 'var(--dash-border)' }}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Disconnect
+          </button>
+        ) : unconfigured ? (
+          <span className="mono rounded-full px-2 py-0.5 text-[9px] tracking-widest text-[var(--dash-subtle)]" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
+            COMING SOON
+          </span>
+        ) : channel.mode === 'email-code' && st?.status !== 'pending' ? null : (
+          <button onClick={connect} disabled={busy} className="dash-accent-grad inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold text-white disabled:opacity-50">
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            {st?.status === 'pending' ? 'Restart' : 'Connect'}
+          </button>
+        )}
       </div>
-    </section>
+
+      {/* Email connect: address input (only when not yet pending/linked) */}
+      {!unconfigured && channel.mode === 'email-code' && st?.status !== 'linked' && st?.status !== 'pending' && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--dash-border-glow)]"
+            style={{ background: 'var(--bg-elev-3, #1c1c1f)', border: '1px solid var(--dash-border)', color: 'var(--dash-text)' }}
+          />
+          <button onClick={connect} disabled={busy || !email.trim()} className="dash-accent-grad inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold text-white disabled:opacity-50">
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />} Send code
+          </button>
+        </div>
+      )}
+
+      {/* Pending state per mode */}
+      {st?.status === 'pending' && (
+        <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+          {channel.mode === 'deeplink' && (
+            <div className="flex flex-wrap items-center gap-2">
+              {st.deepLink && (
+                <a href={st.deepLink} target="_blank" rel="noopener noreferrer" className="dash-accent-grad inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold text-white">
+                  <Send className="h-3.5 w-3.5" /> Open {channel.name}
+                </a>
+              )}
+              {st.code && <CodeChip code={st.code} copied={copied} onCopy={() => { navigator.clipboard?.writeText(st.code!); setCopied(true); setTimeout(() => setCopied(false), 1500) }} />}
+              <Waiting />
+            </div>
+          )}
+          {(channel.mode === 'code-to-number' || channel.mode === 'slash-command') && (
+            <div className="space-y-2">
+              <p className="text-[11px] text-[var(--dash-muted)]">
+                {channel.mode === 'code-to-number'
+                  ? 'Send this code to our WhatsApp number to link:'
+                  : 'In a DM with the bot, run '}
+                {channel.mode === 'slash-command' && <code className="mono">/link {st.code}</code>}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {st.code && <CodeChip code={st.code} copied={copied} onCopy={() => { navigator.clipboard?.writeText(st.code!); setCopied(true); setTimeout(() => setCopied(false), 1500) }} />}
+                <Waiting />
+              </div>
+            </div>
+          )}
+          {channel.mode === 'email-code' && (
+            <div className="space-y-2">
+              <p className="text-[11px] text-[var(--dash-muted)]">We emailed a code{st.handle ? ` to ${st.handle}` : ''}. Paste it here to confirm:</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={emailCode}
+                  onChange={(e) => setEmailCode(e.target.value)}
+                  placeholder="sb-xxxxxx"
+                  className="rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--dash-border-glow)]"
+                  style={{ background: 'var(--bg-elev-3, #1c1c1f)', border: '1px solid var(--dash-border)', color: 'var(--dash-text)' }}
+                />
+                <button onClick={confirmEmail} disabled={busy || !emailCode.trim()} className="dash-accent-grad inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold text-white disabled:opacity-50">
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Confirm
+                </button>
+                <button onClick={disconnect} className="text-[11px] text-[var(--dash-subtle)] underline-offset-2 hover:underline">cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Linked: notification preferences */}
+      {st?.status === 'linked' && (
+        <div className="mt-3 space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+          <p className="mono mb-1 text-[9px] tracking-widest text-[var(--dash-subtle)]">NOTIFY ME ABOUT</p>
+          {([
+            ['proposals', 'Proposals awaiting my sign-off'],
+            ['support', 'Support tickets & escalations'],
+            ['runs', 'Run completions & failures'],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setNotify({ ...notify, [key]: !notify[key] })}
+              className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 transition"
+              style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}
+            >
+              <span className="text-[12px] text-[var(--dash-text)]">{label}</span>
+              <span className="relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition" style={{ background: notify[key] ? 'var(--dash-accent)' : 'var(--dash-border)' }}>
+                <span className="inline-block h-3 w-3 rounded-full bg-white transition" style={{ transform: notify[key] ? 'translateX(calc(100% + 2px))' : 'translateX(2px)' }} />
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
+
+function CodeChip({ code, copied, onCopy }: { code: string; copied: boolean; onCopy: () => void }) {
+  return (
+    <button onClick={onCopy} className="inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium text-[var(--dash-text)]" style={{ borderColor: 'var(--dash-border)', background: 'var(--dash-card-solid)' }}>
+      {copied ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--dash-accent)' }} /> : <Copy className="h-3.5 w-3.5" />}
+      <code className="mono">{code}</code>
+    </button>
+  )
+}
+
+function Waiting() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] text-[var(--dash-subtle)]">
+      <RefreshCw className="h-3 w-3 animate-spin" /> waiting…
+    </span>
+  )
+}
+

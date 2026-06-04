@@ -654,8 +654,8 @@ SupportTicketSchema.index(
 // handle — never message content. One active link per (userId, channel).
 export interface IMessagingLink extends Document {
   userId: string
-  channel: 'telegram' | 'whatsapp'
-  /** channel-native conversation id (e.g. Telegram chat id) — null until linked */
+  channel: 'telegram' | 'whatsapp' | 'email' | 'discord'
+  /** channel-native conversation id (Telegram/Discord chat id, WhatsApp phone, email address) — null until linked */
   chatId: string | null
   /** display handle/username for the UI (e.g. @raviteja) — never required */
   handle: string | null
@@ -677,7 +677,7 @@ export interface IMessagingLink extends Document {
 
 const MessagingLinkSchema = new Schema<IMessagingLink>({
   userId:            { type: String, required: true, index: true },
-  channel:           { type: String, enum: ['telegram', 'whatsapp'], required: true },
+  channel:           { type: String, enum: ['telegram', 'whatsapp', 'email', 'discord'], required: true },
   chatId:            { type: String, default: null, index: true },
   handle:            { type: String, default: null },
   status:            { type: String, enum: ['pending', 'linked', 'revoked'], default: 'pending', index: true },
