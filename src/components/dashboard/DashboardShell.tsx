@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Bell, Command, Search } from 'lucide-react'
 import { AskKnowledgeCard, TopActions } from '@/components/dashboard/AskKnowledgeCard'
+import { CreditsPill } from '@/components/dashboard/CreditsPill'
 import { KnowledgeGraph } from '@/components/dashboard/KnowledgeGraph'
 import { MemoryOverview } from '@/components/dashboard/MemoryOverview'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
@@ -115,6 +116,8 @@ function DashboardHeader() {
             <Command className="h-3 w-3" />K
           </kbd>
         </form>
+
+        <CreditsPill />
 
         <Link
           href="/app/log"

@@ -46,6 +46,7 @@ import { scanContent } from '@/lib/agents/scanner'
 import { agentLog } from '@/lib/agents/redact'
 import { recordTrustEvents, runOutcomeTrustEvents } from '@/lib/agents/trust-events'
 import { openOrUpdateTicketForRun, resolveTicketsOnSuccess } from '@/lib/support/tickets'
+import { deliverToUser } from '@/lib/messaging/deliver'
 import { summarizeDryRun, isCleanDryRunCompletion } from '@/lib/agents/dry-run'
 import { runQuery, planIngest, type IngestInput } from '@/lib/vault-ops'
 import { fetchAndCleanUrl } from '@/lib/claude'
@@ -357,6 +358,18 @@ export async function runAgentOnce(agent: IAgent, trigger: RunTrigger): Promise<
           agentName: agent.name,
           runId: String(run._id),
         })
+      }
+
+      // Best-effort: nudge the owner on their linked chat channels when this run
+      // left proposals awaiting their sign-off (Telegram, etc.). Never affects
+      // the run result; delivery respects each channel's notify prefs.
+      const pendingCount = proposalIds.length
+      if (pendingCount > 0) {
+        await deliverToUser(
+          userId,
+          'proposals',
+          `📥 <b>${agent.name}</b> has ${pendingCount} proposal${pendingCount === 1 ? '' : 's'} awaiting your sign-off.`,
+        ).catch(() => { /* best-effort */ })
       }
     }
     //     enforce the per-Agent cap (Req 10.6, 10.8). BEST-EFFORT: a persistence
