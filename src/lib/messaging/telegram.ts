@@ -67,11 +67,24 @@ export async function sendTelegramMessage(
 }
 
 /**
- * Register the webhook URL with Telegram so inbound messages are delivered to our
- * route. Called once during setup (admin action). The `secret` is echoed back by
- * Telegram in the `X-Telegram-Bot-Api-Secret-Token` header so the webhook can
- * reject forged calls.
+ * Read the current webhook registration from Telegram (getWebhookInfo). Returns
+ * the configured url + pending update count, or an error. Never throws.
  */
+export async function getTelegramWebhookInfo(
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ ok: true; url: string; pending: number } | { ok: false; error: string }> {
+  const t = token()
+  if (!t) return { ok: false, error: 'Telegram not configured' }
+  try {
+    const res = await fetchImpl(`${API_BASE}/bot${t}/getWebhookInfo`, { cache: 'no-store' })
+    if (!res.ok) return { ok: false, error: `Telegram API ${res.status}` }
+    const data = (await res.json()) as { result?: { url?: string; pending_update_count?: number } }
+    return { ok: true, url: data.result?.url ?? '', pending: data.result?.pending_update_count ?? 0 }
+  } catch (err) {
+    agentLog.error('[messaging/telegram] getWebhookInfo failed', err)
+    return { ok: false, error: 'network error' }
+  }
+}
 export async function setTelegramWebhook(
   url: string,
   secret: string,
