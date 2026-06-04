@@ -623,6 +623,60 @@ SupportTicketSchema.index(
   { unique: true, partialFilterExpression: { status: { $in: ['open', 'investigating', 'in-progress', 'awaiting-admin'] } } },
 )
 
+// ── MessagingLink (chat channel ↔ user link) ───────────────
+// Links a user's external chat (Telegram today; WhatsApp/others later via the
+// same `channel` discriminator) to their account so the squad can DM alerts and
+// the user can talk back. Linking is two-phase: the app mints a short-lived
+// `linkCode`; the user sends it to the bot, whose webhook resolves the code and
+// fills in the channel-specific `chatId`. We store ONLY the chat id + display
+// handle — never message content. One active link per (userId, channel).
+export interface IMessagingLink extends Document {
+  userId: string
+  channel: 'telegram' | 'whatsapp'
+  /** channel-native conversation id (e.g. Telegram chat id) — null until linked */
+  chatId: string | null
+  /** display handle/username for the UI (e.g. @raviteja) — never required */
+  handle: string | null
+  status: 'pending' | 'linked' | 'revoked'
+  /** one-time code the user sends to the bot to prove ownership (pending only) */
+  linkCode: string | null
+  linkCodeExpiresAt: Date | null
+  /** notification preferences — which event classes get pushed to this channel */
+  notify: {
+    proposals: boolean      // new proposals awaiting sign-off
+    runs: boolean           // run completions / failures
+    support: boolean        // support tickets / escalations
+  }
+  linkedAt: Date | null
+  lastMessageAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+const MessagingLinkSchema = new Schema<IMessagingLink>({
+  userId:            { type: String, required: true, index: true },
+  channel:           { type: String, enum: ['telegram', 'whatsapp'], required: true },
+  chatId:            { type: String, default: null, index: true },
+  handle:            { type: String, default: null },
+  status:            { type: String, enum: ['pending', 'linked', 'revoked'], default: 'pending', index: true },
+  linkCode:          { type: String, default: null, index: true },
+  linkCodeExpiresAt: { type: Date, default: null },
+  notify: {
+    proposals:       { type: Boolean, default: true },
+    runs:            { type: Boolean, default: false },
+    support:         { type: Boolean, default: true },
+  },
+  linkedAt:          { type: Date, default: null },
+  lastMessageAt:     { type: Date, default: null },
+}, { timestamps: true })
+
+// One active link per user+channel (pending or linked); revoked rows are exempt
+// so a user can re-link after revoking.
+MessagingLinkSchema.index(
+  { userId: 1, channel: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ['pending', 'linked'] } } },
+)
+
 // ── Model exports (safe re-use in hot-reload) ───────────────
 export const Vault:    Model<IVault>    = mongoose.models.Vault    || mongoose.model('Vault',    VaultSchema)
 export const Source:   Model<ISource>   = mongoose.models.Source   || mongoose.model('Source',   SourceSchema)
@@ -639,3 +693,4 @@ export const SquadBudget: Model<ISquadBudget> = mongoose.models.SquadBudget || m
 export const UpstreamWatch: Model<IUpstreamWatch> = mongoose.models.UpstreamWatch || mongoose.model('UpstreamWatch', UpstreamWatchSchema)
 export const AdminNotification: Model<IAdminNotification> = mongoose.models.AdminNotification || mongoose.model('AdminNotification', AdminNotificationSchema)
 export const SupportTicket: Model<ISupportTicket> = mongoose.models.SupportTicket || mongoose.model('SupportTicket', SupportTicketSchema)
+export const MessagingLink: Model<IMessagingLink> = mongoose.models.MessagingLink || mongoose.model('MessagingLink', MessagingLinkSchema)

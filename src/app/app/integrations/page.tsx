@@ -15,8 +15,11 @@ import {
   Download,
   KeyRound,
   Loader2,
+  MessageCircle,
   Plug,
   Plus,
+  RefreshCw,
+  Send,
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
@@ -126,6 +129,9 @@ export default function IntegrationsPage() {
             endpoints below, and export your data any time.
           </p>
         </header>
+
+        {/* ── Chat channels (Telegram live, WhatsApp roadmap) ── */}
+        <MessagingSection />
 
         {/* ── Working: MCP / Agent API access ── */}
         <section className="dash-panel dash-grain dash-interactive dash-rise p-5" style={{ animationDelay: '0.05s' }}>
@@ -266,5 +272,206 @@ export default function IntegrationsPage() {
         </p>
       </div>
     </main>
+  )
+}
+
+// ── Chat channels: Telegram (live when configured) + WhatsApp (roadmap) ────────
+
+type TgStatus = {
+  configured: boolean
+  status: 'unconfigured' | 'none' | 'pending' | 'linked'
+  handle?: string | null
+  code?: string | null
+  deepLink?: string | null
+  botUsername?: string | null
+  notify?: { proposals: boolean; runs: boolean; support: boolean }
+  linkedAt?: string | null
+}
+
+function MessagingSection() {
+  const [tg, setTg] = useState<TgStatus | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch('/api/messaging/telegram', { cache: 'no-store' })
+      const d = await r.json()
+      setTg(d)
+    } catch {
+      setTg({ configured: false, status: 'unconfigured' })
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    queueMicrotask(() => { if (!cancelled) load() })
+    return () => { cancelled = true }
+  }, [load])
+
+  // While pending, poll for the webhook to flip us to "linked".
+  useEffect(() => {
+    if (tg?.status !== 'pending') return
+    const id = setInterval(load, 4000)
+    return () => clearInterval(id)
+  }, [tg?.status, load])
+
+  async function connect() {
+    setBusy(true)
+    try {
+      const r = await fetch('/api/messaging/telegram', { method: 'POST' })
+      const d = await r.json()
+      if (r.ok) setTg((prev) => ({ ...(prev ?? { configured: true }), ...d }))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function disconnect() {
+    setBusy(true)
+    try {
+      await fetch('/api/messaging/telegram', { method: 'DELETE' })
+      await load()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function setNotify(next: { proposals: boolean; runs: boolean; support: boolean }) {
+    setTg((prev) => (prev ? { ...prev, notify: next } : prev))
+    await fetch('/api/messaging/telegram', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notify: next }),
+    })
+  }
+
+  const notify = tg?.notify ?? { proposals: true, runs: false, support: true }
+
+  return (
+    <section className="dash-panel dash-grain dash-interactive dash-rise p-5" style={{ animationDelay: '0.02s' }}>
+      <div className="mb-3 flex items-center gap-2">
+        <MessageCircle className="h-4 w-4 text-[var(--dash-accent)]" />
+        <h2 className="text-sm font-semibold text-[var(--dash-text-strong)]">Chat with your squad</h2>
+        {tg?.status === 'linked' && (
+          <span className="ml-auto inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ color: '#34d399', borderColor: 'rgba(52,211,153,0.30)', background: 'rgba(52,211,153,0.10)' }}>
+            <Check className="h-3 w-3" /> Connected
+          </span>
+        )}
+      </div>
+      <p className="mb-4 text-xs leading-relaxed text-[var(--dash-muted)]">
+        Get pinged on Telegram when your squad needs a decision, and talk to it from anywhere — just like having your
+        team in your pocket.
+      </p>
+
+      {/* Telegram row */}
+      <div className="rounded-xl p-4" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
+        <div className="flex items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ color: 'var(--dash-accent)', borderColor: 'var(--dash-border-glow)', background: 'var(--dash-accent-soft)' }}>
+            <Send className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">Telegram</p>
+            <p className="text-[11px] text-[var(--dash-subtle)]">
+              {tg?.status === 'linked'
+                ? `Connected${tg.handle ? ` as ${tg.handle}` : ''}`
+                : tg?.configured === false
+                  ? 'Not available on this server yet'
+                  : 'Connect your Telegram in two taps'}
+            </p>
+          </div>
+          {tg?.status === 'linked' ? (
+            <button onClick={disconnect} disabled={busy} className="inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium text-[var(--dash-text)] transition hover:border-[var(--dash-border-glow)] disabled:opacity-50" style={{ borderColor: 'var(--dash-border)' }}>
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Disconnect
+            </button>
+          ) : tg?.configured === false ? (
+            <span className="mono rounded-full px-2 py-0.5 text-[9px] tracking-widest text-[var(--dash-subtle)]" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
+              COMING SOON
+            </span>
+          ) : (
+            <button onClick={connect} disabled={busy} className="dash-accent-grad inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold text-white disabled:opacity-50">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {tg?.status === 'pending' ? 'Restart' : 'Connect'}
+            </button>
+          )}
+        </div>
+
+        {/* Pending: show the deep link / code */}
+        {tg?.status === 'pending' && (
+          <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+            <p className="mb-2 text-[11px] text-[var(--dash-muted)]">
+              {tg.deepLink ? (
+                <>Tap the button to open Telegram, then press <strong>Start</strong> — that links this account.</>
+              ) : (
+                <>Open the bot in Telegram and send it this code:</>
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {tg.deepLink && (
+                <a href={tg.deepLink} target="_blank" rel="noopener noreferrer" className="dash-accent-grad inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold text-white">
+                  <Send className="h-3.5 w-3.5" /> Open Telegram
+                </a>
+              )}
+              {tg.code && (
+                <button
+                  onClick={() => { navigator.clipboard?.writeText(tg.code!); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium text-[var(--dash-text)]"
+                  style={{ borderColor: 'var(--dash-border)', background: 'var(--dash-card-solid)' }}
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--dash-accent)' }} /> : <Copy className="h-3.5 w-3.5" />}
+                  <code className="mono">{tg.code}</code>
+                </button>
+              )}
+              <span className="inline-flex items-center gap-1 text-[11px] text-[var(--dash-subtle)]">
+                <RefreshCw className="h-3 w-3 animate-spin" /> waiting…
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Linked: notification preferences */}
+        {tg?.status === 'linked' && (
+          <div className="mt-3 space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+            <p className="mono mb-1 text-[9px] tracking-widest text-[var(--dash-subtle)]">NOTIFY ME ABOUT</p>
+            {([
+              ['proposals', 'Proposals awaiting my sign-off'],
+              ['support', 'Support tickets & escalations'],
+              ['runs', 'Run completions & failures'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setNotify({ ...notify, [key]: !notify[key] })}
+                className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 transition"
+                style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}
+              >
+                <span className="text-[12px] text-[var(--dash-text)]">{label}</span>
+                <span className="relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition" style={{ background: notify[key] ? 'var(--dash-accent)' : 'var(--dash-border)' }}>
+                  <span className="inline-block h-3 w-3 rounded-full bg-white transition" style={{ transform: notify[key] ? 'translateX(calc(100% + 2px))' : 'translateX(2px)' }} />
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* WhatsApp — honest about the Business API requirement */}
+      <div className="mt-3 flex items-start gap-3 rounded-xl p-4" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ color: 'var(--dash-muted)', borderColor: 'var(--dash-border)', background: 'var(--dash-soft)' }}>
+          <MessageCircle className="h-4 w-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">WhatsApp</p>
+            <span className="mono shrink-0 rounded-full px-2 py-0.5 text-[9px] tracking-widest text-[var(--dash-subtle)]" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
+              COMING SOON
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] leading-relaxed text-[var(--dash-muted)]">
+            WhatsApp requires the WhatsApp Business API (Meta verification or a provider like Twilio). It plugs into the
+            same alerts as Telegram — we&apos;ll enable it here once the business number is approved.
+          </p>
+        </div>
+      </div>
+    </section>
   )
 }

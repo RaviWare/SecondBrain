@@ -16,6 +16,7 @@
 
 import { SupportTicket, AdminNotification } from '@/lib/models'
 import { agentLog } from '@/lib/agents/redact'
+import { deliverToUser } from '@/lib/messaging/deliver'
 import {
   diagnoseFailure,
   ticketTitle,
@@ -168,6 +169,13 @@ export async function escalateTicket(ticketId: string, reason: string): Promise<
       },
       { upsert: true },
     ).catch(() => { /* dup escalation notification is fine */ })
+
+    // Best-effort: ping the owner on their linked chat channels (Telegram).
+    await deliverToUser(
+      String(t.userId),
+      'support',
+      `🛠️ <b>${t.agentName}</b> needs you — ${t.title}\n${t.recommendedAction}`,
+    ).catch(() => { /* delivery is best-effort */ })
   } catch (err) {
     agentLog.error('[support] escalateTicket failed', err)
   }
