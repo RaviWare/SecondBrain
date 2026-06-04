@@ -20,7 +20,7 @@
 // When the user has no Agents, the whole surface is replaced by an inviting
 // first-run empty state suggesting a starter Agent matched to the vault (Req 6.8).
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   Activity as ActivityIcon,
@@ -59,6 +59,7 @@ interface RosterCard {
   trustBand: TrustBand
   skillIds: string[]
   now: string
+  lastActiveAt: string | null
 }
 
 interface QueueCitation {
@@ -83,6 +84,7 @@ interface ActivityEntry {
   source: 'log' | 'proposal' | 'run'
   kind: string
   agentId: string | null
+  agentName: string | null
   summary: string
   status?: string
   at: string
@@ -208,6 +210,7 @@ function SquadView({ data, onRefetch }: { data: DashboardPayload; onRefetch: () 
                 trustScore={card.trustScore}
                 skillIds={card.skillIds}
                 now={card.now}
+                lastActiveAt={card.lastActiveAt}
               />
             ))}
           </div>
@@ -220,7 +223,7 @@ function SquadView({ data, onRefetch }: { data: DashboardPayload; onRefetch: () 
           <AegisQueuePanel items={queue} onResolved={onRefetch} />
         </div>
         <div className="dash-rise" style={{ animationDelay: '0.36s' }}>
-          <ActivityFeedPanel entries={activity} />
+          <ActivityFeedPanel entries={activity} roster={roster} />
         </div>
       </aside>
     </div>
@@ -642,47 +645,158 @@ function CitationLink({ slug, url }: { slug?: string; url?: string }) {
 
 // ── Activity_Feed panel (Req 6.4) ─────────────────────────────────────────────
 
-function ActivityFeedPanel({ entries }: { entries: ActivityEntry[] }) {
+function ActivityFeedPanel({ entries, roster }: { entries: ActivityEntry[]; roster: RosterCard[] }) {
+  const [typeFilter, setTypeFilter] = useState<'all' | 'log' | 'proposal' | 'run'>('all')
+  const [agentFilter, setAgentFilter] = useState<string>('all')
+
+  // Only agents that actually appear in the feed are offered as filters (no
+  // fabricated options). Built from the real entries + roster names.
+  const agentOptions = useMemo(() => {
+    const seen = new Map<string, string>()
+    for (const e of entries) {
+      if (!e.agentId) continue
+      const name = e.agentName ?? roster.find((r) => r.id === e.agentId)?.name ?? null
+      if (name && !seen.has(e.agentId)) seen.set(e.agentId, name)
+    }
+    return [...seen.entries()].map(([id, name]) => ({ id, name }))
+  }, [entries, roster])
+
+  const filtered = useMemo(
+    () =>
+      entries.filter(
+        (e) =>
+          (typeFilter === 'all' || e.source === typeFilter) &&
+          (agentFilter === 'all' || e.agentId === agentFilter),
+      ),
+    [entries, typeFilter, agentFilter],
+  )
+
+  const TYPE_TABS: Array<{ key: typeof typeFilter; label: string }> = [
+    { key: 'all', label: 'All' },
+    { key: 'run', label: 'Runs' },
+    { key: 'proposal', label: 'Proposals' },
+    { key: 'log', label: 'Tasks' },
+  ]
+
+  function nameFor(e: ActivityEntry): string | null {
+    return e.agentName ?? roster.find((r) => r.id === e.agentId)?.name ?? null
+  }
+
   return (
     <section className="dash-panel dash-grain dash-interactive p-4">
-      <div className="flex items-center gap-2">
-        <span className="grid h-7 w-7 place-items-center rounded-lg border border-[var(--dash-border)] bg-[var(--dash-soft)] text-[var(--dash-muted)]">
-          <ActivityIcon className="h-3.5 w-3.5" />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="grid h-7 w-7 place-items-center rounded-lg border border-[var(--dash-border)] bg-[var(--dash-soft)] text-[var(--dash-muted)]">
+            <ActivityIcon className="h-3.5 w-3.5" />
+          </span>
+          <h2 className="text-sm font-semibold tracking-tight text-[var(--dash-text-strong)]">
+            Live feed
+          </h2>
+        </div>
+        <span className="text-[10px] font-medium text-[var(--dash-subtle)] [font-variant-numeric:tabular-nums]">
+          {filtered.length} event{filtered.length === 1 ? '' : 's'}
         </span>
-        <h2 className="text-sm font-semibold tracking-tight text-[var(--dash-text-strong)]">
-          Activity
-        </h2>
       </div>
+
+      {/* Type filter chips */}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {TYPE_TABS.map(({ key, label }) => {
+          const on = typeFilter === key
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTypeFilter(key)}
+              className="rounded-full px-2.5 py-1 text-[11px] font-medium transition"
+              style={
+                on
+                  ? { background: 'var(--dash-accent-soft)', border: '1px solid var(--dash-border-glow)', color: 'var(--dash-accent)' }
+                  : { background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-muted)' }
+              }
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Per-agent filter (only when ≥2 agents appear in the feed) */}
+      {agentOptions.length > 1 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setAgentFilter('all')}
+            className="rounded-full px-2.5 py-1 text-[11px] font-medium transition"
+            style={
+              agentFilter === 'all'
+                ? { background: 'var(--dash-soft)', border: '1px solid var(--dash-border-glow)', color: 'var(--dash-text)' }
+                : { background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-subtle)' }
+            }
+          >
+            All agents
+          </button>
+          {agentOptions.map((a) => {
+            const on = agentFilter === a.id
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => setAgentFilter(a.id)}
+                className="rounded-full px-2.5 py-1 text-[11px] font-medium transition"
+                style={
+                  on
+                    ? { background: 'var(--dash-soft)', border: '1px solid var(--dash-border-glow)', color: 'var(--dash-text)' }
+                    : { background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-subtle)' }
+                }
+              >
+                {a.name}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <p className="mt-4 text-[12px] text-[var(--dash-subtle)]">
           No agent activity yet. Events will stream in here as your squad works.
         </p>
+      ) : filtered.length === 0 ? (
+        <p className="mt-4 text-[12px] text-[var(--dash-subtle)]">
+          No events match this filter.
+        </p>
       ) : (
         <ul className="mt-3 space-y-0.5">
-          {entries.map((entry) => (
-            <li key={entry.id} className="flex items-start gap-3 rounded-lg px-1.5 py-2">
-              <span
-                className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{ background: feedDotColor(entry) }}
-                aria-hidden
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-[12px] leading-snug text-[var(--dash-text)]">{entry.summary}</p>
-                <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[var(--dash-subtle)]">
-                  <span className="uppercase tracking-wider">{entry.kind}</span>
-                  {entry.status && (
-                    <>
-                      <span aria-hidden>·</span>
-                      <span>{entry.status}</span>
-                    </>
-                  )}
-                  <span aria-hidden>·</span>
-                  <time dateTime={entry.at}>{timeAgo(entry.at)}</time>
-                </p>
-              </div>
-            </li>
-          ))}
+          {filtered.map((entry) => {
+            const agentName = nameFor(entry)
+            return (
+              <li key={entry.id} className="flex items-start gap-3 rounded-lg px-1.5 py-2">
+                <span
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ background: feedDotColor(entry) }}
+                  aria-hidden
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] leading-snug text-[var(--dash-text)]">
+                    {agentName && (
+                      <span className="font-semibold text-[var(--dash-text-strong)]">{agentName} </span>
+                    )}
+                    {entry.summary}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[var(--dash-subtle)]">
+                    <span className="uppercase tracking-wider">{entry.kind}</span>
+                    {entry.status && (
+                      <>
+                        <span aria-hidden>·</span>
+                        <span>{entry.status}</span>
+                      </>
+                    )}
+                    <span aria-hidden>·</span>
+                    <time dateTime={entry.at}>{timeAgo(entry.at)}</time>
+                  </p>
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>

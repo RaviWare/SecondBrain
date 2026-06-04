@@ -34,6 +34,8 @@ export interface ActivityEntry {
   kind: string
   /** Originating Agent id (string), or null for un-attributed rows. */
   agentId: string | null
+  /** Resolved Agent display name when known (for per-agent filtering + labels). */
+  agentName: string | null
   /** Human-register one-liner (the "what happened"). */
   summary: string
   /** Lifecycle status for proposal/run entries (e.g. 'approved', 'completed'). */
@@ -85,6 +87,18 @@ export interface ActivityFeedInput {
   runs: RunFeedRow[]
   /** Max entries to return after the merge+sort. */
   limit: number
+  /** Optional map of `agentId → display name` so entries carry the agent's name. */
+  agentNames?: Map<string, string> | Record<string, string>
+}
+
+/** Resolve an agent display name from the optional name map (null when unknown). */
+function resolveName(
+  agentId: string | null,
+  names: ActivityFeedInput['agentNames'],
+): string | null {
+  if (!agentId || !names) return null
+  if (names instanceof Map) return names.get(agentId) ?? null
+  return (names as Record<string, string>)[agentId] ?? null
 }
 
 /** Normalize any date-ish value to epoch ms; unparseable → 0 (sorts last). */
@@ -113,16 +127,18 @@ function idOrNull(value: unknown): string | null {
  *   • run      → finishedAt (when finished) else createdAt
  */
 export function buildActivityFeed(input: ActivityFeedInput): ActivityEntry[] {
-  const { logs, proposals, runs, limit } = input
+  const { logs, proposals, runs, limit, agentNames } = input
   const entries: Array<ActivityEntry & { _ms: number }> = []
 
   for (const l of logs) {
+    const agentId = idOrNull(l.agentId)
     entries.push({
       _ms: toMs(l.createdAt),
       id: String(l._id),
       source: 'log',
       kind: l.operation,
-      agentId: idOrNull(l.agentId),
+      agentId,
+      agentName: resolveName(agentId, agentNames),
       summary: l.summary,
       at: new Date(toMs(l.createdAt)).toISOString(),
     })
@@ -130,12 +146,14 @@ export function buildActivityFeed(input: ActivityFeedInput): ActivityEntry[] {
 
   for (const p of proposals) {
     const ms = toMs(p.decidedAt) || toMs(p.createdAt)
+    const agentId = idOrNull(p.agentId)
     entries.push({
       _ms: ms,
       id: String(p._id),
       source: 'proposal',
       kind: p.kind,
-      agentId: idOrNull(p.agentId),
+      agentId,
+      agentName: resolveName(agentId, agentNames),
       summary: p.title,
       status: p.status,
       at: new Date(ms).toISOString(),
@@ -144,12 +162,14 @@ export function buildActivityFeed(input: ActivityFeedInput): ActivityEntry[] {
 
   for (const r of runs) {
     const ms = toMs(r.finishedAt) || toMs(r.createdAt)
+    const agentId = idOrNull(r.agentId)
     entries.push({
       _ms: ms,
       id: String(r._id),
       source: 'run',
       kind: r.trigger,
-      agentId: idOrNull(r.agentId),
+      agentId,
+      agentName: resolveName(agentId, agentNames),
       summary: r.outcome?.trim() ? r.outcome : `${r.trigger} run ${r.status}`,
       status: r.status,
       at: new Date(ms).toISOString(),
@@ -205,4 +225,37 @@ export function deriveNowLine(signals: NowLineSignals): string {
     default:
       return ''
   }
+}
+
+
+// ── Per-agent heartbeat ("last active") ───────────────────────────────────────
+
+/** A run row used to compute an agent's last-active instant. */
+export interface HeartbeatRunRow {
+  agentId?: unknown
+  status?: string
+  startedAt?: Date | string | number | null
+  finishedAt?: Date | string | number | null
+}
+
+/**
+ * Compute each agent's most-recent activity instant (epoch ms) from their run
+ * rows. PURE & total. An in-flight run (status 'running') uses `startedAt` so a
+ * currently-working agent reads as active "now"; finished runs use `finishedAt`
+ * (falling back to `startedAt`). Returns a `Map<agentId, ms>`; agents with no
+ * runs are simply absent (the UI shows no heartbeat for them).
+ */
+export function deriveLastActiveAt(runs: HeartbeatRunRow[]): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const r of runs) {
+    const agentId = idOrNull(r.agentId)
+    if (!agentId) continue
+    const ms = r.status === 'running'
+      ? toMs(r.startedAt)
+      : (toMs(r.finishedAt) || toMs(r.startedAt))
+    if (ms <= 0) continue
+    const prev = out.get(agentId)
+    if (prev === undefined || ms > prev) out.set(agentId, ms)
+  }
+  return out
 }
