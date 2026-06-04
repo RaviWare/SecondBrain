@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
   BellRing,
+  BookMarked,
   BookOpen,
   Bot,
   Blocks,
@@ -17,6 +18,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Network,
+  Plug,
   Radar,
   Search,
   ShieldCheck,
@@ -47,6 +49,9 @@ const nav = [
   { href: '/app/agents/cost', label: 'Cost', icon: Wallet },
   { href: '/app/agent', label: 'AI Agent', icon: Bot },
   { href: '/app/query', label: 'AI Assistant', icon: Sparkles },
+  { href: '/app/integrations', label: 'Integrations', icon: Plug },
+  { href: '/app/docs', label: 'Docs', icon: BookMarked },
+  { href: '/app/help', label: 'Help', icon: LifeBuoy },
 ]
 
 // Real unread count drives the Inbox badge. No data source is wired yet, so it
