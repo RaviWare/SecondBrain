@@ -57,7 +57,7 @@ describe('Conversational Agent Builder — two-pane layout + editable preview + 
     // The conversation pane carries a message composer; the preview pane carries
     // the directly-editable name field — both panes are concretely present.
     expect(screen.getByLabelText('Send message')).toBeTruthy()
-    expect(screen.getByPlaceholderText('Name your agent')).toBeTruthy()
+    expect(screen.getByPlaceholderText(/Name your agent/)).toBeTruthy()
   })
 
   // ── Req 7.5: every config field is directly editable in the preview ──────────
@@ -65,7 +65,7 @@ describe('Conversational Agent Builder — two-pane layout + editable preview + 
     const user = userEvent.setup()
     render(<AgentBuilderPage />)
 
-    const nameInput = screen.getByPlaceholderText('Name your agent') as HTMLInputElement
+    const nameInput = screen.getByPlaceholderText(/Name your agent/) as HTMLInputElement
     expect(nameInput.value).toBe('')
 
     // Direct hand-edit flows through the SAME mergePreview fold as the
@@ -125,6 +125,6 @@ describe('Conversational Agent Builder — two-pane layout + editable preview + 
     const shell = document.querySelector('main.sb-dashboard')
     expect(shell).not.toBeNull()
     expect(shell?.contains(screen.getByLabelText('Send message'))).toBe(true)
-    expect(shell?.contains(screen.getByPlaceholderText('Name your agent'))).toBe(true)
+    expect(shell?.contains(screen.getByPlaceholderText(/Name your agent/))).toBe(true)
   })
 })
