@@ -56,6 +56,7 @@ import {
   Sparkles,
   Target,
   User,
+  Wrench,
 } from 'lucide-react'
 import {
   AGENT_ROLES,
@@ -68,6 +69,7 @@ import {
   type SignOffPolicy,
 } from '@/lib/agents/builder'
 import { roleDefaults, trustScopeStatement } from '@/lib/agents/role-defaults'
+import { suggestNames } from '@/lib/agents/name-presets'
 import type { TrustScope } from '@/lib/agents/scope'
 import { SKILLS } from '@/lib/skills/catalog'
 import { useSpotlight } from '@/lib/use-spotlight'
@@ -481,7 +483,7 @@ function BuilderView() {
               <div className="relative space-y-5">
                 <PreviewHeader />
 
-                <NameField value={preview.name ?? ''} onChange={(name) => applyUpdate({ name })} />
+                <NameField value={preview.name ?? ''} role={preview.role} onChange={(name) => applyUpdate({ name })} />
 
                 <RolePicker
                   role={preview.role}
@@ -524,6 +526,11 @@ function BuilderView() {
                 />
 
                 <TrustScopeStatementCard statement={statement} />
+
+                <AutoFixField
+                  autoFix={preview.autoFix}
+                  onSet={(partial) => applyUpdate({ autoFix: partial })}
+                />
 
                 <ActionBar
                   canSave={canSave}
@@ -720,18 +727,171 @@ const WELL =
   'text-[var(--dash-text)] outline-none transition placeholder:text-[var(--dash-subtle)] ' +
   'focus:border-[var(--dash-border-glow)] focus:shadow-[0_0_0_3px_var(--dash-accent-soft)]'
 
-function NameField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function NameField({ value, role, onChange }: { value: string; role?: AgentRole; onChange: (v: string) => void }) {
+  const [showIdeas, setShowIdeas] = useState(false)
+  const suggestions = useMemo(() => suggestNames(role, new Set(), 6), [role])
   return (
     <div>
-      <FieldLabel>NAME</FieldLabel>
+      <div className="mb-2 flex items-center justify-between">
+        <FieldLabel>NAME</FieldLabel>
+        <button
+          type="button"
+          onClick={() => setShowIdeas((v) => !v)}
+          className="mono inline-flex items-center gap-1 text-[10px] tracking-widest transition"
+          style={{ color: 'var(--dash-accent)' }}
+        >
+          <Sparkles className="h-3 w-3" />
+          {showIdeas ? 'HIDE IDEAS' : 'NEED A NAME?'}
+        </button>
+      </div>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Name your agent"
+        placeholder="Name your agent — or tap “Need a name?”"
         className={WELL}
       />
+      {showIdeas && (
+        <div className="mt-2.5 rounded-xl p-3" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
+          <p className="mb-2 text-[11px] text-[var(--dash-muted)]">
+            {role ? `Names that fit a ${ROLE_LABEL[role]}` : 'Strong names to get you started'} — tap one to use it.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.map((s) => {
+              const active = value.trim().toLowerCase() === s.name.toLowerCase()
+              return (
+                <button
+                  key={s.name}
+                  type="button"
+                  title={s.blurb}
+                  onClick={() => { onChange(s.name); }}
+                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition hover:-translate-y-0.5"
+                  style={
+                    active
+                      ? { background: 'var(--dash-accent-soft)', border: '1px solid var(--dash-border-glow)', color: 'var(--dash-accent)' }
+                      : { background: 'var(--dash-soft)', border: '1px solid var(--dash-border)', color: 'var(--dash-text)' }
+                  }
+                >
+                  {active && <Check className="h-3 w-3" />}
+                  {s.name}
+                </button>
+              )
+            })}
+          </div>
+          {role && (
+            <p className="mt-2 text-[10px] text-[var(--dash-subtle)]">
+              {suggestions[0]?.blurb}
+            </p>
+          )}
+        </div>
+      )}
     </div>
+  )
+}
+
+type AutoFixPreviewShape = import('@/lib/agents/builder').AutoFixPreview
+
+function AutoFixField({
+  autoFix,
+  onSet,
+}: {
+  autoFix?: Partial<AutoFixPreviewShape>
+  onSet: (partial: Partial<AutoFixPreviewShape>) => void
+}) {
+  const enabled = autoFix?.enabled === true
+  const TOGGLES: Array<{ key: keyof AutoFixPreviewShape; label: string; hint: string }> = [
+    { key: 'retryTransient', label: 'Auto-retry transient failures', hint: 'Re-runs after a timeout or temporary error.' },
+    { key: 'autoRaiseBudget', label: 'Auto-raise budget', hint: 'Raises the cap up to your ceiling, then retries.' },
+    { key: 'autoApplyLowStakes', label: 'Auto-apply low-stakes work', hint: 'Applies only reversible, low-risk proposals.' },
+    { key: 'proposeScopeChanges', label: 'Propose scope changes', hint: 'Drafts a 1-click scope change (never auto-widens).' },
+  ]
+  return (
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <Wrench className="h-3.5 w-3.5 text-[var(--dash-subtle)]" />
+        <FieldLabel>AUTO-FIX · SELF-TROUBLESHOOTING</FieldLabel>
+      </div>
+      <div className="rounded-xl p-3.5" style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)' }}>
+        {/* Master toggle */}
+        <button
+          type="button"
+          onClick={() => onSet({ enabled: !enabled })}
+          className="flex w-full items-center justify-between gap-3"
+        >
+          <span className="min-w-0 text-left">
+            <span className="block text-[13px] font-semibold text-[var(--dash-text-strong)]">
+              Let this agent fix its own issues
+            </span>
+            <span className="mt-0.5 block text-[11px] leading-relaxed text-[var(--dash-muted)]">
+              When a run fails, the agent diagnoses it and applies safe, reversible fixes by itself —
+              documenting every step. Security issues always escalate to you.
+            </span>
+          </span>
+          <Switch on={enabled} />
+        </button>
+
+        {enabled && (
+          <div className="mt-3 space-y-2 border-t pt-3" style={{ borderColor: 'var(--dash-border)' }}>
+            {TOGGLES.map(({ key, label, hint }) => {
+              const on = autoFix?.[key] === true || (key === 'retryTransient' && autoFix?.[key] !== false)
+              return (
+                <button
+                  key={String(key)}
+                  type="button"
+                  onClick={() => onSet({ [key]: !on } as Partial<AutoFixPreviewShape>)}
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 transition"
+                  style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}
+                >
+                  <span className="min-w-0 text-left">
+                    <span className="block text-[12px] font-medium text-[var(--dash-text)]">{label}</span>
+                    <span className="mt-0.5 block text-[10px] text-[var(--dash-subtle)]">{hint}</span>
+                  </span>
+                  <Switch on={on} small />
+                </button>
+              )
+            })}
+
+            {autoFix?.autoRaiseBudget === true && (
+              <div className="rounded-lg px-2.5 py-2" style={{ background: 'var(--dash-soft)', border: '1px solid var(--dash-border)' }}>
+                <label className="mono mb-1.5 block text-[9px] tracking-widest text-[var(--dash-subtle)]">
+                  BUDGET CEILING (tokens) — auto-raise can never exceed this
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={autoFix?.budgetCeiling ?? 0}
+                  onChange={(e) => onSet({ budgetCeiling: Math.max(0, Number(e.target.value) || 0) })}
+                  placeholder="e.g. 200000"
+                  className="w-full rounded-lg bg-[var(--dash-card-solid)] px-3 py-2 text-sm text-[var(--dash-text)] outline-none focus:border-[var(--dash-border-glow)]"
+                  style={{ border: '1px solid var(--dash-border)' }}
+                />
+              </div>
+            )}
+
+            <p className="flex items-center gap-1.5 pt-0.5 text-[10px] text-[var(--dash-subtle)]">
+              <ShieldCheck className="h-3 w-3" />
+              Agents never edit code, run commands, or widen their own access. Everything is reversible and logged.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Switch({ on, small }: { on: boolean; small?: boolean }) {
+  const w = small ? 'h-4 w-7' : 'h-5 w-9'
+  const dot = small ? 'h-3 w-3' : 'h-4 w-4'
+  return (
+    <span
+      className={`relative inline-flex ${w} shrink-0 items-center rounded-full transition`}
+      style={{ background: on ? 'var(--dash-accent)' : 'var(--dash-border)' }}
+    >
+      <span
+        className={`inline-block ${dot} rounded-full bg-white transition`}
+        style={{ transform: on ? 'translateX(calc(100% + 2px))' : 'translateX(2px)' }}
+      />
+    </span>
   )
 }
 
@@ -1372,6 +1532,20 @@ function seedPreviewFromAgent(agent: Record<string, unknown>): PreviewState {
       webAccess: Boolean(trustScope.webAccess),
       perRunTokenBudget: Number(trustScope.perRunTokenBudget) || 0,
     },
+    autoFix: seedAutoFix(agent.autoFix),
+  }
+}
+
+/** Coerce a persisted autoFix subdoc into the preview shape (absent ⇒ all off). */
+function seedAutoFix(value: unknown): import('@/lib/agents/builder').AutoFixPreview {
+  const a = (value ?? {}) as Record<string, unknown>
+  return {
+    enabled: a.enabled === true,
+    retryTransient: a.retryTransient !== false,
+    autoRaiseBudget: a.autoRaiseBudget === true,
+    budgetCeiling: Number(a.budgetCeiling) || 0,
+    autoApplyLowStakes: a.autoApplyLowStakes === true,
+    proposeScopeChanges: a.proposeScopeChanges === true,
   }
 }
 
@@ -1393,5 +1567,6 @@ function previewToPayload(preview: PreviewState): Record<string, unknown> {
   if (Array.isArray(preview.assignedSkillIds)) payload.assignedSkillIds = preview.assignedSkillIds
   if (preview.signOffPolicy) payload.signOffPolicy = preview.signOffPolicy
   if (preview.trustScope) payload.trustScope = preview.trustScope
+  if (preview.autoFix) payload.autoFix = preview.autoFix
   return payload
 }

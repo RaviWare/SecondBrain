@@ -108,6 +108,18 @@ export interface PreviewState {
   trustScope?: Partial<PreviewTrustScope>
   /** Plain-language goal interpolated into the runner prompt. */
   objective?: string
+  /** Opt-in auto-fix config (support workforce). Default OFF. */
+  autoFix?: Partial<AutoFixPreview>
+}
+
+/** Opt-in auto-fix config mirrored from `IAgent['autoFix']` (preview shape). */
+export interface AutoFixPreview {
+  enabled: boolean
+  retryTransient: boolean
+  autoRaiseBudget: boolean
+  budgetCeiling: number
+  autoApplyLowStakes: boolean
+  proposeScopeChanges: boolean
 }
 
 /**
