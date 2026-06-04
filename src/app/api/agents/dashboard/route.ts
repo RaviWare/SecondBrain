@@ -30,9 +30,11 @@ import { pendingQueue, type ProposalView } from '@/lib/agents/aegis/queue-view'
 import {
   buildActivityFeed,
   deriveNowLine,
+  deriveLastActiveAt,
   type LogFeedRow,
   type ProposalFeedRow,
   type RunFeedRow,
+  type HeartbeatRunRow,
 } from '@/lib/agents/dashboard-feed'
 import { band, type TrustBand } from '@/lib/agents/trust'
 import type { AgentStatus } from '@/lib/agents/accent'
@@ -55,6 +57,8 @@ interface RosterCard {
   trustBand: TrustBand
   skillIds: string[]
   now: string
+  /** ISO instant of this agent's most recent run activity (null when never run). */
+  lastActiveAt: string | null
 }
 
 /** Full dashboard payload returned by GET. */
@@ -128,6 +132,18 @@ export async function GET() {
       lastRunFailedByAgent.set(aid, FAILED_RUN_STATUSES.has(run.status))
     }
 
+    // Agent display-name map (id → name) for feed labels + per-agent filtering.
+    const agentNames = new Map<string, string>()
+    for (const a of agentDocs) agentNames.set(String(a._id), a.name)
+
+    // Per-agent last-active instant (heartbeat) from real run rows. Considers
+    // active runs (start time) + recent runs (finish/start) so a working agent
+    // reads as active "now" and an idle one shows how long since its last run.
+    const lastActiveByAgent = deriveLastActiveAt([
+      ...(activeRuns as unknown as HeartbeatRunRow[]),
+      ...(recentRuns as unknown as HeartbeatRunRow[]),
+    ])
+
     // ── Roster cards ──
     const roster: RosterCard[] = agentDocs.map((a) => {
       const aid = String(a._id)
@@ -157,6 +173,9 @@ export async function GET() {
         trustBand: band(a.trustScore),
         skillIds: a.assignedSkillIds ?? [],
         now,
+        lastActiveAt: lastActiveByAgent.has(aid)
+          ? new Date(lastActiveByAgent.get(aid)!).toISOString()
+          : null,
       }
     })
 
@@ -171,6 +190,7 @@ export async function GET() {
       proposals: recentProposals as unknown as ProposalFeedRow[],
       runs: recentRuns as unknown as RunFeedRow[],
       limit: FEED_LIMIT,
+      agentNames,
     })
 
     const payload: DashboardPayload = { tally, roster, queue, activity }

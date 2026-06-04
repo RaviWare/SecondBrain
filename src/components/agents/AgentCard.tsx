@@ -38,6 +38,8 @@ export interface AgentCardProps {
   skillIds: string[]
   /** The "now" line — what the Agent is doing right now. */
   now: string
+  /** ISO instant of the agent's most recent activity (heartbeat). Optional. */
+  lastActiveAt?: string | null
 }
 
 // Human label for each Agent_Role.
@@ -87,6 +89,7 @@ export function AgentCard({
   trustScore,
   skillIds,
   now,
+  lastActiveAt,
 }: AgentCardProps) {
   const spotlight = useSpotlight<HTMLElement>()
 
@@ -177,6 +180,29 @@ export function AgentCard({
         {now?.trim() ? now : <span className="text-[var(--dash-subtle)]">Nothing in flight</span>}
       </p>
 
+      {/* Heartbeat — live when working, else "idle · <time since last run>". */}
+      <p className="flex items-center gap-1.5 text-[10px] text-[var(--dash-subtle)]">
+        {status === 'live' ? (
+          <>
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 opacity-60 dash-live-dot" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </span>
+            <span>Working now</span>
+          </>
+        ) : lastActiveAt ? (
+          <>
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--dash-subtle)]" aria-hidden />
+            <span>Idle · last active {agentTimeAgo(lastActiveAt)}</span>
+          </>
+        ) : (
+          <>
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--dash-subtle)]" aria-hidden />
+            <span>No runs yet</span>
+          </>
+        )}
+      </p>
+
       {/* Assigned Skill chips. */}
       {skills.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
@@ -194,4 +220,21 @@ export function AgentCard({
       )}
     </article>
   )
+}
+
+/**
+ * Compact relative-time for the heartbeat (e.g. "12s", "5m", "3h", "2d" ago).
+ * PURE; tolerates a bad/empty value by returning "recently".
+ */
+function agentTimeAgo(iso: string): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return 'recently'
+  const secs = Math.max(0, Math.floor((Date.now() - t) / 1000))
+  if (secs < 60) return `${secs}s ago`
+  const mins = Math.floor(secs / 60)
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return `${days}d ago`
 }

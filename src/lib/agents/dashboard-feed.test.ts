@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildActivityFeed,
   deriveNowLine,
+  deriveLastActiveAt,
   type LogFeedRow,
   type ProposalFeedRow,
   type RunFeedRow,
@@ -96,5 +97,60 @@ describe('deriveNowLine — real signals only, never fabricated (Req 6.3)', () =
 
   it('idle → empty string (nothing in flight, no fabrication)', () => {
     expect(deriveNowLine({ status: 'idle' })).toBe('')
+  })
+})
+
+
+describe('buildActivityFeed — agentName resolution', () => {
+  it('resolves agentName from a Map when provided', () => {
+    const names = new Map([['123', 'Sentinel']])
+    const [e] = buildActivityFeed({ logs: [logRow({ agentId: 123 })], proposals: [], runs: [], limit: 20, agentNames: names })
+    expect(e.agentName).toBe('Sentinel')
+  })
+
+  it('resolves agentName from a plain object map too', () => {
+    const [e] = buildActivityFeed({ logs: [logRow({ agentId: 'a9' })], proposals: [], runs: [], limit: 20, agentNames: { a9: 'Ranger' } })
+    expect(e.agentName).toBe('Ranger')
+  })
+
+  it('agentName is null when no map or no match', () => {
+    const [noMap] = buildActivityFeed({ logs: [logRow({ agentId: 'a1' })], proposals: [], runs: [], limit: 20 })
+    expect(noMap.agentName).toBeNull()
+    const [noMatch] = buildActivityFeed({ logs: [logRow({ agentId: 'a1' })], proposals: [], runs: [], limit: 20, agentNames: new Map([['other', 'X']]) })
+    expect(noMatch.agentName).toBeNull()
+  })
+})
+
+describe('deriveLastActiveAt — per-agent heartbeat', () => {
+  it('uses startedAt for an in-flight run (working now)', () => {
+    const map = deriveLastActiveAt([{ agentId: 'a1', status: 'running', startedAt: T('2024-05-16T10:00:00Z'), finishedAt: null }])
+    expect(map.get('a1')).toBe(T('2024-05-16T10:00:00Z'))
+  })
+
+  it('uses finishedAt for a completed run, falling back to startedAt', () => {
+    const map = deriveLastActiveAt([
+      { agentId: 'a1', status: 'completed', startedAt: T('2024-05-16T10:00:00Z'), finishedAt: T('2024-05-16T10:05:00Z') },
+      { agentId: 'a2', status: 'completed', startedAt: T('2024-05-16T09:00:00Z'), finishedAt: null },
+    ])
+    expect(map.get('a1')).toBe(T('2024-05-16T10:05:00Z'))
+    expect(map.get('a2')).toBe(T('2024-05-16T09:00:00Z'))
+  })
+
+  it('keeps the most recent instant per agent', () => {
+    const map = deriveLastActiveAt([
+      { agentId: 'a1', status: 'completed', finishedAt: T('2024-05-16T10:00:00Z') },
+      { agentId: 'a1', status: 'completed', finishedAt: T('2024-05-16T12:00:00Z') },
+      { agentId: 'a1', status: 'completed', finishedAt: T('2024-05-16T08:00:00Z') },
+    ])
+    expect(map.get('a1')).toBe(T('2024-05-16T12:00:00Z'))
+  })
+
+  it('omits agents with no usable timestamp', () => {
+    const map = deriveLastActiveAt([
+      { agentId: 'a1', status: 'completed', startedAt: null, finishedAt: null },
+      { agentId: undefined, status: 'completed', finishedAt: T('2024-05-16T10:00:00Z') },
+    ])
+    expect(map.has('a1')).toBe(false)
+    expect(map.size).toBe(0)
   })
 })
