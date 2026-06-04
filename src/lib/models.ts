@@ -241,6 +241,19 @@ export interface IAgent extends Document {
     periodStart: Date
   }
 
+  // Auto-Fix (support workforce) — OPT-IN, default OFF. Lets the support worker
+  // apply BOUNDED, REVERSIBLE remedies on this agent's failures with no human
+  // approval. It NEVER edits code, runs a terminal, touches credentials, widens
+  // its own scope, or reaches another user — those always escalate to an admin.
+  autoFix: {
+    enabled: boolean                 // master opt-in for this agent (default false)
+    retryTransient: boolean          // auto-retry transient/timeout failures
+    autoRaiseBudget: boolean         // auto-raise the cap up to `budgetCeiling`
+    budgetCeiling: number            // hard ceiling auto-raise can never exceed (0 = never raise)
+    autoApplyLowStakes: boolean      // auto-apply ONLY low-reversible proposals (skip the queue)
+    proposeScopeChanges: boolean     // generate a 1-click scope-change proposal (never auto-widens)
+  }
+
   // Lifecycle (Req 1.9–1.13)
   lifecycle: 'describe' | 'preview' | 'dry-run' | 'deploy' | 'monitor' | 'pause' | 'retire'
   hadSuccessfulDryRun: boolean         // gates deploy (Req 7.10)
@@ -288,6 +301,15 @@ const AgentSchema = new Schema<IAgent>({
     tokenCap:            { type: Number, default: 0 },
     tokensThisPeriod:    { type: Number, default: 0 },
     periodStart:         { type: Date, default: Date.now },
+  },
+
+  autoFix: {
+    enabled:             { type: Boolean, default: false },
+    retryTransient:      { type: Boolean, default: true },
+    autoRaiseBudget:     { type: Boolean, default: false },
+    budgetCeiling:       { type: Number, default: 0 },
+    autoApplyLowStakes:  { type: Boolean, default: false },
+    proposeScopeChanges: { type: Boolean, default: false },
   },
 
   lifecycle:             { type: String, enum: ['describe', 'preview', 'dry-run', 'deploy', 'monitor', 'pause', 'retire'], default: 'describe' },

@@ -45,7 +45,36 @@ const MUTABLE_FIELDS = [
   'signOffPolicy',
   'trustScope',
   'assignedSkillIds',
+  'autoFix',
 ] as const
+
+/**
+ * Hard cap on what a user may set as their auto-fix budget ceiling (defense in
+ * depth: even an opted-in agent can never auto-raise its budget past this). Tune
+ * via env if needed; defaults to 1,000,000 tokens.
+ */
+function maxAutoFixCeiling(): number {
+  const n = Number(process.env.AUTOFIX_MAX_BUDGET_CEILING)
+  return Number.isFinite(n) && n > 0 ? n : 1_000_000
+}
+
+/**
+ * Coerce + clamp a client-supplied autoFix payload into the safe shape. Unknown
+ * keys are dropped; `budgetCeiling` is clamped to [0, maxAutoFixCeiling]. This is
+ * the server-side guarantee that the no-approval tiers stay bounded.
+ */
+function asAutoFix(value: unknown): Record<string, unknown> {
+  const s = (value ?? {}) as Record<string, unknown>
+  const ceiling = Math.max(0, Math.min(Number(s.budgetCeiling) || 0, maxAutoFixCeiling()))
+  return {
+    enabled: s.enabled === true,
+    retryTransient: s.retryTransient !== false,
+    autoRaiseBudget: s.autoRaiseBudget === true,
+    budgetCeiling: ceiling,
+    autoApplyLowStakes: s.autoApplyLowStakes === true,
+    proposeScopeChanges: s.proposeScopeChanges === true,
+  }
+}
 
 /** True iff `value` is a known lifecycle EVENT the FSM accepts. */
 function isLifecycleEvent(value: unknown): value is LifecycleEvent {
@@ -148,10 +177,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     let trustScopeChanged = false
     for (const field of MUTABLE_FIELDS) {
       if (field in body && body[field] !== undefined) {
-        agent.set(field, body[field])
+        // autoFix is clamped server-side (budget ceiling capped, unknown keys
+        // dropped) so the no-approval tiers can never exceed safe bounds.
+        agent.set(field, field === 'autoFix' ? asAutoFix(body[field]) : body[field])
         // `schedule` is a Mixed path — mark it modified so Mongoose persists a
         // whole-object replacement reliably.
         if (field === 'schedule') agent.markModified('schedule')
+        if (field === 'autoFix') agent.markModified('autoFix')
         if (field === 'trustScope') trustScopeChanged = true
       }
     }
