@@ -226,6 +226,7 @@ function SidebarView({
           {isAdmin && [
             { href: '/app/admin/updates', label: 'Updates', icon: BellRing },
             { href: '/app/admin/support', label: 'Support', icon: LifeBuoy },
+            { href: '/app/admin/messaging', label: 'Messaging', icon: Plug },
           ].map(({ href, label, icon: Icon }) => {
             const active = adminPath === href
             return (

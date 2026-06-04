@@ -6,10 +6,41 @@ import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { isAdminUser } from '@/lib/admin'
 import { agentLog } from '@/lib/agents/redact'
-import { setTelegramWebhook, telegramConfigured } from '@/lib/messaging/telegram'
+import { setTelegramWebhook, getTelegramWebhookInfo, telegramConfigured, telegramBotUsername } from '@/lib/messaging/telegram'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
+/** GET → readiness checklist + current webhook registration (admin only). */
+export async function GET() {
+  const { userId } = await auth()
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdminUser(userId)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const hasToken = telegramConfigured()
+  const hasUsername = !!telegramBotUsername()
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET
+  const hasSecret = !!secret && secret.length >= 8
+
+  const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'https://secondbraincloud.com'
+  const expectedUrl = `${base}/api/messaging/telegram/webhook`
+
+  let webhook: { registered: boolean; url: string; pending: number; matches: boolean } | null = null
+  if (hasToken) {
+    const info = await getTelegramWebhookInfo()
+    if (info.ok) {
+      webhook = { registered: info.url.length > 0, url: info.url, pending: info.pending, matches: info.url === expectedUrl }
+    }
+  }
+
+  return NextResponse.json({
+    checklist: { hasToken, hasUsername, hasSecret },
+    botUsername: telegramBotUsername(),
+    expectedUrl,
+    webhook,
+    ready: hasToken && hasSecret,
+  })
+}
 
 export async function POST() {
   const { userId } = await auth()
