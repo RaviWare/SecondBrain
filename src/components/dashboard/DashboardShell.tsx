@@ -10,6 +10,7 @@ import { KnowledgeGraph } from '@/components/dashboard/KnowledgeGraph'
 import { MemoryOverview } from '@/components/dashboard/MemoryOverview'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { RecentSources } from '@/components/dashboard/RecentSources'
+import { SquadMissionsPanel } from '@/components/dashboard/SquadMissionsPanel'
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
 import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
 
@@ -36,6 +37,9 @@ export function DashboardShell() {
           </section>
 
           <aside className="grid gap-4 lg:grid-cols-2 min-[1180px]:block min-[1180px]:space-y-4 min-[1180px]:pt-[78px] 2xl:gap-5 2xl:min-[1180px]:space-y-5">
+            <div className="dash-rise" style={{ animationDelay: '0.26s' }}>
+              <SquadMissionsPanel />
+            </div>
             <div className="dash-rise" style={{ animationDelay: '0.3s' }}>
               <RecentActivity />
             </div>

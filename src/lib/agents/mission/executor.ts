@@ -194,10 +194,12 @@ export function selectReadyTasks(input: SelectInput): ExecTask[] {
 
   // Guarantee 5 — compute the free Concurrency_Limit slots, clamped at zero so it can
   // NEVER go negative (Req 5.3, 5.4). Sanitize both operands first so a non-finite or
-  // negative count/limit cannot fabricate a slot.
+  // negative count/limit cannot fabricate a slot, then FLOOR the result: a slot is a
+  // whole task, so a fractional remaining capacity (e.g. a `0.5` limit) yields ZERO
+  // startable slots — never rounds UP to one, which would exceed the cap (Req 5.4).
   const runningCount = nonNegFinite(input?.runningCount)
   const concurrencyLimit = nonNegFinite(input?.concurrencyLimit)
-  const slots = Math.max(0, concurrencyLimit - runningCount)
+  const slots = Math.floor(Math.max(0, concurrencyLimit - runningCount))
   if (slots === 0) return []
 
   // Build the `key → ExecTask` lookup once for dependency classification (first key wins).
