@@ -699,6 +699,186 @@ MessagingLinkSchema.index(
   { unique: true, partialFilterExpression: { status: { $in: ['pending', 'linked'] } } },
 )
 
+// ── Mission (multi-agent objective layer — Mission_Orchestrator) ────
+// NEW collection. One user-stated Objective and its full lifecycle, plan,
+// execution, deliverables, cost, and safety limits. Strictly ADDITIVE — it
+// references Agent / AgentRun / Proposal BY ID only and duplicates none of their
+// data (Req 12.1, 12.2), and alters no existing collection (Req 12.3). A Mission
+// owns exactly one Task_Graph (the MissionTask rows). The `lifecycle` enum MUST
+// stay in sync with the `MissionState` union in `src/lib/agents/mission/lifecycle.ts`.
+// Every Mission_Task still runs through the existing single audited Run path and
+// every deliverable still resolves through the existing applyProposal choke point —
+// the mission layer adds no new write path.
+export interface IMission extends Document {
+  userId: string                       // Clerk user (indexed) — owner-only visibility (Req 1.7, 12.5)
+  objective: string                    // the user-stated goal (Req 1.1)
+  context: string                      // optional user-supplied context for planning (Req 1.2)
+  leadAgentId: mongoose.Types.ObjectId // selected or auto-selected Lead_Agent (Req 1.3, 1.4)
+  leadAutoSelected: boolean            // true when auto-selected by role fit (Req 1.4, 1.8)
+
+  lifecycle: 'planning' | 'awaiting-plan-approval' | 'running'
+           | 'paused' | 'completed' | 'failed' | 'aborted'   // Req 9.1; initial 'planning' (Req 9.2)
+
+  // Safety limits (Graph_Limit lives on the validated graph; the rest are ceilings)
+  limits: {
+    maxGraphDepth: number              // Graph_Limit depth (Req 5.1)
+    maxTaskCount: number               // Graph_Limit count (Req 5.1)
+    concurrencyLimit: number           // Concurrency_Limit (Req 5.3)
+    tokenCeiling: number               // Mission_Budget token ceiling (Req 5.5); 0 = unlimited
+    costCeiling: number                // Mission_Budget cost ceiling  (Req 5.5); 0 = unlimited
+    wallClockLimitMs: number           // Wall_Clock_Limit (Req 5.8); 0 = unlimited
+  }
+
+  // Accumulated usage — derived from real AgentRun records of this mission's tasks (Req 11.2)
+  usage: { tokensUsed: number; costUsed: number }
+
+  // Outcome bookkeeping
+  failureReason: string | null         // cycle / graph-limit / ceiling type reached (Req 2.7, 5.2, 5.6)
+  ceilingReached: 'mission-token-ceiling' | 'mission-cost-ceiling' | 'wall-clock' | null  // Req 5.6, 5.9
+
+  // Inter-agent collaboration (embedded; surfaced in Activity_Feed + Timeline)
+  handoffs: Array<{ at: Date; fromTaskKey: string; toTaskKey: string
+                    runId: mongoose.Types.ObjectId; proposalIds: mongoose.Types.ObjectId[] }>  // Req 7.1
+  mentions: Array<{ at: Date; byTaskKey: string; byAgentId: mongoose.Types.ObjectId
+                    referencedTaskKey: string; referencedAgentId: mongoose.Types.ObjectId; note: string }>  // Req 7.2
+
+  startedAt: Date | null               // set on transition to 'running' (anchors Wall_Clock + Timeline T+0)
+  approvedAt: Date | null              // explicit Plan_Approval instant (Req 3.4)
+  finishedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+const MissionHandoffSchema = new Schema<IMission['handoffs'][number]>({
+  at:          { type: Date, default: Date.now },
+  fromTaskKey: { type: String, required: true },
+  toTaskKey:   { type: String, required: true },
+  runId:       { type: Schema.Types.ObjectId, ref: 'AgentRun', required: true },
+  proposalIds: [{ type: Schema.Types.ObjectId, ref: 'Proposal' }],
+}, { _id: false })
+
+const MissionMentionSchema = new Schema<IMission['mentions'][number]>({
+  at:                 { type: Date, default: Date.now },
+  byTaskKey:          { type: String, required: true },
+  byAgentId:          { type: Schema.Types.ObjectId, ref: 'Agent', required: true },
+  referencedTaskKey:  { type: String, default: '' },
+  referencedAgentId:  { type: Schema.Types.ObjectId, ref: 'Agent', required: true },
+  note:               { type: String, default: '' },
+}, { _id: false })
+
+const MissionSchema = new Schema<IMission>({
+  userId:           { type: String, required: true, index: true },
+  objective:        { type: String, required: true },
+  context:          { type: String, default: '' },
+  leadAgentId:      { type: Schema.Types.ObjectId, ref: 'Agent', required: true },
+  leadAutoSelected: { type: Boolean, default: false },
+
+  lifecycle:        { type: String, enum: ['planning', 'awaiting-plan-approval', 'running', 'paused', 'completed', 'failed', 'aborted'], default: 'planning' },
+
+  limits: {
+    maxGraphDepth:    { type: Number, default: 0 },
+    maxTaskCount:     { type: Number, default: 0 },
+    concurrencyLimit: { type: Number, default: 0 },
+    tokenCeiling:     { type: Number, default: 0 },
+    costCeiling:      { type: Number, default: 0 },
+    wallClockLimitMs: { type: Number, default: 0 },
+  },
+
+  usage: {
+    tokensUsed:     { type: Number, default: 0 },
+    costUsed:       { type: Number, default: 0 },
+  },
+
+  failureReason:    { type: String, default: null },
+  ceilingReached:   { type: String, enum: ['mission-token-ceiling', 'mission-cost-ceiling', 'wall-clock', null], default: null },
+
+  handoffs:         { type: [MissionHandoffSchema], default: [] },
+  mentions:         { type: [MissionMentionSchema], default: [] },
+
+  startedAt:        { type: Date, default: null },
+  approvedAt:       { type: Date, default: null },
+  finishedAt:       { type: Date, default: null },
+}, { timestamps: true })
+
+MissionSchema.index({ userId: 1 })
+MissionSchema.index({ userId: 1, lifecycle: 1 })
+
+// ── MissionTask (one node of a Mission's Task_Graph) ────────
+// NEW collection. References the executing AgentRun and emitted Proposals BY ID —
+// the deliverables remain in the existing collections (Req 12.2). `status` MUST
+// stay in sync with the `TaskStatus` union in `src/lib/agents/mission/executor.ts`.
+// A partial unique index on { missionId, key } guarantees stable, non-duplicated
+// task keys within a single mission's graph — the same partial-unique discipline
+// used by InstalledSkill and SupportTicket above.
+export interface IMissionTask extends Document {
+  userId: string                       // owner (indexed, Req 12.5)
+  missionId: mongoose.Types.ObjectId   // parent Mission (indexed)
+  key: string                          // stable within-graph key (e.g. 't1')
+  description: string                  // Req 2.2
+
+  assignedAgentId: mongoose.Types.ObjectId  // best-fit by role; Lead_Agent on fallback (Req 2.3, 2.4)
+  assignmentFallback: boolean          // recorded when assigned to Lead_Agent as fallback (Req 2.4)
+
+  dependsOn: string[]                  // keys of Task_Dependencies (DAG edges) (Req 2.5)
+
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'blocked'   // Req 2.2, 4.1, 4.5, 4.6
+
+  // Produced output — a REFERENCE to the originating Run + its emitted Proposals (Req 4.4, 2.2)
+  outputRef: { runId: mongoose.Types.ObjectId | null; proposalIds: mongoose.Types.ObjectId[] }
+
+  // Handoff inputs this task received from completed dependencies (Req 4.3, 7.1)
+  handoffInputs: Array<{ fromTaskKey: string; runId: mongoose.Types.ObjectId }>
+
+  statusHistory: Array<{ status: string; at: Date }>   // real transition times for the Timeline (Req 8.2, 8.6)
+  failureReason: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+const MissionTaskHandoffInputSchema = new Schema<IMissionTask['handoffInputs'][number]>({
+  fromTaskKey: { type: String, required: true },
+  runId:       { type: Schema.Types.ObjectId, ref: 'AgentRun', required: true },
+}, { _id: false })
+
+const MissionTaskStatusHistorySchema = new Schema<IMissionTask['statusHistory'][number]>({
+  status: { type: String, required: true },
+  at:     { type: Date, default: Date.now },
+}, { _id: false })
+
+const MissionTaskSchema = new Schema<IMissionTask>({
+  userId:             { type: String, required: true, index: true },
+  missionId:          { type: Schema.Types.ObjectId, ref: 'Mission', required: true, index: true },
+  key:                { type: String, required: true },
+  description:        { type: String, required: true },
+
+  assignedAgentId:    { type: Schema.Types.ObjectId, ref: 'Agent', required: true },
+  assignmentFallback: { type: Boolean, default: false },
+
+  dependsOn:          { type: [String], default: [] },
+
+  status:             { type: String, enum: ['pending', 'running', 'completed', 'failed', 'blocked'], default: 'pending' },
+
+  outputRef: {
+    runId:            { type: Schema.Types.ObjectId, ref: 'AgentRun', default: null },
+    proposalIds:      [{ type: Schema.Types.ObjectId, ref: 'Proposal' }],
+  },
+
+  handoffInputs:      { type: [MissionTaskHandoffInputSchema], default: [] },
+  statusHistory:      { type: [MissionTaskStatusHistorySchema], default: [] },
+  failureReason:      { type: String, default: null },
+}, { timestamps: true })
+
+MissionTaskSchema.index({ userId: 1, missionId: 1 })
+
+// One task `key` per mission: a partial unique index (scoped to docs that carry
+// both fields) guarantees stable, non-duplicated Task_Graph keys within a single
+// Mission while leaving keys free to repeat ACROSS missions — the same
+// partial-unique discipline as InstalledSkill / SupportTicket above.
+MissionTaskSchema.index(
+  { missionId: 1, key: 1 },
+  { unique: true, partialFilterExpression: { missionId: { $exists: true }, key: { $exists: true } } },
+)
+
 // ── Model exports (safe re-use in hot-reload) ───────────────
 export const Vault:    Model<IVault>    = mongoose.models.Vault    || mongoose.model('Vault',    VaultSchema)
 export const Source:   Model<ISource>   = mongoose.models.Source   || mongoose.model('Source',   SourceSchema)
@@ -716,3 +896,5 @@ export const UpstreamWatch: Model<IUpstreamWatch> = mongoose.models.UpstreamWatc
 export const AdminNotification: Model<IAdminNotification> = mongoose.models.AdminNotification || mongoose.model('AdminNotification', AdminNotificationSchema)
 export const SupportTicket: Model<ISupportTicket> = mongoose.models.SupportTicket || mongoose.model('SupportTicket', SupportTicketSchema)
 export const MessagingLink: Model<IMessagingLink> = mongoose.models.MessagingLink || mongoose.model('MessagingLink', MessagingLinkSchema)
+export const Mission:  Model<IMission>  = mongoose.models.Mission  || mongoose.model('Mission',  MissionSchema)
+export const MissionTask: Model<IMissionTask> = mongoose.models.MissionTask || mongoose.model('MissionTask', MissionTaskSchema)

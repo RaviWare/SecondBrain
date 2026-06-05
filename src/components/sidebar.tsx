@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Sparkles,
   Tags,
+  Target,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -47,6 +48,7 @@ const nav = [
   { href: '/app/agents/board', label: 'Board', icon: KanbanSquare },
   { href: '/app/agents/skills', label: 'Skills', icon: Blocks },
   { href: '/app/agents/cost', label: 'Cost', icon: Wallet },
+  { href: '/app/missions', label: 'Missions', icon: Target },
   { href: '/app/agent', label: 'AI Agent', icon: Bot },
   { href: '/app/query', label: 'AI Assistant', icon: Sparkles },
   { href: '/app/integrations', label: 'Integrations', icon: Plug },
