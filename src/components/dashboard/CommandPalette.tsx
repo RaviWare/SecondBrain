@@ -45,6 +45,9 @@ export function CommandPalette() {
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  // The element focused before the palette opened, so focus can be restored on close.
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
   const titleId = useId()
 
   useEffect(() => setMounted(true), [])
@@ -92,18 +95,31 @@ export function CommandPalette() {
     }
   }, [open])
 
-  // On open: focus the input. Reset the active row whenever the result set changes.
+  // On open: remember the previously-focused element and focus the input. On close,
+  // restore focus to where it was (so keyboard users land back on the trigger).
   useEffect(() => {
     if (open) {
-      // Defer so the input exists in the DOM before focusing.
+      restoreFocusRef.current = (document.activeElement as HTMLElement) ?? null
       const id = window.setTimeout(() => inputRef.current?.focus(), 0)
       return () => window.clearTimeout(id)
     }
+    const el = restoreFocusRef.current
+    if (el && document.contains(el)) el.focus()
   }, [open])
 
   useEffect(() => {
     setActiveIndex(0)
   }, [query])
+
+  // Lock body scroll while the palette is open so the page behind it doesn't move.
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
 
   // Keep the active row scrolled into view as the user arrows through.
   useEffect(() => {
@@ -134,6 +150,28 @@ export function CommandPalette() {
       if (e.key === 'Enter') {
         e.preventDefault()
         run(results[activeIndex])
+        return
+      }
+      if (e.key === 'Tab') {
+        // Trap focus within the panel so keyboard users can't tab out of the modal.
+        const root = panelRef.current
+        if (!root) return
+        const focusables = Array.from(
+          root.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null)
+        if (focusables.length === 0) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        const active = document.activeElement
+        if (e.shiftKey && active === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     },
     [results, activeIndex, run, close],
@@ -163,6 +201,7 @@ export function CommandPalette() {
       />
 
       <div
+        ref={panelRef}
         className="relative w-full max-w-[560px] overflow-hidden rounded-2xl"
         style={{
           background: 'var(--bg-elev-3, #1c1c1f)',
