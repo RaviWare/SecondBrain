@@ -20,8 +20,9 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { CornerDownLeft, Search, X } from 'lucide-react'
+import { Clock, CornerDownLeft, Search, X } from 'lucide-react'
 import { COMMANDS, filterCommands, groupCommands, type PaletteCommand } from '@/lib/command-palette'
+import { loadRecents, pushRecent, resolveRecents, saveRecents } from '@/lib/command-recents'
 
 /** True when the keydown is the palette-open chord (⌘K / Ctrl+K). */
 function isOpenChord(e: KeyboardEvent): boolean {
@@ -42,6 +43,8 @@ export function CommandPalette() {
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [mounted, setMounted] = useState(false)
+  // Recent command ids (MRU). Loaded from localStorage when the palette opens.
+  const [recentIds, setRecentIds] = useState<string[]>([])
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
@@ -52,10 +55,23 @@ export function CommandPalette() {
 
   useEffect(() => setMounted(true), [])
 
-  // The ordered, flat result list (what arrow keys traverse) + the grouped view (what
-  // we render). Both derive from the same pure matcher, so they never disagree.
-  const results = useMemo(() => filterCommands(query, COMMANDS), [query])
-  const grouped = useMemo(() => groupCommands(results), [results])
+  // The grouped sections to render + the flat ordered list arrow keys traverse. Both
+  // derive from the same source so they never disagree. When the query is empty we
+  // prepend a "Recent" section (the user's MRU commands) above the standard groups; a
+  // non-empty query shows ranked matches only (recents are a browse aid, not a filter).
+  const byId = useCallback((id: string) => COMMANDS.find((c) => c.id === id), [])
+  const sections = useMemo(() => {
+    const trimmed = query.trim()
+    if (trimmed.length === 0) {
+      const recent = resolveRecents(recentIds, byId)
+      const base = groupCommands(filterCommands('', COMMANDS))
+      return recent.length > 0 ? [{ group: 'Recent', commands: recent }, ...base] : base
+    }
+    return groupCommands(filterCommands(query, COMMANDS))
+  }, [query, recentIds, byId])
+
+  // Flattened, in render order — the linear list arrow keys + Enter operate on.
+  const results = useMemo(() => sections.flatMap((s) => s.commands), [sections])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -66,10 +82,14 @@ export function CommandPalette() {
   const run = useCallback(
     (cmd: PaletteCommand | undefined) => {
       if (!cmd) return
+      // Record this command as recent (MRU, persisted) before navigating.
+      const next = pushRecent(recentIds, cmd.id)
+      setRecentIds(next)
+      saveRecents(next)
       close()
       router.push(cmd.href)
     },
-    [close, router],
+    [close, router, recentIds],
   )
 
   // Global open chord (⌘K / Ctrl+K, or "/" when not typing in a field), plus a custom
@@ -95,10 +115,11 @@ export function CommandPalette() {
     }
   }, [open])
 
-  // On open: remember the previously-focused element and focus the input. On close,
-  // restore focus to where it was (so keyboard users land back on the trigger).
+  // On open: remember the previously-focused element and focus the input, and refresh
+  // the recents from storage. On close, restore focus to where it was.
   useEffect(() => {
     if (open) {
+      setRecentIds(loadRecents())
       restoreFocusRef.current = (document.activeElement as HTMLElement) ?? null
       const id = window.setTimeout(() => inputRef.current?.focus(), 0)
       return () => window.clearTimeout(id)
@@ -249,12 +270,13 @@ export function CommandPalette() {
               No matches for “{query.trim()}”.
             </p>
           ) : (
-            grouped.map((section) => (
+            sections.map((section) => (
               <div key={section.group} className="px-2 pb-1.5">
                 <p
-                  className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest"
+                  className="flex items-center gap-1.5 px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest"
                   style={{ color: 'var(--text-secondary, var(--text-primary))', opacity: 0.7 }}
                 >
+                  {section.group === 'Recent' && <Clock className="h-3 w-3" aria-hidden />}
                   {section.group}
                 </p>
                 {section.commands.map((cmd) => {
@@ -263,7 +285,7 @@ export function CommandPalette() {
                   const active = index === activeIndex
                   return (
                     <button
-                      key={cmd.id}
+                      key={`${section.group}:${cmd.id}`}
                       type="button"
                       data-cmd-index={index}
                       onMouseMove={() => setActiveIndex(index)}
