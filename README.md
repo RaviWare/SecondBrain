@@ -1,3 +1,16 @@
+# SecondBrain Cloud
+
+> 🧭 **Working on this project (human or AI agent)? Read [`HANDOFF.md`](./HANDOFF.md) first.**
+> It is the single source of truth: the mandatory glass theme, the no-dummy-data rule,
+> build/test/deploy process, the Coolify + cron setup, git safety, and environment quirks.
+> [`AGENTS.md`](./AGENTS.md) is the short version. When rules conflict, `HANDOFF.md` wins.
+
+A private AI operating system — a knowledge vault that turns sources into cited memory,
+plus always-on AI agents. Live at https://secondbraincloud.com (Next.js 16, React 19,
+Tailwind v4, MongoDB, Clerk, Claude).
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
