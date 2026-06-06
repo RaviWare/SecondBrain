@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUpRight, CheckCircle2, FileText, Sparkles } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, FileText, type LucideIcon, MessageCircleQuestion, Network, Plus, Sparkles, Upload } from 'lucide-react'
 import { useDashboardData, useMemoryOverview } from '@/components/dashboard/DashboardData'
 
 export function MemoryOverview() {
@@ -22,25 +22,65 @@ export function MemoryOverview() {
       </div>
 
       <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4 2xl:gap-3">
-        <OverviewCard title="Most used sources" action="View all" href="/app/wiki?view=sources" loading={loading} empty={mostUsedSources.length === 0} emptyText="No sources yet">
+        <OverviewCard
+          title="Most used sources"
+          action="View all"
+          href="/app/wiki?view=sources"
+          loading={loading}
+          empty={mostUsedSources.length === 0}
+          emptyText="Add your first source to start building memory."
+          emptyCta="Add a source"
+          emptyHref="/app/ingest"
+          emptyIcon={Upload}
+        >
           {mostUsedSources.map(s => (
             <ListRow key={s.href} icon={FileText} label={s.label} value={s.value} tone="blue" href={s.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="Top topics" action="View all" href="/app/wiki?type=concept" loading={loading} empty={topTopics.length === 0} emptyText="No topics yet">
+        <OverviewCard
+          title="Top topics"
+          action="View all"
+          href="/app/wiki?type=concept"
+          loading={loading}
+          empty={topTopics.length === 0}
+          emptyText="Topics emerge automatically as you add sources."
+          emptyCta="Add a source"
+          emptyHref="/app/ingest"
+          emptyIcon={Network}
+        >
           {topTopics.map(t => (
             <TopicRow key={t.href} label={t.label} value={t.value} max={maxTopic} href={t.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="Recent decisions" action="View all" href="/app/wiki?type=synthesis" loading={loading} empty={recentDecisions.length === 0} emptyText="No decisions yet">
+        <OverviewCard
+          title="Recent decisions"
+          action="View all"
+          href="/app/wiki?type=synthesis"
+          loading={loading}
+          empty={recentDecisions.length === 0}
+          emptyText="Decisions you capture and synthesize will appear here."
+          emptyCta="Add a note"
+          emptyHref="/app/ingest?type=note"
+          emptyIcon={Plus}
+        >
           {recentDecisions.map(d => (
             <ListRow key={d.href} icon={CheckCircle2} label={d.label} value={d.value} tone="green" href={d.href} />
           ))}
         </OverviewCard>
 
-        <OverviewCard title="AI answers" action="View all" href="/app/query" loading={loading} empty={aiAnswers.length === 0} emptyText="No questions asked yet">
+        <OverviewCard
+          title="AI answers"
+          action="View all"
+          href="/app/query"
+          loading={loading}
+          empty={aiAnswers.length === 0}
+          emptyText="Ask your memory a question to get a cited answer."
+          emptyCta="Ask a question"
+          emptyHref="/app/query"
+          emptyIcon={MessageCircleQuestion}
+        >
           {aiAnswers.map((a, i) => (
             <ListRow key={i} icon={Sparkles} label={a.label} value={a.value} tone="orange" href={a.href} />
           ))}
@@ -57,6 +97,9 @@ function OverviewCard({
   loading,
   empty,
   emptyText,
+  emptyCta,
+  emptyHref,
+  emptyIcon: EmptyIcon,
   children,
 }: {
   title: string
@@ -65,6 +108,9 @@ function OverviewCard({
   loading: boolean
   empty: boolean
   emptyText: string
+  emptyCta?: string
+  emptyHref?: string
+  emptyIcon?: LucideIcon
   children: React.ReactNode
 }) {
   return (
@@ -85,7 +131,27 @@ function OverviewCard({
             </div>
           ))
         ) : empty ? (
-          <p className="py-3 text-center text-[11px] text-[var(--dash-subtle)]">{emptyText}</p>
+          <div className="flex flex-col items-center gap-2.5 py-3 text-center">
+            {EmptyIcon && (
+              <span
+                className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--dash-border)] bg-[var(--dash-soft)] text-[var(--dash-subtle)]"
+                aria-hidden
+              >
+                <EmptyIcon className="h-4 w-4" />
+              </span>
+            )}
+            <p className="text-[11px] leading-snug text-[var(--dash-subtle)]">{emptyText}</p>
+            {emptyCta && emptyHref && (
+              <Link
+                href={emptyHref}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition hover:-translate-y-0.5"
+                style={{ background: 'var(--dash-card-solid)', border: '1px solid var(--dash-border)', color: 'var(--dash-accent)' }}
+              >
+                {emptyCta}
+                <ArrowUpRight className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
         ) : (
           children
         )}
