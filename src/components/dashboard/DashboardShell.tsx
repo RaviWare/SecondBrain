@@ -13,6 +13,7 @@ import { RecentSources } from '@/components/dashboard/RecentSources'
 import { SquadMissionsPanel } from '@/components/dashboard/SquadMissionsPanel'
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
 import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
+import { useSquadSnapshot } from '@/lib/use-squad-snapshot'
 
 export function DashboardShell() {
   return (
@@ -123,21 +124,47 @@ function DashboardHeader() {
 
         <CreditsPill />
 
-        <Link
-          href="/app/log"
-          aria-label="Notifications"
-          className="dash-menu dash-interactive group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[var(--dash-text)]"
-        >
-          <Bell className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" />
-          <span className="absolute right-[9px] top-[9px] flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--dash-accent)] opacity-60 dash-live-dot" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--dash-accent)]" />
-          </span>
-        </Link>
+        <NotificationBell />
 
         <TopActions />
       </div>
     </header>
+  )
+}
+
+// Notification bell — the dot is bound to REAL pending sign-off state (the Aegis
+// queue depth from useSquadSnapshot). NO DUMMY DATA: no pending → no dot, and the
+// link routes to where the user can act (agents queue when something's waiting,
+// the activity log otherwise).
+function NotificationBell() {
+  const { pendingSignOff, loading } = useSquadSnapshot()
+  const hasPending = !loading && pendingSignOff > 0
+  const href = hasPending ? '/app/agents' : '/app/log'
+  const label = hasPending
+    ? `${pendingSignOff} item${pendingSignOff === 1 ? '' : 's'} need your sign-off`
+    : 'Notifications'
+
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className="dash-panel dash-interactive relative grid h-11 w-11 shrink-0 place-items-center !rounded-2xl text-[var(--dash-muted)] transition hover:text-[var(--dash-text)]"
+    >
+      <Bell className="h-[18px] w-[18px]" />
+      {hasPending && (
+        <>
+          <span
+            aria-hidden
+            className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[var(--dash-accent)] shadow-[0_0_0_2px_var(--dash-card-solid)]"
+          />
+          <span
+            aria-hidden
+            className="absolute right-2.5 top-2.5 h-2 w-2 animate-ping rounded-full bg-[var(--dash-accent)]"
+          />
+        </>
+      )}
+    </Link>
   )
 }
 

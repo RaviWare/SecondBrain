@@ -19,6 +19,10 @@ import {
   deriveRecentDecisions,
   deriveRecentPages,
   derivePageStats,
+  deriveDailyTrend,
+  dailyTrendFromTimestamps,
+  startOfDayMs,
+  TREND_DAYS,
   type DashboardPageRow,
 } from '@/lib/dashboard-derive'
 
@@ -31,8 +35,11 @@ export async function GET() {
   await connectDB()
 
   const weekAgo = Date.now() - WEEK_MS
+  const dayStart = startOfDayMs(Date.now())
+  // Window for the daily sparkline trends (real history, oldest → newest).
+  const trendWindowStart = new Date(dayStart - (TREND_DAYS - 1) * 24 * 60 * 60 * 1000)
 
-  const [vault, plan, recentLogs, allPages, queryCount, queriesThisWeek] = await Promise.all([
+  const [vault, plan, recentLogs, allPages, queryCount, queriesThisWeek, queryTrendLogs] = await Promise.all([
     Vault.findOne({ userId }),
     UserPlan.findOne({ userId }),
     Log.find({ userId }).sort({ createdAt: -1 }).limit(10).lean(),
@@ -40,6 +47,8 @@ export async function GET() {
     // Cheap server-side counts (no row loading) for the AI-answers stat.
     Log.countDocuments({ userId, operation: 'query' }),
     Log.countDocuments({ userId, operation: 'query', createdAt: { $gte: new Date(weekAgo) } }),
+    // Just the timestamps of recent query logs, for the AI-answers daily trend.
+    Log.find({ userId, operation: 'query', createdAt: { $gte: trendWindowStart } }, 'createdAt').lean(),
   ])
 
   const pages = allPages as unknown as DashboardPageRow[]
@@ -61,6 +70,19 @@ export async function GET() {
     aiAnswers: { total: queryCount, week: queriesThisWeek },
   }
 
+  // ── REAL daily trends (one point per day, oldest → newest) for the stat
+  //    sparklines — actual creation/query history, never a synthesized curve. ──
+  const trends = {
+    sources: deriveDailyTrend(pages, (p) => p.type === 'source-summary', dayStart),
+    notes: deriveDailyTrend(pages, () => true, dayStart),
+    topics: deriveDailyTrend(pages, (p) => p.type === 'concept', dayStart),
+    decisions: deriveDailyTrend(pages, (p) => p.type === 'synthesis', dayStart),
+    aiAnswers: dailyTrendFromTimestamps(
+      (queryTrendLogs as Array<{ createdAt: Date }>).map((l) => l.createdAt),
+      dayStart,
+    ),
+  }
+
   return NextResponse.json(
     {
       vault,
@@ -68,6 +90,7 @@ export async function GET() {
       recentLogs,
       recentPages,
       stats,
+      trends,
       topTopics: deriveTopTopics(pages, 5),
       mostUsedSources: deriveMostUsedSources(pages, 5),
       recentDecisions: deriveRecentDecisions(pages, 5),

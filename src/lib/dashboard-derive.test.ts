@@ -16,6 +16,10 @@ import {
   deriveRecentDecisions,
   deriveRecentPages,
   derivePageStats,
+  deriveDailyTrend,
+  dailyTrendFromTimestamps,
+  startOfDayMs,
+  TREND_DAYS,
   DEFAULT_GRAPH_NODE_CAP,
   type DashboardPageRow,
 } from './dashboard-derive'
@@ -181,5 +185,66 @@ describe('derivePageStats', () => {
     const s = derivePageStats([], WEEK_AGO)
     expect(s.sources).toEqual({ total: 0, week: 0 })
     expect(s.notes).toEqual({ total: 0, week: 0 })
+  })
+})
+
+// ── Daily trends (real history, honest about zero) ──────────────────────────────
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+describe('deriveDailyTrend', () => {
+  // Anchor all buckets off the same day-start the production code uses, so the test
+  // is timezone-independent (both sides derive from startOfDayMs).
+  const dayStart = startOfDayMs(NOW)
+
+  it('buckets matching pages by local day, oldest → newest, today last', () => {
+    const pages = [
+      // today (bucket TREND_DAYS-1)
+      page({ slug: 't1', type: 'source-summary', createdAt: new Date(dayStart + 1000) }),
+      page({ slug: 't2', type: 'source-summary', createdAt: new Date(dayStart + 2000) }),
+      // yesterday (bucket TREND_DAYS-2)
+      page({ slug: 'y1', type: 'source-summary', createdAt: new Date(dayStart - DAY_MS + 5000) }),
+      // a non-matching type — must not be counted
+      page({ slug: 'c1', type: 'concept', createdAt: new Date(dayStart + 3000) }),
+    ]
+    const trend = deriveDailyTrend(pages, (p) => p.type === 'source-summary', dayStart)
+    expect(trend).toHaveLength(TREND_DAYS)
+    expect(trend[TREND_DAYS - 1]).toBe(2) // today
+    expect(trend[TREND_DAYS - 2]).toBe(1) // yesterday
+    // every other bucket is an honest zero
+    expect(trend.slice(0, TREND_DAYS - 2).every((n) => n === 0)).toBe(true)
+  })
+
+  it('ignores pages outside the window and is honest about zero (empty → all zeros)', () => {
+    const old = page({ slug: 'ancient', type: 'concept', createdAt: new Date(dayStart - 100 * DAY_MS) })
+    const trend = deriveDailyTrend([old], () => true, dayStart)
+    expect(trend).toEqual(new Array(TREND_DAYS).fill(0))
+    expect(deriveDailyTrend([], () => true, dayStart)).toEqual(new Array(TREND_DAYS).fill(0))
+  })
+
+  it('skips unparseable timestamps without throwing', () => {
+    const bad = page({ slug: 'bad', type: 'concept', createdAt: 'not-a-date' })
+    expect(() => deriveDailyTrend([bad], () => true, dayStart)).not.toThrow()
+    expect(deriveDailyTrend([bad], () => true, dayStart)).toEqual(new Array(TREND_DAYS).fill(0))
+  })
+})
+
+describe('dailyTrendFromTimestamps', () => {
+  const dayStart = startOfDayMs(NOW)
+
+  it('buckets raw timestamps the same way as deriveDailyTrend', () => {
+    const ts = [
+      new Date(dayStart + 1000), // today
+      new Date(dayStart - DAY_MS + 1000), // yesterday
+      new Date(dayStart - DAY_MS + 2000), // yesterday
+    ]
+    const trend = dailyTrendFromTimestamps(ts, dayStart)
+    expect(trend).toHaveLength(TREND_DAYS)
+    expect(trend[TREND_DAYS - 1]).toBe(1)
+    expect(trend[TREND_DAYS - 2]).toBe(2)
+  })
+
+  it('empty input is honest all-zeros', () => {
+    expect(dailyTrendFromTimestamps([], dayStart)).toEqual(new Array(TREND_DAYS).fill(0))
   })
 })

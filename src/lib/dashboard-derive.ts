@@ -162,6 +162,13 @@ function ms(v: Date | string | number): number {
   return Number.isNaN(t) ? 0 : t
 }
 
+/** Start-of-day (local) epoch ms for a given instant — anchors the daily trend window. */
+export function startOfDayMs(atMs: number): number {
+  const d = new Date(atMs)
+  d.setHours(0, 0, 0, 0)
+  return d.getTime()
+}
+
 /**
  * Top topics = concept pages ranked by their number of relations, with a `weight` of
  * `relations + 1` (so a lone concept still has weight 1). PURE; identical ranking to
@@ -218,6 +225,60 @@ export function deriveRecentPages(pages: ReadonlyArray<DashboardPageRow>, limit 
 export interface StatPair {
   total: number
   week: number
+}
+
+/** Number of points in a stat's real daily trend (one per day, oldest → newest). */
+export const TREND_DAYS = 8
+
+/**
+ * Build a REAL daily-count trend for a predicate over the page set — one bucket per day
+ * for the last `days` days, oldest → newest, each bucket being the count of pages whose
+ * `createdAt` falls on that local day. PURE; the caller passes `dayStartMs` (start of
+ * today, local) so there is no clock here. NO DUMMY DATA: this is the actual creation
+ * history, not a synthesized curve. A day with no pages is an honest `0`.
+ */
+export function deriveDailyTrend(
+  pages: ReadonlyArray<DashboardPageRow>,
+  predicate: (p: DashboardPageRow) => boolean,
+  dayStartMs: number,
+  days: number = TREND_DAYS,
+): number[] {
+  const n = Number.isFinite(days) && days > 0 ? Math.floor(days) : TREND_DAYS
+  const dayMs = 24 * 60 * 60 * 1000
+  // Bucket i covers [dayStartMs - (n-1-i)*day, +1 day): bucket n-1 is "today".
+  const buckets = new Array<number>(n).fill(0)
+  const windowStart = dayStartMs - (n - 1) * dayMs
+  for (const p of Array.isArray(pages) ? pages : []) {
+    if (!predicate(p)) continue
+    const t = new Date(p.createdAt).getTime()
+    if (Number.isNaN(t) || t < windowStart) continue
+    const idx = Math.floor((t - windowStart) / dayMs)
+    if (idx >= 0 && idx < n) buckets[idx] += 1
+  }
+  return buckets
+}
+
+/**
+ * Build a REAL daily-count trend from a set of already-fetched timestamps (e.g. query
+ * Log `createdAt`s for the AI-answers stat). Same bucketing as {@link deriveDailyTrend}.
+ * PURE; honest about zero.
+ */
+export function dailyTrendFromTimestamps(
+  timestamps: ReadonlyArray<Date | string | number>,
+  dayStartMs: number,
+  days: number = TREND_DAYS,
+): number[] {
+  const n = Number.isFinite(days) && days > 0 ? Math.floor(days) : TREND_DAYS
+  const dayMs = 24 * 60 * 60 * 1000
+  const buckets = new Array<number>(n).fill(0)
+  const windowStart = dayStartMs - (n - 1) * dayMs
+  for (const ts of Array.isArray(timestamps) ? timestamps : []) {
+    const t = new Date(ts).getTime()
+    if (Number.isNaN(t) || t < windowStart) continue
+    const idx = Math.floor((t - windowStart) / dayMs)
+    if (idx >= 0 && idx < n) buckets[idx] += 1
+  }
+  return buckets
 }
 
 /**

@@ -30,6 +30,14 @@ export type DashboardApi = {
     decisions: StatPair
     aiAnswers: StatPair
   }
+  /** Real daily-count trends (one point per day, oldest → newest) for the sparklines. */
+  trends?: {
+    sources: number[]
+    notes: number[]
+    topics: number[]
+    decisions: number[]
+    aiAnswers: number[]
+  }
   topTopics: Array<{ slug: string; title: string; weight: number }>
   mostUsedSources: Array<{ slug: string; title: string; refs: number }>
   recentDecisions: Array<{ slug: string; title: string; updatedAt: string }>
