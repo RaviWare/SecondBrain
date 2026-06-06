@@ -8,6 +8,7 @@ import {
   Brain, AlertTriangle, Save, Loader2, type LucideIcon,
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/ThemeProvider'
+import { toast } from '@/lib/toast-store'
 
 const SILVER = '#c8c8cf'
 const SURFACE_SOLID = 'var(--bg-elev-3, #1c1c1f)'
@@ -308,7 +309,14 @@ function VaultSection({ vault, onSaved }: { vault: VaultData | null; onSaved: (v
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description: desc }),
       })
-      if (r.ok) { onSaved({ name: name.trim(), description: desc }); setSaved(true); setTimeout(() => setSaved(false), 1800) }
+      if (r.ok) {
+        onSaved({ name: name.trim(), description: desc }); setSaved(true); setTimeout(() => setSaved(false), 1800)
+        toast.success('Vault settings saved')
+      } else {
+        toast.error('Could not save vault settings', { description: `The server returned ${r.status}.` })
+      }
+    } catch {
+      toast.error('Could not save vault settings', { description: 'Check your connection and try again.' })
     } finally { setSaving(false) }
   }
 
@@ -520,12 +528,20 @@ function AgentAccessSection() {
       const d = await r.json()
       if (!r.ok) { setError(d.error || 'Failed to create token'); return }
       setFreshToken(d.token); await load()
+      toast.success('Access token created', { description: 'Copy it now — it won\u2019t be shown again.' })
     } catch { setError('Network error creating token') }
     finally { setCreating(false) }
   }
 
   async function revoke(id: string) {
-    await fetch(`/api/agent/tokens?id=${id}`, { method: 'DELETE' }); await load()
+    try {
+      const r = await fetch(`/api/agent/tokens?id=${id}`, { method: 'DELETE' })
+      await load()
+      if (r.ok) toast.success('Access token revoked')
+      else toast.error('Could not revoke token', { description: `The server returned ${r.status}.` })
+    } catch {
+      toast.error('Could not revoke token', { description: 'Check your connection and try again.' })
+    }
   }
 
   function copy(text: string) {

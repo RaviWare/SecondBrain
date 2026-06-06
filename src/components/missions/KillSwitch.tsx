@@ -37,6 +37,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Ban, Loader2, Pause, Play, TriangleAlert, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from '@/lib/toast-store'
 import type { MissionState } from '@/lib/agents/mission/lifecycle'
 
 // The Kill_Switch actions a user may POST — each maps 1:1 onto a lifecycle FSM event
@@ -106,6 +107,16 @@ export function KillSwitch({ missionId, lifecycle, onUpdated, onChange, classNam
 
         if (res.ok) {
           const data = (await res.json()) as ControlSuccess
+          // Visible confirmation of the control that just took effect (was silent).
+          const verb = action === 'pause' ? 'paused' : action === 'resume' ? 'resumed' : 'aborted'
+          toast.success(`Mission ${verb}`, {
+            description:
+              action === 'abort'
+                ? 'No new agent runs will start.'
+                : action === 'pause'
+                  ? 'Agent runs are held until you resume.'
+                  : 'Agent runs continue.',
+          })
           onUpdated?.(data.mission)
           onChange?.()
           return
