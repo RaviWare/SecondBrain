@@ -13,7 +13,6 @@ import { RecentSources } from '@/components/dashboard/RecentSources'
 import { SquadMissionsPanel } from '@/components/dashboard/SquadMissionsPanel'
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
 import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
-import { CommandPalette } from '@/components/dashboard/CommandPalette'
 import { ActionCenter } from '@/components/dashboard/ActionCenter'
 import { useSquadSnapshot } from '@/lib/use-squad-snapshot'
 
@@ -26,7 +25,6 @@ export function DashboardShell() {
   return (
     <DashboardDataProvider>
       <main className="sb-dashboard min-h-full text-[var(--dash-text)]">
-        <CommandPalette />
         <div className="mx-auto grid max-w-[1640px] gap-4 p-4 sm:p-5 lg:p-6 min-[1180px]:grid-cols-[minmax(0,1fr)_300px] min-[1440px]:grid-cols-[minmax(0,1fr)_336px] 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-5 2xl:p-7">
           <section className="min-w-0 space-y-4 2xl:space-y-5">
             <DashboardHeader />
