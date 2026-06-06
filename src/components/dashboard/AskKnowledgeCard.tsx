@@ -9,6 +9,7 @@ import { suggestedQuestions } from '@/lib/dashboard-data'
 import { useTypewriter } from '@/lib/use-typewriter'
 import { useSpotlight } from '@/lib/use-spotlight'
 import { MandalaCore } from '@/components/dashboard/MandalaCore'
+import { useDashboardData } from '@/components/dashboard/DashboardData'
 
 const addOptions = [
   { label: 'Add note', href: '/app/ingest?type=note', icon: NotebookPen },
@@ -107,6 +108,14 @@ export function AskKnowledgeCard() {
   const router = useRouter()
   const reduceMotion = useReducedMotion()
   const spotlight = useSpotlight<HTMLElement>()
+  const { data } = useDashboardData()
+
+  // Seed the "Try asking" chips from the user's REAL top topics when the vault has
+  // any — a question grounded in their own knowledge beats a generic example. Falls
+  // back to the generic starter prompts only for an empty/new vault (honest: we never
+  // present a fabricated topic as if it were theirs).
+  const realTopics = (data?.topTopics ?? []).slice(0, 4).map((t) => `What do my notes say about ${t.title}?`)
+  const prompts = realTopics.length > 0 ? realTopics : suggestedQuestions
 
   // Typewriter runs only when the user hasn't focused or typed anything.
   const typewriterActive = !focused && question.length === 0
@@ -214,7 +223,7 @@ export function AskKnowledgeCard() {
 
           <p className="mt-4 text-[11px] font-medium text-[var(--dash-muted)]">Try asking:</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {suggestedQuestions.map((prompt, i) => (
+            {prompts.map((prompt, i) => (
               <motion.button
                 key={prompt}
                 type="button"

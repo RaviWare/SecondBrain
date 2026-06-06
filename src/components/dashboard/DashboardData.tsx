@@ -34,17 +34,6 @@ export function useDashboardData(): DashboardState {
 
 const TONES = ['violet', 'blue', 'green', 'orange', 'purple'] as const
 
-/** Build a representative 8-point trend ending at the weekly delta. */
-function buildTrend(week: number): number[] {
-  const peak = Math.max(week, 3)
-  return Array.from({ length: 8 }, (_, i) => {
-    const t = i / 7
-    const eased = Math.pow(t, 1.4)
-    const jitter = i % 2 === 0 ? 0 : peak * 0.08
-    return Math.max(1, Math.round(eased * peak + jitter))
-  })
-}
-
 export type StatVM = {
   label: string
   value: number
@@ -54,23 +43,35 @@ export type StatVM = {
   trend: number[]
 }
 
+/** A flat zero trend — the honest fallback when no real daily history is present yet
+ *  (renders as a flat baseline, never a fabricated curve). */
+const FLAT_TREND: number[] = [0, 0, 0, 0, 0, 0, 0, 0]
+
 export function useStatCards(): StatVM[] {
   const { data } = useDashboardData()
   const s = data?.stats
-  const mk = (label: string, pair: { total: number; week: number } | undefined, icon: LucideIcon, tone: StatVM['tone']): StatVM => ({
+  const t = data?.trends
+  const mk = (
+    label: string,
+    pair: { total: number; week: number } | undefined,
+    trend: number[] | undefined,
+    icon: LucideIcon,
+    tone: StatVM['tone'],
+  ): StatVM => ({
     label,
     value: pair?.total ?? 0,
     delta: pair ? `+${pair.week} this week` : '—',
     icon,
     tone,
-    trend: buildTrend(pair?.week ?? 0),
+    // REAL daily history from the API; flat baseline until data exists (no synthesis).
+    trend: trend && trend.length > 1 ? trend : FLAT_TREND,
   })
   return [
-    mk('Sources', s?.sources, FileText, 'violet'),
-    mk('Notes', s?.notes, BookOpen, 'blue'),
-    mk('Topics', s?.topics, Network, 'green'),
-    mk('Decisions', s?.decisions, CheckCircle2, 'orange'),
-    mk('AI Answers', s?.aiAnswers, Search, 'purple'),
+    mk('Sources', s?.sources, t?.sources, FileText, 'violet'),
+    mk('Notes', s?.notes, t?.notes, BookOpen, 'blue'),
+    mk('Topics', s?.topics, t?.topics, Network, 'green'),
+    mk('Decisions', s?.decisions, t?.decisions, CheckCircle2, 'orange'),
+    mk('AI Answers', s?.aiAnswers, t?.aiAnswers, Search, 'purple'),
   ]
 }
 

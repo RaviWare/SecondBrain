@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { UserButton } from '@clerk/nextjs'
+import { UserButton, useUser } from '@clerk/nextjs'
 import {
   BellRing,
   BookMarked,
@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Sparkles,
   Tags,
+  Target,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -47,6 +48,7 @@ const nav = [
   { href: '/app/agents/board', label: 'Board', icon: KanbanSquare },
   { href: '/app/agents/skills', label: 'Skills', icon: Blocks },
   { href: '/app/agents/cost', label: 'Cost', icon: Wallet },
+  { href: '/app/missions', label: 'Missions', icon: Target },
   { href: '/app/agent', label: 'AI Agent', icon: Bot },
   { href: '/app/query', label: 'AI Assistant', icon: Sparkles },
   { href: '/app/integrations', label: 'Integrations', icon: Plug },
@@ -97,6 +99,21 @@ function useIsAdmin(): boolean {
   return isAdmin
 }
 
+// The signed-in user's REAL plan tier, for the sidebar account label. Defaults to
+// null (renders nothing) until it resolves — never a fabricated "Pro". Cheap probe.
+function usePlanTier(): 'free' | 'pro' | null {
+  const [tier, setTier] = useState<'free' | 'pro' | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/me')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && (d?.plan === 'free' || d?.plan === 'pro')) setTier(d.plan) })
+      .catch(() => { /* leave null — no label rather than a wrong one */ })
+    return () => { cancelled = true }
+  }, [])
+  return tier
+}
+
 function SidebarWithActive() {
   const path = usePathname()
   const searchParams = useSearchParams()
@@ -137,6 +154,15 @@ function SidebarView({
         <div className="flex items-center justify-between gap-3">
           <BrandMark />
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
+              aria-label="Search and commands"
+              className="grid h-8 w-8 place-items-center rounded-full border"
+              style={{ background: 'var(--app-sidebar-card)', borderColor: 'var(--app-sidebar-card-border)', color: 'var(--app-sidebar-muted)' }}
+            >
+              <Search className="h-4 w-4" />
+            </button>
             <ThemeToggle />
             <UserButton appearance={userButtonAppearance} />
           </div>
@@ -293,14 +319,7 @@ function SidebarView({
             <div className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full">
               <UserButton appearance={userButtonAppearance} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium leading-none" style={{ color: 'var(--app-sidebar-text)' }}>
-                Alex Thompson
-              </p>
-              <p className="mt-1 truncate text-[11px]" style={{ color: 'var(--app-sidebar-muted)' }}>
-                Pro Plan
-              </p>
-            </div>
+            <SidebarIdentity />
             <ThemeToggle />
           </div>
         </div>
@@ -341,6 +360,34 @@ function SidebarView({
         </div>
       </nav>
     </>
+  )
+}
+
+function SidebarIdentity() {
+  const { user, isLoaded } = useUser()
+  const tier = usePlanTier()
+
+  // Real Clerk display name, with graceful fallbacks (full name → first name →
+  // username → email local-part). Never a hardcoded placeholder.
+  const name = !isLoaded
+    ? ''
+    : user?.fullName
+      || user?.firstName
+      || user?.username
+      || user?.primaryEmailAddress?.emailAddress?.split('@')[0]
+      || 'Your account'
+
+  const planLabel = tier === 'pro' ? 'Pro plan' : tier === 'free' ? 'Free plan' : ''
+
+  return (
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-[13px] font-medium leading-none" style={{ color: 'var(--app-sidebar-text)' }}>
+        {name || '\u00A0'}
+      </p>
+      <p className="mt-1 truncate text-[11px]" style={{ color: 'var(--app-sidebar-muted)' }}>
+        {planLabel || '\u00A0'}
+      </p>
+    </div>
   )
 }
 

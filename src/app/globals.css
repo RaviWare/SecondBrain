@@ -594,6 +594,27 @@ body::before {
   .dash-live-dot { animation: none; }
 }
 
+/* ── Global toast (Radix Toast) entrance/exit + swipe ─────────────── */
+@keyframes sb-toast-in {
+  from { opacity: 0; transform: translateX(calc(100% + 1rem)); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sb-toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(calc(100% + 1rem)); }
+}
+.sb-toast-root[data-state='open']   { animation: sb-toast-in 0.28s var(--ease-out-expo); }
+.sb-toast-root[data-state='closed'] { animation: sb-toast-out 0.18s ease-in forwards; }
+.sb-toast-root[data-swipe='move']   { transform: translateX(var(--radix-toast-swipe-move-x)); }
+.sb-toast-root[data-swipe='cancel'] { transform: translateX(0); transition: transform 0.2s ease-out; }
+.sb-toast-root[data-swipe='end']    { animation: sb-toast-out 0.18s ease-in forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-toast-root[data-state='open'],
+  .sb-toast-root[data-state='closed'],
+  .sb-toast-root[data-swipe='end'] { animation: none; }
+}
+
 /* ── Mandala (Ask-anything illustration) ─────────────── */
 @keyframes mandala-spin     { from { transform: rotate(0deg); }  to { transform: rotate(360deg); } }
 @keyframes mandala-spin-rev { from { transform: rotate(0deg); }  to { transform: rotate(-360deg); } }

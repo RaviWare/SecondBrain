@@ -25,8 +25,18 @@ vi.mock('next/navigation', () => ({
 }))
 
 // Clerk + theme toggle are inert in jsdom — stub to harmless markers.
-vi.mock('@clerk/nextjs', () => ({ UserButton: () => null }))
+vi.mock('@clerk/nextjs', () => ({
+  UserButton: () => null,
+  useUser: () => ({ isLoaded: true, isSignedIn: false, user: null }),
+}))
 vi.mock('@/components/theme/ThemeToggle', () => ({ ThemeToggle: () => null }))
+
+// The sidebar's plan probe + admin probe call fetch; stub it to a never-resolving
+// no-op so the components fall back to their honest defaults (no plan label / no admin).
+if (!('fetch' in globalThis)) {
+  // @ts-expect-error — minimal stub for jsdom
+  globalThis.fetch = () => new Promise(() => {})
+}
 
 import { Sidebar } from './sidebar'
 
