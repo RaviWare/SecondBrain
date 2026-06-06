@@ -13,12 +13,19 @@ import { RecentSources } from '@/components/dashboard/RecentSources'
 import { SquadMissionsPanel } from '@/components/dashboard/SquadMissionsPanel'
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
 import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
+import { CommandPalette } from '@/components/dashboard/CommandPalette'
 import { useSquadSnapshot } from '@/lib/use-squad-snapshot'
+
+/** Open the global ⌘K command palette (handled by <CommandPalette/>'s window listener). */
+function openCommandPalette() {
+  window.dispatchEvent(new Event('open-command-palette'))
+}
 
 export function DashboardShell() {
   return (
     <DashboardDataProvider>
       <main className="sb-dashboard min-h-full text-[var(--dash-text)]">
+        <CommandPalette />
         <div className="mx-auto grid max-w-[1640px] gap-4 p-4 sm:p-5 lg:p-6 min-[1180px]:grid-cols-[minmax(0,1fr)_300px] min-[1440px]:grid-cols-[minmax(0,1fr)_336px] 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-5 2xl:p-7">
           <section className="min-w-0 space-y-4 2xl:space-y-5">
             <DashboardHeader />
@@ -117,9 +124,15 @@ function DashboardHeader() {
             placeholder="Search your memory..."
             className="dash-panel h-11 w-full !rounded-2xl pl-11 pr-16 text-sm text-[var(--dash-text)] outline-none transition focus:border-[var(--dash-border-glow)] focus:shadow-[var(--dash-shadow-md),0_0_0_3px_var(--dash-accent-soft)]"
           />
-          <kbd className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md border border-[var(--dash-border-bright)] bg-[var(--dash-soft)] px-1.5 py-0.5 font-sans text-[11px] font-medium text-[var(--dash-muted)] sm:flex">
+          <button
+            type="button"
+            onClick={openCommandPalette}
+            aria-label="Open command palette"
+            title="Command palette"
+            className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md border border-[var(--dash-border-bright)] bg-[var(--dash-soft)] px-1.5 py-0.5 font-sans text-[11px] font-medium text-[var(--dash-muted)] transition hover:border-[var(--dash-border-glow)] hover:text-[var(--dash-text)] sm:flex"
+          >
             <Command className="h-3 w-3" />K
-          </kbd>
+          </button>
         </form>
 
         <CreditsPill />
