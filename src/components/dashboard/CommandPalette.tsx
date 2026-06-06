@@ -330,6 +330,18 @@ export function CommandPalette() {
             <Kbd>esc</Kbd>
             to close
           </span>
+          <button
+            type="button"
+            onClick={() => {
+              close()
+              window.dispatchEvent(new Event('open-shortcuts'))
+            }}
+            className="ml-auto inline-flex items-center gap-1 transition hover:opacity-80"
+            style={{ color: 'var(--text-secondary, var(--text-primary))' }}
+          >
+            <Kbd>?</Kbd>
+            shortcuts
+          </button>
         </div>
       </div>
     </div>,
