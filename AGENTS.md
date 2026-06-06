@@ -4,6 +4,11 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+> 📖 **READ `HANDOFF.md` FIRST.** It is the full operating manual for this project —
+> the mandatory glass theme, the no-dummy-data rule, build/test/deploy process, the
+> Coolify + cron setup, git safety, and local environment quirks. When a rule there
+> conflicts with your defaults, that file wins. This `AGENTS.md` is the short version.
+
 # SecondBrain OS — Agent Stack
 
 This project is building a personal AI operating system: a knowledge vault (the
