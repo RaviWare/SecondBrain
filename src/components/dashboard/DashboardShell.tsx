@@ -14,6 +14,7 @@ import { SquadMissionsPanel } from '@/components/dashboard/SquadMissionsPanel'
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard'
 import { DashboardDataProvider, useDashboardData, useStatCards } from '@/components/dashboard/DashboardData'
 import { CommandPalette } from '@/components/dashboard/CommandPalette'
+import { ActionCenter } from '@/components/dashboard/ActionCenter'
 import { useSquadSnapshot } from '@/lib/use-squad-snapshot'
 
 /** Open the global ⌘K command palette (handled by <CommandPalette/>'s window listener). */
@@ -30,6 +31,8 @@ export function DashboardShell() {
           <section className="min-w-0 space-y-4 2xl:space-y-5">
             <DashboardHeader />
             <StatRow />
+
+            <ActionCenter />
 
             <div className="dash-rise" style={{ animationDelay: '0.4s' }}>
               <AskKnowledgeCard />
