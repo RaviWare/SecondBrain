@@ -12,14 +12,15 @@ disconnected things: an $18/mo self-serve "Pro" (Stripe) and a $99/mo "AI squad"
 buyers with different checkouts and split the message. We are consolidating into a single
 3-tier ladder under one hero positioning.
 
-**Primary Q1 objective bias:** optimize for **users + learning**, not revenue/ACV. Lead
-with a frictionless Free tier (that's the 1,000-user engine), a cheap self-serve Pro, and
-a capped premium "Squad" tier for revenue + high-touch validation.
+**Primary Q1 objective:** **1,000 USERS** (founder-confirmed). Optimize for **users +
+learning**, not revenue/ACV. Lead with a frictionless Free tier (the 1,000-user engine),
+a cheap self-serve Pro, and a capped premium "Squad" tier for revenue + high-touch
+validation.
 
-> ⚠️ OPEN DECISION for the founder to confirm: is the Q1 goal **1,000 users** or **1,000
-> paying customers**? This doc assumes **1,000 users** (free-led). If it's paying
-> customers, the strategy shifts toward a sales-heavy, Squad-led motion — flag before
-> building.
+> ✅ RESOLVED: Q1 goal is **1,000 users** (free-led motion), not 1,000 paying customers.
+> Build the funnel accordingly: maximize top-of-funnel signups and time-to-"aha", treat
+> Pro/Squad as upsells. Revisit a revenue/ACV-led motion only after the user base and
+> retention are proven.
 
 ## The ladder
 
@@ -81,7 +82,7 @@ Running Stripe ($18) AND Paddle ($99) doubles tax/reconciliation/support surface
 - Keep all numbers honest (NO DUMMY DATA): don't show fake "X customers" social proof.
 
 ## Open questions to resolve before launch
-1. Q1 goal: 1,000 **users** or 1,000 **paying**? (changes the whole motion)
+1. ~~Q1 goal: 1,000 users or 1,000 paying?~~ ✅ RESOLVED: **1,000 users** (free-led).
 2. Is the Free tier truly no-card-required?
 3. Squad tier seat cap number?
 4. Stripe-only confirmed, or is global tax a reason to move to Paddle?

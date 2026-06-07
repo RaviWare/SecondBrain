@@ -264,8 +264,7 @@ With the secret in an `Authorization: Bearer` header these tick routes return
 - **Pricing — consolidate to one ladder.** See [`docs/PRICING.md`](./docs/PRICING.md) for
   the agreed strategy: a single Free → Pro ($18) → Squad ($99 early access) ladder on ONE
   checkout (Stripe), not two separate offerings. Build/repoint the public pricing page to
-  match it (glass theme per §3). One open founder decision noted in that doc: is Q1 a
-  1,000-**users** goal or 1,000-**paying** goal? Confirm before building the motion.
+  match it (glass theme per §3). Q1 goal is confirmed as **1,000 users** (free-led motion).
 - Wire toasts into more flows (ingest/query) for consistent feedback.
 - Consider onboarding empty-states on the remaining pages.
 
