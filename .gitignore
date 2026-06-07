@@ -44,3 +44,6 @@ next-env.d.ts
 # local editor / agent config
 .claude/
 .gstack/
+
+# growth/marketing scratch docs (for the Claude growth project, not app code)
+docs/growth/
