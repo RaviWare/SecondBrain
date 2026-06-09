@@ -196,7 +196,7 @@ Because Coolify only auto-builds the main Next.js app, the underlying Hermes san
 3. **Pull latest changes and rebuild:**
    ```bash
    git pull origin main
-   docker build -t secondbrain/hermes-agent:latest -f docker/hermes/Dockerfile .
+   docker build -t secondbrain/hermes-agent:latest docker/hermes
    ```
 *The `Dockerfile` automatically downloads the latest Hermes installer script, so this rebuild guarantees you have the newest features. Once built, any new agent session will use this fresh image automatically.*
 

@@ -49,7 +49,7 @@ Coolify automatically deploys the main SecondBrain web app on push, but the Herm
 3. **Pull and Build**: 
    ```bash
    git pull origin main
-   docker build -t secondbrain/hermes-agent:latest -f docker/hermes/Dockerfile .
+   docker build -t secondbrain/hermes-agent:latest docker/hermes
    ```
 This automatically fetches the newest Hermes installer script inside the Dockerfile.
 
