@@ -2056,13 +2056,13 @@ export default function LandingPage() {
                       className="w-2 h-2 rounded-full pulse-dot"
                       style={{ background: 'var(--dash-accent)', boxShadow: '0 0 8px var(--dash-accent)' }}
                     />
-                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[9px]">SECONDBRAIN OS · LIVE</span>
+                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[10px]">SECONDBRAIN OS · LIVE</span>
                   </div>
-                  <h2 className="text-[1.8rem] md:text-4xl font-semibold tracking-tight leading-[1.1] text-[var(--dash-text-strong)] mb-4">
+                  <h2 className="text-[2.2rem] md:text-[3.2rem] font-semibold tracking-tight leading-[1.05] text-[var(--dash-text-strong)] mb-5">
                     One brain.<br />
-                    <span className="brushed-text block mt-1">100+ skills.<br />Your squad.</span>
+                    <span className="brushed-text block mt-2">100+ skills.<br />Your squad.</span>
                   </h2>
-                  <p className="text-[13px] md:text-sm leading-relaxed md:leading-[1.6] text-[var(--dash-muted)] max-w-[90%]">
+                  <p className="text-[15px] md:text-[1.1rem] leading-relaxed md:leading-[1.6] text-[var(--dash-muted)] max-w-[95%]">
                     Ingest sources, build cited memory, search the knowledge graph, command named specialist agents, and run multi-agent missions — all in one workspace. Results delivered to your inbox.
                   </p>
                 </div>
