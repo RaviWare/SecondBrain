@@ -2039,55 +2039,56 @@ export default function LandingPage() {
         <div className="absolute inset-0 grid-bg opacity-50" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
-          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full max-w-5xl mx-auto">
+          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full">
             <div
               ref={systemSpotlight.ref}
               onMouseMove={systemSpotlight.onMouseMove}
-              className="relative rounded-[22px] p-4 md:p-6 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
+              className="relative rounded-[22px] p-5 md:p-10 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
               style={{ 
                 boxShadow: 'var(--dash-shadow-lg)' 
               }}
             >
               <span className="dash-spotlight-glow" aria-hidden />
-              <div className="relative z-[1] flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-                <div className="md:w-1/3 shrink-0 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-2.5 mb-3">
+              <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-12 items-center">
+                <div className="text-left">
+                  <div className="flex items-center justify-start gap-3 mb-6">
                     <span
-                      className="w-1.5 h-1.5 rounded-full pulse-dot"
+                      className="w-2 h-2 rounded-full pulse-dot"
                       style={{ background: 'var(--dash-accent)', boxShadow: '0 0 8px var(--dash-accent)' }}
                     />
-                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[9px]">SECONDBRAIN OS · LIVE</span>
+                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[10px]">SECONDBRAIN OS · LIVE</span>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight text-[var(--dash-text-strong)] mb-2">
-                    One brain.<br />100+ skills.<br />Your squad.
+                  <h2 className="text-[2rem] md:text-5xl font-semibold tracking-tight leading-[1.1] text-[var(--dash-text-strong)] mb-4 md:mb-6">
+                    One brain.<br />
+                    <span className="brushed-text block mt-1">100+ skills.<br />Your squad.</span>
                   </h2>
-                  <p className="text-xs md:text-sm leading-relaxed text-[var(--dash-muted)]">
-                    Ingest sources, build cited memory, and run multi-agent missions all in one workspace.
+                  <p className="text-sm md:text-base leading-relaxed md:leading-8 text-[var(--dash-muted)] max-w-md">
+                    Ingest sources, build cited memory, search the knowledge graph, command named specialist agents, and run multi-agent missions — all in one workspace. Results delivered to your inbox.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 w-full">
                   {CAPABILITIES.map(([title, label], i) => (
                     <div
                       key={title}
-                      className="rounded-lg p-2.5 border border-[var(--dash-border)]"
+                      className="rounded-xl p-4 md:p-5 border border-[var(--dash-border)] transition-colors hover:border-[var(--dash-accent)]/30 group"
                       style={{
                         background: 'var(--dash-card-solid)',
                       }}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="mono text-[8px] tracking-widest text-[var(--dash-muted)]">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <span className="mono text-[10px] tracking-widest text-[var(--dash-muted)] group-hover:text-[var(--dash-accent)] transition-colors">
                           {label.toUpperCase()}
                         </span>
                         <span
-                          className="h-1 w-1 rounded-full"
+                          className="h-1.5 w-1.5 rounded-full"
                           style={{
                             background: i % 2 === 0 ? 'var(--dash-accent)' : '#c8c8cf',
-                            boxShadow: i % 2 === 0 ? '0 0 6px var(--dash-accent)' : 'none',
+                            boxShadow: i % 2 === 0 ? '0 0 8px var(--dash-accent)' : 'none',
                           }}
                         />
                       </div>
-                      <p className="text-[11px] leading-snug text-[var(--dash-text)] opacity-90">
+                      <p className="text-[13px] md:text-sm leading-6 text-[var(--dash-text)]">
                         {title}
                       </p>
                     </div>
