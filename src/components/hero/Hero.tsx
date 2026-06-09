@@ -177,7 +177,7 @@ export function Hero() {
       <div aria-hidden className="hero-glow-b" />
       <div aria-hidden className="hero-scanline" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 pb-10 pt-[76px] md:gap-10 md:px-6 md:pb-16 md:pt-[120px] lg:grid-cols-[1fr_1.08fr] lg:gap-12 lg:pb-20">
+      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 pb-10 md:gap-10 md:px-6 md:pb-16 lg:grid-cols-[1fr_1.08fr] lg:gap-12 lg:pb-20" style={{ paddingTop: 'var(--hero-pt, 68px)' }}>
 
         {/* ── Left column ── */}
         <div className="w-full md:max-w-[600px]">
@@ -186,17 +186,18 @@ export function Hero() {
           <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 py-1.5 backdrop-blur-xl shadow-[0_2px_14px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent-bright)] animate-pulse" />
             <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-              Private AI OS · Agents that know your business
+              <span className="md:hidden">Private AI OS · Always-on agents</span>
+              <span className="hidden md:inline">Private AI OS · Agents that know your business</span>
             </span>
           </div>
 
           {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-headline mt-4 text-[2.6rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.08] md:leading-[0.93] tracking-[-0.035em] md:tracking-[-0.048em] text-[var(--text-primary)]"
+            className="hero-headline mt-3 md:mt-4 font-semibold tracking-tight text-[var(--text-primary)]"
+            style={{ fontSize: 'var(--hero-h1, 2.2rem)', lineHeight: 'var(--hero-lh, 1.1)' }}
           >
-            Your brain.<br />
-            Your squad.<br />
+            Your brain. Your squad.<br />
             <span
               className="brushed-text"
               style={{
@@ -210,16 +211,16 @@ export function Hero() {
           </h1>
 
           {/* Body */}
-          <p className="hero-sub mt-4 text-[13.5px] leading-[1.65] text-[var(--text-secondary)] md:text-[16px] md:mt-5 max-w-[90%] md:max-w-[44ch]">
-            SecondBrain is a private knowledge vault and a team of always-on AI agents — built on your data, not the internet’s. Cited answers, zero guesses, 24/7.
+          <p className="hero-sub mt-3 text-[13px] leading-[1.6] text-[var(--text-secondary)] md:text-[16px] md:mt-5 md:max-w-[44ch]">
+            A private knowledge vault and always-on AI agents built on your data — not the internet’s. Cited answers, zero guesses, 24/7.
           </p>
 
           {/* CTAs */}
-          <div className="hero-cta-row mt-6 md:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="hero-cta-row mt-5 md:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 md:gap-3">
             <Link
               href="/sign-up"
               id="hero-cta-primary"
-              className="group relative inline-flex justify-center h-12 md:h-[52px] items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 w-full sm:w-auto overflow-hidden"
+              className="group relative inline-flex justify-center h-11 md:h-[52px] items-center gap-2 rounded-xl px-6 text-[14px] md:text-[15px] font-semibold transition-all duration-300 w-full sm:w-auto overflow-hidden"
               style={{
                 color: 'var(--text-inverse)',
                 background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
@@ -229,25 +230,25 @@ export function Hero() {
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
               <span className="relative z-10 flex items-center gap-2">
                 Start Building
-                <ArrowRight size={16} strokeWidth={2.4} className="transition-transform group-hover:translate-x-1" />
+                <ArrowRight size={15} strokeWidth={2.4} className="transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
             <Link
               href="/#see-it"
               id="hero-cta-secondary"
-              className="inline-flex justify-center h-12 md:h-[52px] items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:bg-[var(--surface)] hover:border-[var(--border-glow)] w-full sm:w-auto"
+              className="inline-flex justify-center h-11 md:h-[52px] items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[14px] md:text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:bg-[var(--surface)] hover:border-[var(--border-glow)] w-full sm:w-auto"
             >
               Watch it work
-              <Sparkles size={15} strokeWidth={2.2} />
+              <Sparkles size={14} strokeWidth={2.2} />
             </Link>
           </div>
 
-          {/* Trust row — horizontal on mobile */}
-          <div className="hero-trust mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/* Trust row — always horizontal */}
+          <div className="hero-trust mt-4 flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-1.5">
-                <Icon size={13} className="shrink-0 text-[var(--accent)]" />
-                <span className="text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
+                <Icon size={12} className="shrink-0 text-[var(--accent)]" />
+                <span className="text-[11px] text-[var(--text-muted)]">{label}</span>
               </div>
             ))}
           </div>
@@ -608,6 +609,11 @@ export function Hero() {
         }
 
         /* ── Responsive ── */
+        .hero-root {
+          --hero-pt: 120px;
+          --hero-h1: clamp(3.2rem, 6.5vw, 5.6rem);
+          --hero-lh: 0.93;
+        }
         @media (max-width: 1024px) {
           .hero-root { min-height: auto; }
           .hero-lab { min-height: 540px; }
@@ -615,7 +621,12 @@ export function Hero() {
           .float-card-b { right: 10px; top: 18px; }
         }
         @media (max-width: 720px) {
-          .hero-root { padding-top: 72px; padding-bottom: 28px; }
+          .hero-root {
+            --hero-pt: 68px;
+            --hero-h1: 2.2rem;
+            --hero-lh: 1.1;
+            padding-bottom: 28px;
+          }
           .hero-lab { min-height: auto; }
           .lab-shell { border-radius: 20px; padding: 8px; animation: none; }
           .preview-grid { grid-template-columns: 1fr !important; }
@@ -623,7 +634,7 @@ export function Hero() {
           .float-card { display: none; }
         }
         @media (max-width: 480px) {
-          .hero-root { padding-inline: 14px; padding-top: 68px; }
+          .hero-root { padding-inline: 16px; }
           .hero-console { margin: 6px; }
           .source-row:nth-child(3), .wiki-panel { display: none; }
           .graph-panel { min-height: 240px; }
