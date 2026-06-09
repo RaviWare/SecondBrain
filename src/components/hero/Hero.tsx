@@ -193,14 +193,14 @@ export function Hero() {
           {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-headline mt-5 text-[2.6rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.05] md:leading-[0.93] tracking-tight md:tracking-[-0.048em] text-[var(--text-primary)]"
+            className="hero-headline mt-5 text-[3.2rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.1] md:leading-[0.93] tracking-tight md:tracking-[-0.048em] text-[var(--text-primary)]"
           >
-            Your brain.<br className="md:hidden" />
-            <span className="md:block brushed-text md:mt-1">Your squad. Always on.</span>
+            Your brain.<br />
+            <span className="brushed-text">Your squad.<br />Always on.</span>
           </h1>
 
           {/* Body */}
-          <p className="hero-sub mt-5 max-w-[44ch] text-[15px] leading-[1.7] text-[var(--text-secondary)] md:text-[16px]">
+          <p className="hero-sub mt-4 max-w-[44ch] text-[14px] leading-[1.6] text-[var(--text-secondary)] md:text-[16px] md:mt-5">
             SecondBrain is a private knowledge vault and a team of always-on AI agents — built on your data, not the internet's. Your agents know your business because they live inside it. Cited answers, zero guesses, 24/7.
           </p>
 

@@ -12,7 +12,7 @@ import { AgentShowcase } from '@/components/demo/AgentShowcase'
 import { VaultAnatomyInteractive } from '@/components/features/VaultAnatomyInteractive'
 import { BrainMark } from '@/components/ui/BrainMark'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { Shield, Bot, Network, Database, Inbox, GitBranch, Zap, Briefcase, BookOpen, Pen, Layers, MessageSquare, Lock, FileText, CheckCircle2, MessageCircle, Terminal, ChevronRight, Loader2, Plus } from 'lucide-react'
+import { Shield, Bot, Network, Database, Inbox, GitBranch, Zap, Briefcase, BookOpen, Pen, Layers, MessageSquare, Lock, FileText, CheckCircle2, MessageCircle, Terminal, ChevronRight, Loader2, Plus, Menu, X } from 'lucide-react'
 import { useSpotlight } from '@/lib/use-spotlight'
 
 import { SITE_URL, FAQS } from './constants'
@@ -1447,6 +1447,7 @@ export default function LandingPage() {
   }, [userInteracted])
 
   const vaultSpotlight = useSpotlight<HTMLDivElement>()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const systemSpotlight = useSpotlight<HTMLDivElement>()
 
   useEffect(() => {
@@ -1527,24 +1528,40 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-        <div className="hidden max-w-7xl mx-auto px-3.5 pb-2 overflow-x-auto">
-          <div className="flex items-center gap-2 min-w-max">
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className="mono text-[8px] tracking-widest px-2.5 py-1.5 rounded-full border whitespace-nowrap"
-                style={{
-                  color: 'var(--text-secondary)',
-                  borderColor: 'color-mix(in srgb, var(--border-bright) 52%, transparent)',
-                  background: 'color-mix(in srgb, var(--surface) 54%, transparent)',
-                }}
-              >
-                {l.label.toUpperCase()}
-              </a>
-            ))}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-full border border-[var(--border-bright)] hover:border-[var(--border-glow)] transition-colors text-[var(--text-primary)]"
+              style={{ background: 'var(--metallic)', boxShadow: 'var(--shadow-1)' }}
+            >
+              {isMobileMenuOpen ? <X size={14} /> : <Menu size={14} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-[calc(100%+8px)] left-4 right-4 rounded-2xl border border-[var(--border-bright)] p-4 shadow-2xl backdrop-blur-3xl animate-in slide-in-from-top-4 fade-in duration-200" style={{ background: 'color-mix(in srgb, var(--surface) 90%, transparent)' }}>
+            <div className="flex flex-col gap-1">
+              {NAV_LINKS.map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-4 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] rounded-xl transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+              <div className="h-px w-full bg-[var(--border)] my-2" />
+              <Link
+                href="/sign-in"
+                className="px-4 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] rounded-xl transition-colors"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero — SecondBrain two-column with autonomous brain canvas */}
