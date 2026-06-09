@@ -2039,45 +2039,45 @@ export default function LandingPage() {
         <div className="absolute inset-0 grid-bg opacity-50" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
-          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full">
+          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full max-w-6xl mx-auto">
             <div
               ref={systemSpotlight.ref}
               onMouseMove={systemSpotlight.onMouseMove}
-              className="relative rounded-[22px] p-5 md:p-10 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
+              className="relative rounded-[22px] p-4 md:p-8 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
               style={{ 
                 boxShadow: 'var(--dash-shadow-lg)' 
               }}
             >
               <span className="dash-spotlight-glow" aria-hidden />
-              <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-12 items-center">
+              <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 md:gap-10 items-center">
                 <div className="text-left">
-                  <div className="flex items-center justify-start gap-3 mb-6">
+                  <div className="flex items-center justify-start gap-2.5 mb-5">
                     <span
                       className="w-2 h-2 rounded-full pulse-dot"
                       style={{ background: 'var(--dash-accent)', boxShadow: '0 0 8px var(--dash-accent)' }}
                     />
-                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[10px]">SECONDBRAIN OS · LIVE</span>
+                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[9px]">SECONDBRAIN OS · LIVE</span>
                   </div>
-                  <h2 className="text-[2rem] md:text-5xl font-semibold tracking-tight leading-[1.1] text-[var(--dash-text-strong)] mb-4 md:mb-6">
+                  <h2 className="text-[1.8rem] md:text-4xl font-semibold tracking-tight leading-[1.1] text-[var(--dash-text-strong)] mb-4">
                     One brain.<br />
                     <span className="brushed-text block mt-1">100+ skills.<br />Your squad.</span>
                   </h2>
-                  <p className="text-sm md:text-base leading-relaxed md:leading-8 text-[var(--dash-muted)] max-w-md">
+                  <p className="text-[13px] md:text-sm leading-relaxed md:leading-[1.6] text-[var(--dash-muted)] max-w-[90%]">
                     Ingest sources, build cited memory, search the knowledge graph, command named specialist agents, and run multi-agent missions — all in one workspace. Results delivered to your inbox.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3 w-full">
                   {CAPABILITIES.map(([title, label], i) => (
                     <div
                       key={title}
-                      className="rounded-xl p-4 md:p-5 border border-[var(--dash-border)] transition-colors hover:border-[var(--dash-accent)]/30 group"
+                      className="rounded-[14px] p-3.5 md:p-4 border border-[var(--dash-border)] transition-colors hover:border-[var(--dash-accent)]/30 group"
                       style={{
                         background: 'var(--dash-card-solid)',
                       }}
                     >
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <span className="mono text-[10px] tracking-widest text-[var(--dash-muted)] group-hover:text-[var(--dash-accent)] transition-colors">
+                      <div className="flex items-center justify-between gap-2.5 mb-2.5">
+                        <span className="mono text-[9px] tracking-widest text-[var(--dash-muted)] group-hover:text-[var(--dash-accent)] transition-colors">
                           {label.toUpperCase()}
                         </span>
                         <span
@@ -2088,7 +2088,7 @@ export default function LandingPage() {
                           }}
                         />
                       </div>
-                      <p className="text-[13px] md:text-sm leading-6 text-[var(--dash-text)]">
+                      <p className="text-[12px] md:text-[13px] leading-[1.5] text-[var(--dash-text)]">
                         {title}
                       </p>
                     </div>
