@@ -183,9 +183,9 @@ export function Hero() {
         <div className="max-w-[600px]">
 
           {/* Badge */}
-          <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 md:px-3.5 py-1.5 md:py-2 backdrop-blur-xl max-w-full">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
-            <span className="text-[9px] md:text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)] text-left md:text-center truncate md:whitespace-normal">
+          <div className="hero-badge inline-flex items-center gap-2 md:gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 md:px-3.5 py-1.5 md:py-2 backdrop-blur-xl max-w-full shadow-[0_2px_14px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent-bright)] animate-pulse" />
+            <span className="text-[10px] md:text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis">
               Private AI OS · Agents that know your business
             </span>
           </div>
@@ -193,10 +193,12 @@ export function Hero() {
           {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-headline mt-5 text-[3.2rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.1] md:leading-[0.93] tracking-tight md:tracking-[-0.048em] text-[var(--text-primary)]"
+            className="hero-headline mt-6 text-[3.4rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.02] md:leading-[0.93] tracking-[-0.03em] md:tracking-[-0.048em] text-[var(--text-primary)]"
           >
-            Your brain.<br />
-            <span className="brushed-text">Your squad.<br />Always on.</span>
+            Your brain.<br className="hidden sm:block" />
+            <span className="sm:hidden"> Your squad.</span>
+            <span className="hidden sm:inline"> Your squad.</span><br />
+            <span className="brushed-text bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-bright)] to-[var(--accent-deep)] drop-shadow-[0_2px_8px_rgba(255,122,31,0.2)]">Always on.</span>
           </h1>
 
           {/* Body */}
@@ -205,27 +207,30 @@ export function Hero() {
           </p>
 
           {/* CTAs */}
-          <div className="hero-cta-row mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="hero-cta-row mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
             <Link
               href="/sign-up"
               id="hero-cta-primary"
-              className="inline-flex justify-center h-12 items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
+              className="group relative inline-flex justify-center h-[52px] items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 w-full sm:w-auto overflow-hidden"
               style={{
                 color: 'var(--text-inverse)',
                 background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
-                boxShadow: '0 12px 36px color-mix(in srgb, var(--accent) 32%, transparent)',
+                boxShadow: '0 8px 32px color-mix(in srgb, var(--accent) 40%, transparent)',
               }}
             >
-              Start Building
-              <ArrowRight size={16} strokeWidth={2.4} />
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+              <span className="relative z-10 flex items-center gap-2">
+                Start Building
+                <ArrowRight size={16} strokeWidth={2.4} className="transition-transform group-hover:translate-x-1" />
+              </span>
             </Link>
             <Link
               href="/#see-it"
               id="hero-cta-secondary"
-              className="inline-flex justify-center h-12 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)] w-full sm:w-auto"
+              className="inline-flex justify-center h-[52px] items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:bg-[var(--surface)] hover:border-[var(--border-glow)] hover:shadow-[0_0_24px_color-mix(in_srgb,var(--accent)_15%,transparent)] w-full sm:w-auto"
             >
               Watch it work
-              <Sparkles size={15} strokeWidth={2.2} />
+              <Sparkles size={15} strokeWidth={2.2} className="text-[var(--text-muted)] group-hover:text-[var(--accent-bright)] transition-colors" />
             </Link>
           </div>
 
@@ -258,11 +263,11 @@ export function Hero() {
         </div>
 
         {/* ── Right column — Product visual ── */}
-        <div className="hero-lab relative min-h-[480px] lg:min-h-[600px]">
+        <div className="hero-lab relative mt-4 md:mt-0 min-h-[480px] lg:min-h-[600px] w-full max-w-[100vw] overflow-hidden sm:overflow-visible">
 
           {/* Main panel */}
-          <div className="hero-panel lab-shell relative overflow-hidden rounded-[26px] border border-[var(--border-bright)] shadow-[0_40px_130px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
-            <div className="absolute inset-0 rounded-[26px] bg-[radial-gradient(circle_at_74%_18%,color-mix(in_srgb,var(--accent)_20%,transparent),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.07),transparent_30%,rgba(255,255,255,0.025))]" />
+          <div className="hero-panel lab-shell relative overflow-hidden rounded-[20px] sm:rounded-[26px] border border-[var(--border-bright)] shadow-[0_20px_80px_rgba(0,0,0,0.65)] sm:shadow-[0_40px_130px_rgba(0,0,0,0.55)] backdrop-blur-2xl transform scale-[0.92] origin-top sm:scale-100">
+            <div className="absolute inset-0 rounded-[20px] sm:rounded-[26px] bg-[radial-gradient(circle_at_74%_18%,color-mix(in_srgb,var(--accent)_20%,transparent),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.07),transparent_30%,rgba(255,255,255,0.025))]" />
 
             {/* Console chrome */}
             <div className="hero-console relative rounded-[22px] border border-[var(--border)] bg-[rgba(5,5,7,0.65)] m-2.5">
