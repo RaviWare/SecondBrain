@@ -1527,18 +1527,18 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-        <div className="md:hidden max-w-7xl mx-auto px-3.5 pb-2 overflow-x-auto">
+        <div className="hidden max-w-7xl mx-auto px-3.5 pb-2 overflow-x-auto">
           <div className="flex items-center gap-2 min-w-max">
             {NAV_LINKS.map((l) => (
               <a
                 key={l.label}
                 href={l.href}
-	                className="mono text-[8px] tracking-widest px-2.5 py-1.5 rounded-full border whitespace-nowrap"
-	                style={{
-	                  color: 'var(--text-secondary)',
-	                  borderColor: 'color-mix(in srgb, var(--border-bright) 52%, transparent)',
-	                  background: 'color-mix(in srgb, var(--surface) 54%, transparent)',
-	                }}
+                className="mono text-[8px] tracking-widest px-2.5 py-1.5 rounded-full border whitespace-nowrap"
+                style={{
+                  color: 'var(--text-secondary)',
+                  borderColor: 'color-mix(in srgb, var(--border-bright) 52%, transparent)',
+                  background: 'color-mix(in srgb, var(--surface) 54%, transparent)',
+                }}
               >
                 {l.label.toUpperCase()}
               </a>

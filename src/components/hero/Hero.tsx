@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 import {
@@ -183,9 +183,9 @@ export function Hero() {
         <div className="max-w-[600px]">
 
           {/* Badge */}
-          <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3.5 py-2 backdrop-blur-xl">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+          <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 md:px-3.5 py-1.5 md:py-2 backdrop-blur-xl max-w-full">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
+            <span className="text-[9px] md:text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)] text-left md:text-center truncate md:whitespace-normal">
               Private AI OS · Agents that know your business
             </span>
           </div>
@@ -193,10 +193,10 @@ export function Hero() {
           {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-headline mt-5 text-[clamp(2.8rem,6.5vw,5.6rem)] font-semibold leading-[0.93] tracking-[-0.048em] text-[var(--text-primary)]"
+            className="hero-headline mt-5 text-[2.6rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.05] md:leading-[0.93] tracking-tight md:tracking-[-0.048em] text-[var(--text-primary)]"
           >
-            Your brain.
-            <span className="block brushed-text">Your squad. Always on.</span>
+            Your brain.<br className="md:hidden" />
+            <span className="md:block brushed-text md:mt-1">Your squad. Always on.</span>
           </h1>
 
           {/* Body */}
@@ -205,11 +205,11 @@ export function Hero() {
           </p>
 
           {/* CTAs */}
-          <div className="hero-cta-row mt-7 flex flex-wrap items-center gap-3">
+          <div className="hero-cta-row mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <Link
               href="/sign-up"
               id="hero-cta-primary"
-              className="inline-flex h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5"
+              className="inline-flex justify-center h-12 items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
               style={{
                 color: 'var(--text-inverse)',
                 background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
@@ -217,24 +217,24 @@ export function Hero() {
               }}
             >
               Start Building
-              <ArrowRight size={15} strokeWidth={2.4} />
+              <ArrowRight size={16} strokeWidth={2.4} />
             </Link>
             <Link
               href="/#see-it"
               id="hero-cta-secondary"
-              className="inline-flex h-12 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)]"
+              className="inline-flex justify-center h-12 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)] w-full sm:w-auto"
             >
               Watch it work
-              <Sparkles size={14} strokeWidth={2.2} />
+              <Sparkles size={15} strokeWidth={2.2} />
             </Link>
           </div>
 
           {/* Trust row */}
-          <div className="hero-trust mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+          <div className="hero-trust mt-6 grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-x-5 gap-y-3">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <Icon size={12} className="shrink-0 text-[var(--accent)]" />
-                <span className="text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
+              <div key={label} className="flex items-center gap-2">
+                <Icon size={14} className="shrink-0 text-[var(--accent)]" />
+                <span className="text-[12px] md:text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
               </div>
             ))}
           </div>
