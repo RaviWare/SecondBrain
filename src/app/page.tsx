@@ -1598,8 +1598,8 @@ export default function LandingPage() {
                 style={{ background: 'var(--metallic-hi)' }}
               />
               <span className="nav-cta-label relative z-[1]">
-                <span className="sm:hidden">Start free</span>
-                <span className="hidden sm:inline">Get started free</span>
+                <span className="sm:hidden">Start</span>
+                <span className="hidden sm:inline">Get early access</span>
               </span>
             </Link>
           </div>

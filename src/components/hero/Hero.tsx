@@ -42,9 +42,35 @@ const TRUST_ITEMS = [
   { icon: CheckCircle2, label: 'Every answer cited' },
 ]
 
+const VAULT_FEATURES = [
+  { icon: ShieldCheck, label: 'Vault-grounded', desc: "Agents that know your business — not the internet's" },
+  { icon: Database, label: 'Secure Storage', desc: "Your data is encrypted and isolated per workspace" },
+  { icon: Search, label: 'Instant Recall', desc: "Find any past decision or document in seconds" }
+]
+
+const SQUAD_FEATURES = [
+  { icon: Zap, label: 'Squad · always on', desc: "One ask. Your squad runs it. Results cited." },
+  { icon: Network, label: 'Multi-Agent', desc: "Agents collaborate to solve complex, multi-step tasks" },
+  { icon: Sparkles, label: 'Self-improving', desc: "Your squad learns your workflow preferences over time" }
+]
+
+const AGENT_RESPONSES = [
+  { label: 'Agent · cited answer', text: "\"Based on your Q2 strategy doc and 3 board notes — here's what the data says.\"", tags: ['Your vault', '3 sources', 'No guessing'] },
+  { label: 'Agent · market analysis', text: "\"Competitor Acme raised prices by 15%. I've drafted a counter-strategy memo.\"", tags: ['Market Intel', '1 source', 'Drafted'] },
+  { label: 'Agent · synthesis', text: "\"I've summarized the 4-hour technical sync into 5 action items for the engineering team.\"", tags: ['Meeting Notes', '1 source', 'Actionable'] }
+]
+
 export function Hero() {
   const rootRef = useRef<HTMLElement>(null)
   const counterRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const [featureIdx, setFeatureIdx] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFeatureIdx(prev => (prev + 1) % 3)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -190,7 +216,7 @@ export function Hero() {
                 boxShadow: '0 12px 36px color-mix(in srgb, var(--accent) 32%, transparent)',
               }}
             >
-              Build your brain free
+              Start Building
               <ArrowRight size={15} strokeWidth={2.4} />
             </Link>
             <Link
@@ -321,18 +347,18 @@ export function Hero() {
 
                   <BrainMemoryVisual />
 
-                  <div className="query-card dark-preview relative rounded-xl border border-[var(--border-bright)] bg-black/50 p-3 backdrop-blur-xl">
+                  <div className="query-card dark-preview relative rounded-xl border border-[var(--border-bright)] bg-black/50 p-3 backdrop-blur-xl transition-all duration-300">
                     <div className="mb-2 flex items-center gap-2">
                       <Network size={13} className="text-[var(--accent-bright)]" />
-                      <p className="preview-muted text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                        Agent · cited answer
+                      <p className="preview-muted text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)] animate-[fade-in_0.4s_ease-out]" key={AGENT_RESPONSES[featureIdx].label}>
+                        {AGENT_RESPONSES[featureIdx].label}
                       </p>
                     </div>
-                    <p className="preview-title text-[12px] font-semibold leading-5 text-[var(--text-primary)]">
-                      "Based on your Q2 strategy doc and 3 board notes — here's what the data says."
+                    <p className="preview-title text-[12px] font-semibold leading-5 text-[var(--text-primary)] animate-[fade-in_0.4s_ease-out] min-h-[40px]" key={AGENT_RESPONSES[featureIdx].text}>
+                      {AGENT_RESPONSES[featureIdx].text}
                     </p>
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {['Your vault', '3 sources', 'No guessing'].map((tag) => (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5 animate-[fade-in_0.4s_ease-out]" key={AGENT_RESPONSES[featureIdx].tags.join(',')}>
+                      {AGENT_RESPONSES[featureIdx].tags.map((tag) => (
                         <span
                           key={tag}
                           className="preview-pill rounded-full border border-[var(--border)] px-2 py-0.5 text-[7px] uppercase tracking-[0.12em] text-[var(--text-secondary)]"
@@ -348,23 +374,29 @@ export function Hero() {
           </div>
 
           {/* Floating metric cards */}
-          <div className="float-card float-card-a lab-card">
-            <div className="flex items-center gap-2 mb-2">
-              <ShieldCheck size={13} className="text-[var(--accent)]" />
-              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Vault-grounded</span>
+          <div className="float-card float-card-a lab-card transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2 animate-[fade-in_0.4s_ease-out]" key={VAULT_FEATURES[featureIdx].label}>
+              {(() => {
+                const Icon = VAULT_FEATURES[featureIdx].icon
+                return <Icon size={13} className="text-[var(--accent)]" />
+              })()}
+              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">{VAULT_FEATURES[featureIdx].label}</span>
             </div>
-            <strong className="block text-[13px] leading-5 text-[var(--text-primary)]">
-              Agents that know your business — not the internet's
+            <strong className="block text-[13px] leading-5 text-[var(--text-primary)] animate-[fade-in_0.4s_ease-out]" key={VAULT_FEATURES[featureIdx].desc}>
+              {VAULT_FEATURES[featureIdx].desc}
             </strong>
           </div>
 
-          <div className="float-card float-card-b lab-card">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap size={13} className="text-[var(--accent)]" />
-              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Squad · always on</span>
+          <div className="float-card float-card-b lab-card transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2 animate-[fade-in_0.4s_ease-out]" key={SQUAD_FEATURES[featureIdx].label}>
+              {(() => {
+                const Icon = SQUAD_FEATURES[featureIdx].icon
+                return <Icon size={13} className="text-[var(--accent)]" />
+              })()}
+              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">{SQUAD_FEATURES[featureIdx].label}</span>
             </div>
-            <strong className="block text-[13px] leading-5 text-[var(--text-primary)]">
-              One ask. Your squad runs it. Results cited.
+            <strong className="block text-[13px] leading-5 text-[var(--text-primary)] animate-[fade-in_0.4s_ease-out]" key={SQUAD_FEATURES[featureIdx].desc}>
+              {SQUAD_FEATURES[featureIdx].desc}
             </strong>
           </div>
 
