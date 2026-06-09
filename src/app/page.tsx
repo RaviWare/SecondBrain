@@ -1527,11 +1527,11 @@ export default function LandingPage() {
 
   return (
     <div className="site-ambient min-h-screen bg-[var(--bg)] text-[var(--text-primary)] overflow-x-hidden">
-      <Script
-        id="structured-data"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      <div
+        style={{ display: 'none' }}
+        dangerouslySetInnerHTML={{
+          __html: `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>`,
+        }}
       />
 
       {/* Nav — Apple Silicon treatment */}
