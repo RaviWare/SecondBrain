@@ -197,9 +197,10 @@ export function Hero() {
             className="hero-headline mt-3 md:mt-4 font-semibold tracking-tight text-[var(--text-primary)]"
             style={{ fontSize: 'var(--hero-h1, 2.2rem)', lineHeight: 'var(--hero-lh, 1.1)' }}
           >
-            Your brain. Your squad.<br />
+            Your brain.
+            <span className="block"> Your squad.</span>
             <span
-              className="brushed-text"
+              className="brushed-text block"
               style={{
                 background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
                 WebkitBackgroundClip: 'text',
@@ -243,12 +244,12 @@ export function Hero() {
             </Link>
           </div>
 
-          {/* Trust row — always horizontal */}
-          <div className="hero-trust mt-4 flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5">
+          {/* Trust row — always horizontal, 3 on one line */}
+          <div className="hero-trust mt-4 flex flex-row items-center gap-x-3 gap-y-1.5 flex-wrap">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <Icon size={12} className="shrink-0 text-[var(--accent)]" />
-                <span className="text-[11px] text-[var(--text-muted)]">{label}</span>
+              <div key={label} className="flex items-center gap-1">
+                <Icon size={11} className="shrink-0 text-[var(--accent)]" />
+                <span className="text-[10.5px] text-[var(--text-muted)]">{label}</span>
               </div>
             ))}
           </div>
@@ -270,40 +271,69 @@ export function Hero() {
             ))}
           </div>
 
-          {/* Mobile-only mini dashboard preview */}
-          <div className="mt-6 md:hidden rounded-2xl border border-[var(--border-bright)] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ background: 'color-mix(in srgb, var(--surface) 70%, transparent)', backdropFilter: 'blur(20px)' }}>
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />
-                <span className="text-[9px] uppercase tracking-[0.18em] text-[var(--text-secondary)]">Memory engine</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)]">Live</span>
-              </div>
-            </div>
-            <div className="p-3 space-y-2">
-              {SOURCES.slice(0, 2).map(({ icon: Icon, type, title }) => (
-                <div key={title} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent-bright)]">
-                    <Icon size={13} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[7px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{type}</span>
-                    <span className="block truncate text-[12px] font-medium text-[var(--text-primary)]">{title}</span>
-                  </span>
-                  <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
+          {/* Mobile-only: Brain animation + agent card */}
+          <div className="mt-6 md:hidden">
+            {/* Glass panel */}
+            <div
+              className="relative rounded-[20px] border border-[var(--border-bright)] overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+              style={{ background: 'color-mix(in srgb, var(--surface) 65%, transparent)', backdropFilter: 'blur(24px)' }}
+            >
+              {/* Accent glow inside panel */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 70% 20%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 55%)' }} />
+
+              {/* Header bar */}
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2.5 relative">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--text-secondary)]">SecondBrain OS</span>
                 </div>
-              ))}
-              <div className="rounded-xl border border-[var(--border-bright)] bg-black/40 p-3 backdrop-blur-xl">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Network size={12} className="text-[var(--accent-bright)]" />
-                  <span className="text-[9px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{AGENT_RESPONSES[0].label}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[9px] uppercase tracking-[0.16em] text-emerald-400">Live</span>
                 </div>
-                <p className="text-[12px] font-medium leading-[1.5] text-[var(--text-primary)]">{AGENT_RESPONSES[0].text}</p>
-                <div className="mt-2 flex gap-1.5">
+              </div>
+
+              {/* Two-column layout: Brain anim + feed */}
+              <div className="grid grid-cols-[1fr_1fr] gap-0">
+                {/* Left: Brain animation */}
+                <div className="flex flex-col items-center justify-center p-3 border-r border-[var(--border)]">
+                  <div className="w-full max-w-[136px] mx-auto">
+                    <BrainMemoryVisual />
+                  </div>
+                  <span className="mt-1.5 text-[8.5px] uppercase tracking-[0.16em] text-[var(--text-muted)]">Living memory</span>
+                </div>
+
+                {/* Right: Ingest feed */}
+                <div className="flex flex-col gap-2 p-3">
+                  <p className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)] mb-0.5">Ingest queue</p>
+                  {SOURCES.slice(0, 2).map(({ icon: Icon, type, title }) => (
+                    <div key={title} className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-2.5 py-2">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent-bright)]">
+                        <Icon size={11} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[6.5px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{type}</span>
+                        <span className="block truncate text-[11px] font-medium text-[var(--text-primary)]">{title}</span>
+                      </span>
+                    </div>
+                  ))}
+                  <div className="mt-auto flex items-center justify-between pt-1">
+                    <span className="text-[9px] text-[var(--text-muted)]">Vault-cited</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-bright)]">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agent response card */}
+              <div className="border-t border-[var(--border)] px-3 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Network size={11} className="text-[var(--accent-bright)]" />
+                  <span className="text-[8.5px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{AGENT_RESPONSES[0].label}</span>
+                </div>
+                <p className="text-[11.5px] font-medium leading-[1.5] text-[var(--text-primary)] mb-2">{AGENT_RESPONSES[0].text}</p>
+                <div className="flex gap-1.5">
                   {AGENT_RESPONSES[0].tags.map(t => (
-                    <span key={t} className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[7px] uppercase tracking-[0.12em] text-[var(--text-secondary)]">{t}</span>
+                    <span key={t} className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[7px] uppercase tracking-[0.1em] text-[var(--text-secondary)]">{t}</span>
                   ))}
                 </div>
               </div>
