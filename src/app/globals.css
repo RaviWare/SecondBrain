@@ -437,7 +437,8 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
-.sb-dashboard > * { position: relative; z-index: 1; }
+.sb-dashboard > *:not(.absolute):not(.fixed) { position: relative; }
+.sb-dashboard > * { z-index: 1; }
 
 /* Inline/embedded variant (e.g. landing-page showcase): contain the ambient
    backdrops to the section instead of painting the whole viewport. */

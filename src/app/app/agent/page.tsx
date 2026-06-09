@@ -18,6 +18,7 @@ const PROVIDERS = [
   { id: 'openrouter', label: 'OpenRouter', placeholder: 'openai/gpt-4o-mini' },
   { id: 'anthropic', label: 'Anthropic', placeholder: 'claude-haiku-4-5' },
   { id: 'openai', label: 'OpenAI', placeholder: 'gpt-4o-mini' },
+  { id: 'deepseek', label: 'DeepSeek', placeholder: 'deepseek-v4-flash' },
 ]
 
 export default function AgentPage() {

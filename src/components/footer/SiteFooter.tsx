@@ -6,15 +6,6 @@ import { ArrowUpRight, Sparkles } from 'lucide-react'
 import { Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
-/**
- * SiteFooter — DD146-inspired (aura.build)
- * ----------------------------------------
- *  · Top hairline with animated glow sweep
- *  · 4 link columns + newsletter card on a 12-col grid
- *  · Giant scroll-revealed "SECOND BRAIN" wordmark (per-letter stagger + gradient wipe)
- *  · Status / legal row with pulsing ops dot
- *  · Fully theme-aware — uses Phase 1 design tokens only
- */
 const WORDMARK = ['SECOND', 'BRAIN']
 
 export function SiteFooter() {
@@ -49,7 +40,7 @@ export function SiteFooter() {
         />
       </div>
 
-      {/* ── Soft backdrop plume (keeps footer cohesive with hero) ── */}
+      {/* ── Soft backdrop plume ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
@@ -60,11 +51,11 @@ export function SiteFooter() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-40"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-30"
         style={{
           backgroundImage:
             'radial-gradient(var(--border-bright) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
+          backgroundSize: '24px 24px',
           maskImage:
             'radial-gradient(ellipse 80% 60% at 50% 100%, #000 10%, transparent 75%)',
           WebkitMaskImage:
@@ -72,66 +63,64 @@ export function SiteFooter() {
         }}
       />
 
-      {/* ── Top content: link columns + newsletter ───────── */}
-      <div className="mx-auto max-w-7xl px-4 md:px-6 pt-12 md:pt-24 pb-8 md:pb-14">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12">
+      {/* ── Top content ───────── */}
+      <div className="mx-auto max-w-7xl px-4 md:px-6 pt-10 md:pt-16 pb-6 md:pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12">
           {/* Brand · newsletter */}
-          <div className="md:col-span-5">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-[var(--radius-sm)] metallic grid place-items-center">
-                <Sparkles size={15} className="relative z-[1] text-[var(--accent-bright)]" />
+          <div className="col-span-2 md:col-span-5 lg:col-span-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-8 w-8 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] grid place-items-center shadow-[0_0_12px_rgba(255,122,31,0.1)]">
+                  <Sparkles size={14} className="text-[var(--accent-bright)]" />
+                </div>
+                <div>
+                  <div className="type-mono-xs text-[var(--accent-bright)] tracking-[0.15em] text-[9px]">SECONDBRAIN · CLOUD</div>
+                  <div className="text-[1.05rem] font-semibold tracking-tight text-[var(--text-primary)]">Your second brain, wired.</div>
+                </div>
               </div>
-              <div>
-                <div className="type-mono-xs text-[var(--text-muted)]">SECONDBRAIN · CLOUD</div>
-                <div className="type-h5 brushed-text">Your second brain, wired.</div>
-              </div>
+              <p className="text-[0.85rem] leading-[1.6] text-[var(--text-secondary)]">
+                Ingest anything, query everything. A compiled source of truth with a preserved timeline.
+              </p>
             </div>
 
-            <p className="type-body-sm mt-3 md:mt-5 max-w-sm">
-              Ingest anything, query everything. A compiled source of truth with a preserved timeline —
-              shipped as your personal AI knowledge base.
-            </p>
-
             <form
-              className="mt-5 md:mt-7 max-w-sm"
-              onSubmit={(e) => {
-                e.preventDefault()
-                // hook up in Phase 2 (Resend/Loops)
-              }}
+              className="mt-6 md:mt-8 relative max-w-sm"
+              onSubmit={(e) => e.preventDefault()}
             >
-              <label className="type-mono-xs text-[var(--text-muted)] mb-2 block">
-                JOIN · THE · BUILD · LOG
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input type="email" required placeholder="you@domain.com" />
+              <div className="relative flex items-center p-1 rounded-[14px] border border-[var(--border)] bg-[var(--surface-glass)] focus-within:border-[var(--accent)]/50 focus-within:shadow-[0_0_16px_rgba(255,122,31,0.15)] transition-all duration-300">
+                <Input 
+                  type="email" 
+                  required 
+                  placeholder="Join the build log..." 
+                  className="border-0 bg-transparent h-9 text-[0.85rem] focus-visible:ring-0 px-3 w-full shadow-none"
+                />
                 <button
                   type="submit"
                   className={cn(
-                    'inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-md)] px-4',
-                    'text-[var(--text-inverse)] text-sm font-medium whitespace-nowrap',
+                    'shrink-0 flex h-8 w-8 items-center justify-center rounded-[10px]',
                     'bg-[linear-gradient(135deg,var(--accent-bright),var(--accent))]',
-                    'shadow-[var(--shadow-2)] hover:shadow-[var(--glow-accent)]',
-                    'transition-all duration-300'
+                    'text-[var(--text-inverse)] shadow-[var(--shadow-1)] hover:shadow-[0_0_12px_var(--accent)]',
+                    'transition-all duration-300 hover:scale-105'
                   )}
                 >
-                  Subscribe <ArrowUpRight size={14} />
+                  <ArrowUpRight size={16} />
                 </button>
               </div>
-              <p className="type-caption mt-2">Build notes + release posts. No spam, unsubscribe any time.</p>
             </form>
           </div>
 
-          {/* Spacer on lg */}
-          <div className="hidden md:block md:col-span-1" />
+          <div className="hidden lg:block lg:col-span-2" />
 
           {/* Link columns */}
-          <FooterCol title="Product" links={PRODUCT} />
-          <FooterCol title="Resources" links={RESOURCES} />
-          <FooterCol title="Company" links={COMPANY} />
+          <div className="col-span-2 md:col-span-7 lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
+            <FooterCol title="Product" links={PRODUCT} />
+            <FooterCol title="Resources" links={RESOURCES} />
+            <FooterCol title="Company" links={COMPANY} />
+          </div>
         </div>
 
         {/* Pill row · quick actions */}
-        <div className="mt-8 md:mt-14 flex flex-wrap items-center gap-2">
+        <div className="mt-8 md:mt-12 flex flex-wrap items-center gap-2">
           {PILLS.map((p) => (
             <Link
               key={p.label}
@@ -152,25 +141,25 @@ export function SiteFooter() {
       </div>
 
       {/* ── Giant wordmark with scroll reveal ───────────── */}
-      <div className="relative select-none px-4 md:px-6 pb-6 md:pb-10 overflow-hidden">
+      <div className="relative select-none px-4 md:px-6 pb-4 md:pb-6 overflow-hidden">
         <div
           aria-hidden
           className="mx-auto max-w-7xl flex justify-center"
           style={{
             maskImage:
-              'linear-gradient(180deg, transparent 0%, #000 18%, #000 70%, color-mix(in srgb, #000 30%, transparent) 100%)',
+              'linear-gradient(180deg, #000 0%, #000 40%, color-mix(in srgb, #000 10%, transparent) 100%)',
             WebkitMaskImage:
-              'linear-gradient(180deg, transparent 0%, #000 18%, #000 70%, color-mix(in srgb, #000 30%, transparent) 100%)',
+              'linear-gradient(180deg, #000 0%, #000 40%, color-mix(in srgb, #000 10%, transparent) 100%)',
           }}
         >
           <div
             className="flex items-baseline justify-center"
             style={{
               fontFamily: 'var(--font-inter), ui-sans-serif, system-ui',
-              fontWeight: 700,
-              fontSize: 'clamp(2.25rem, 10.2vw, 10rem)',
-              lineHeight: 0.9,
-              letterSpacing: '-0.045em',
+              fontWeight: 800,
+              fontSize: 'clamp(2.5rem, 9vw, 6.5rem)',
+              lineHeight: 0.85,
+              letterSpacing: '-0.04em',
               whiteSpace: 'nowrap',
             }}
           >
@@ -187,15 +176,24 @@ export function SiteFooter() {
                     <span
                       key={i}
                       className={cn(
-                        'inline-block brushed-text',
-                        revealed ? 'footer-letter-in' : 'opacity-0 translate-y-[40%]'
+                        'inline-block relative',
+                        revealed ? 'footer-letter-in' : 'opacity-0'
                       )}
                       style={{
-                        animationDelay: `${flatIndex * 55}ms`,
-                        transitionDelay: `${flatIndex * 55}ms`,
+                        animationDelay: `${flatIndex * 60}ms`,
                       }}
                     >
-                      {ch}
+                      <span 
+                        className="block"
+                        style={{
+                          background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 50%, var(--accent-deep, #e65c00) 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: 'drop-shadow(0 4px 24px rgba(255,122,31,0.3))'
+                        }}
+                      >
+                        {ch}
+                      </span>
                     </span>
                   )
                 })}
@@ -203,25 +201,11 @@ export function SiteFooter() {
             ))}
           </div>
         </div>
-
-        {/* Gradient sweep over wordmark */}
-        <div
-          aria-hidden
-          className={cn(
-            'pointer-events-none absolute inset-x-0 top-0 h-full',
-            revealed && 'footer-sweep'
-          )}
-          style={{
-            background:
-              'linear-gradient(105deg, transparent 40%, color-mix(in srgb, var(--accent) 22%, transparent) 50%, transparent 60%)',
-            mixBlendMode: 'screen',
-          }}
-        />
       </div>
 
       {/* ── Bottom status row ────────────────────────────── */}
-      <div className="border-t border-[var(--border)]">
-        <div className="mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="border-t border-[var(--border)] bg-[#030304]/80 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="type-mono-xs text-[var(--text-muted)]">© 2026 · SECONDBRAIN CLOUD</span>
             <span className="hidden md:inline text-[var(--text-muted)]">·</span>
@@ -246,35 +230,22 @@ export function SiteFooter() {
       {/* ── Scoped keyframes for footer-only motion ──────── */}
       <style jsx>{`
         .footer-letter-in {
-          animation: letterIn 0.9s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
-          transform: translateY(40%);
+          animation: letterIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
         }
         @keyframes letterIn {
-          0%   { opacity: 0; transform: translateY(40%); filter: blur(6px); }
-          60%  { opacity: 1; filter: blur(0); }
-          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
-        }
-
-        .footer-sweep {
-          animation: sweep 3.2s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) 0.4s forwards;
-          transform: translateX(-30%);
-          opacity: 0;
-        }
-        @keyframes sweep {
-          0%   { transform: translateX(-30%); opacity: 0; }
-          25%  { opacity: 1; }
-          100% { transform: translateX(40%); opacity: 0; }
+          0%   { opacity: 0; transform: scale(0.92) translateY(12%); filter: blur(12px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
         .footer-hairline-anim {
-          animation: hairline 2.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
+          animation: hairline 2s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
           transform: translateX(-100%);
         }
         @keyframes hairline {
           0%   { transform: translateX(-100%); opacity: 0; }
           20%  { opacity: 1; }
-          100% { transform: translateX(260%); opacity: 0.3; }
+          100% { transform: translateX(260%); opacity: 0.2; }
         }
       `}</style>
     </footer>
@@ -290,9 +261,9 @@ function FooterCol({
   links: { label: string; href: string; external?: boolean }[]
 }) {
   return (
-    <div className="md:col-span-2">
-      <div className="type-mono-xs text-[var(--text-muted)] mb-4">{title.toUpperCase()}</div>
-      <ul className="space-y-2.5">
+    <div className="flex flex-col">
+      <div className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3 md:mb-4">{title.toUpperCase()}</div>
+      <ul className="space-y-2 md:space-y-2.5">
         {links.map((l) => (
           <li key={l.label}>
             <Link
@@ -300,7 +271,7 @@ function FooterCol({
               target={l.external ? '_blank' : undefined}
               rel={l.external ? 'noreferrer' : undefined}
               className={cn(
-                'group inline-flex items-center gap-1 text-sm',
+                'group inline-flex items-center gap-1.5 text-[0.85rem] md:text-sm',
                 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
                 'transition-colors duration-200'
               )}
@@ -315,7 +286,7 @@ function FooterCol({
               {l.external && (
                 <ArrowUpRight
                   size={12}
-                  className="opacity-0 -translate-x-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0"
+                  className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
                 />
               )}
             </Link>
@@ -326,7 +297,7 @@ function FooterCol({
   )
 }
 
-/* ── Link data (swap routes as real pages land) ─────── */
+/* ── Link data ─────── */
 const PRODUCT = [
   { label: 'Dashboard', href: '/app/dashboard' },
   { label: 'Ingest', href: '/app/ingest' },

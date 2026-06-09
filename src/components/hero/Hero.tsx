@@ -11,33 +11,35 @@ import {
   Network,
   Search,
   Sparkles,
+  CheckCircle2,
+  Zap,
+  ShieldCheck,
 } from 'lucide-react'
 import { BrainCanvas } from './BrainCanvas'
 
 const TELEMETRY = [
-  { target: 24, label: 'Always on', suffix: '/7' },
-  { target: 5, label: 'Memory layers', suffix: '' },
-  { target: 100, label: 'Cited recall', suffix: '%' },
-]
-
-const STACK = [
-  'Private memory vault',
-  'Cited answers',
-  '24/7 agents',
-  'Knowledge graph',
+  { target: 24, label: 'Always running', suffix: '/7' },
+  { target: 100, label: 'Vault-grounded', suffix: '%' },
+  { target: 0, label: 'Hallucinations', suffix: '' },
 ]
 
 const SOURCES = [
-  { icon: FileText, type: 'URL', title: 'Research article saved' },
-  { icon: Database, type: 'PDF', title: 'Market analysis uploaded' },
-  { icon: Search, type: 'NOTE', title: 'Meeting transcript added' },
+  { icon: FileText, type: 'URL', title: 'Competitor intel ingested' },
+  { icon: Database, type: 'PDF', title: 'Q2 strategy uploaded' },
+  { icon: Search, type: 'NOTE', title: 'Board meeting transcribed' },
 ]
 
 const WIKI_PAGES = [
-  ['SOURCE', 'Research summary'],
-  ['CONCEPT', 'Customer insight'],
-  ['PATTERN', 'Growth signal'],
-  ['ACTION', 'Next decision'],
+  ['SOURCE', 'Q2 strategy brief'],
+  ['CONCEPT', 'ICP insight — Series A'],
+  ['SIGNAL', 'Churn pattern detected'],
+  ['AGENT', 'Follow-up drafted'],
+]
+
+const TRUST_ITEMS = [
+  { icon: ShieldCheck, label: 'Private vault — never shared' },
+  { icon: Zap, label: 'Agents run 24/7' },
+  { icon: CheckCircle2, label: 'Every answer cited' },
 ]
 
 export function Hero() {
@@ -47,35 +49,74 @@ export function Hero() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap
-        .timeline({ delay: 0.12 })
-        .from('.hero-reveal', {
+        .timeline({ delay: 0.08 })
+        .from('.hero-badge', {
           opacity: 0,
-          y: 22,
-          duration: 0.74,
-          stagger: 0.08,
+          y: 12,
+          duration: 0.55,
           ease: 'power3.out',
         })
         .from(
-          '.lab-card',
+          '.hero-headline',
           {
             opacity: 0,
-            y: 24,
-            scale: 0.97,
+            y: 28,
             duration: 0.72,
-            stagger: 0.09,
+            ease: 'power3.out',
+          },
+          '-=0.32'
+        )
+        .from(
+          '.hero-sub',
+          {
+            opacity: 0,
+            y: 18,
+            duration: 0.6,
             ease: 'power3.out',
           },
           '-=0.46'
         )
         .from(
-          '.signal-path',
+          '.hero-cta-row',
           {
-            scaleX: 0,
-            transformOrigin: 'left center',
-            duration: 0.9,
+            opacity: 0,
+            y: 14,
+            duration: 0.55,
             ease: 'power3.out',
           },
-          '-=0.5'
+          '-=0.38'
+        )
+        .from(
+          '.hero-trust',
+          {
+            opacity: 0,
+            y: 10,
+            duration: 0.45,
+            ease: 'power3.out',
+          },
+          '-=0.32'
+        )
+        .from(
+          '.hero-panel',
+          {
+            opacity: 0,
+            y: 32,
+            scale: 0.975,
+            duration: 0.82,
+            ease: 'power3.out',
+          },
+          '-=0.72'
+        )
+        .from(
+          '.hero-metric',
+          {
+            opacity: 0,
+            y: 14,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: 'power3.out',
+          },
+          '-=0.46'
         )
 
       counterRefs.current.forEach((el, i) => {
@@ -84,8 +125,8 @@ export function Hero() {
         const target = TELEMETRY[i].target
         gsap.to(obj, {
           value: target,
-          duration: 2,
-          delay: 0.6 + i * 0.12,
+          duration: 2.2,
+          delay: 0.7 + i * 0.15,
           ease: 'power2.out',
           onUpdate() {
             el.textContent = `${Math.floor(obj.value).toLocaleString()}${TELEMETRY[i].suffix}`
@@ -102,77 +143,87 @@ export function Hero() {
       ref={rootRef}
       id="hero"
       aria-labelledby="hero-heading"
-      className="hero-root relative isolate overflow-hidden border-b border-[var(--border)] px-4 pb-10 pt-[104px] md:px-6 md:pb-20 md:pt-32"
+      className="hero-root relative isolate overflow-hidden border-b border-[var(--border)]"
     >
-      <div aria-hidden className="absolute inset-0 -z-20 grid-bg opacity-35" />
-      <div aria-hidden className="hero-aurora hero-aurora-a" />
-      <div aria-hidden className="hero-aurora hero-aurora-b" />
-      <div aria-hidden className="hero-noise" />
+      {/* Ambient layers */}
+      <div aria-hidden className="absolute inset-0 -z-20 grid-bg opacity-30" />
+      <div aria-hidden className="hero-glow-a" />
+      <div aria-hidden className="hero-glow-b" />
+      <div aria-hidden className="hero-scanline" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-10">
-        <div className="max-w-[660px]">
-          <div className="hero-reveal inline-flex max-w-full items-center gap-2 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_82%,transparent)] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur-xl">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_16px_var(--accent)]" />
-            Your AI operating system
+      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 pb-10 pt-[108px] md:gap-10 md:px-6 md:pb-16 md:pt-[120px] lg:grid-cols-[1fr_1.08fr] lg:gap-12 lg:pb-20">
+
+        {/* ── Left column ── */}
+        <div className="max-w-[600px]">
+
+          {/* Badge */}
+          <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3.5 py-2 backdrop-blur-xl">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+              Private AI OS · Agents that know your business
+            </span>
           </div>
 
+          {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-title hero-reveal mt-5 max-w-[14ch] text-[clamp(3.1rem,7vw,6.4rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-[var(--text-primary)] max-[720px]:text-[clamp(2.6rem,12vw,3.7rem)] max-[480px]:text-[clamp(2.15rem,11vw,2.9rem)] md:mt-7"
+            className="hero-headline mt-5 text-[clamp(2.8rem,6.5vw,5.6rem)] font-semibold leading-[0.93] tracking-[-0.048em] text-[var(--text-primary)]"
           >
-            Your second brain,
-            <span className="block brushed-text">with a team that runs it.</span>
+            Your brain.
+            <span className="block brushed-text">Your squad. Always on.</span>
           </h1>
 
-          <p className="hero-copy hero-reveal mt-5 max-w-xl text-[15px] leading-7 text-[var(--text-secondary)] md:text-lg md:leading-9">
-            Everything you read, write, and decide becomes a private, searchable memory.
-            Then a team of always-on AI agents works that memory for you, around the clock,
-            with cited answers and zero hallucinated facts.
+          {/* Body */}
+          <p className="hero-sub mt-5 max-w-[44ch] text-[15px] leading-[1.7] text-[var(--text-secondary)] md:text-[16px]">
+            SecondBrain is a private knowledge vault and a team of always-on AI agents — built on your data, not the internet's. Your agents know your business because they live inside it. Cited answers, zero guesses, 24/7.
           </p>
 
-          <div className="hero-reveal mt-5 flex flex-wrap gap-2">
-            {STACK.map((item) => (
-              <span
-                key={item}
-                className="rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_70%,transparent)] px-3 py-2 text-[9px] uppercase tracking-[0.13em] text-[var(--text-secondary)] backdrop-blur"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-
-          <div className="hero-reveal mt-6 flex flex-wrap items-center gap-3">
+          {/* CTAs */}
+          <div className="hero-cta-row mt-7 flex flex-wrap items-center gap-3">
             <Link
               href="/sign-up"
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--accent-bright),var(--accent))] px-5 text-sm font-semibold text-[var(--text-inverse)] shadow-[0_16px_42px_color-mix(in_srgb,var(--accent)_28%,transparent)] transition duration-300 hover:-translate-y-0.5"
+              id="hero-cta-primary"
+              className="inline-flex h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5"
+              style={{
+                color: 'var(--text-inverse)',
+                background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
+                boxShadow: '0 12px 36px color-mix(in srgb, var(--accent) 32%, transparent)',
+              }}
             >
-              Build my second brain
-              <ArrowRight size={16} strokeWidth={2.3} />
+              Build your brain free
+              <ArrowRight size={15} strokeWidth={2.4} />
             </Link>
             <Link
               href="/#see-it"
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_64%,transparent)] px-5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)]"
+              id="hero-cta-secondary"
+              className="inline-flex h-12 items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-glow)]"
             >
-              See the agents work
-              <Sparkles size={15} strokeWidth={2.2} />
+              Watch it work
+              <Sparkles size={14} strokeWidth={2.2} />
             </Link>
           </div>
 
-          <div className="hero-reveal mt-8 grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-5 sm:max-w-lg">
+          {/* Trust row */}
+          <div className="hero-trust mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+            {TRUST_ITEMS.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <Icon size={12} className="shrink-0 text-[var(--accent)]" />
+                <span className="text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Telemetry strip */}
+          <div className="hero-trust mt-8 hidden sm:grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-6 max-w-sm">
             {TELEMETRY.map((item, i) => (
-              <div
-                key={item.label}
-                className="rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_48%,transparent)] p-3"
-              >
+              <div key={item.label} className="hero-metric">
                 <span
-                  ref={(el) => {
-                    counterRefs.current[i] = el
-                  }}
-                  className="block text-xl font-semibold text-[var(--text-primary)]"
+                  ref={(el) => { counterRefs.current[i] = el }}
+                  className="block text-2xl font-semibold tracking-tight text-[var(--text-primary)]"
                 >
                   0
                 </span>
-                <span className="mt-1 block text-[9px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                <span className="mt-1 block text-[9px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
                   {item.label}
                 </span>
               </div>
@@ -180,42 +231,52 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="hero-lab relative min-h-[500px] lg:min-h-[650px]">
-          <div className="lab-card lab-shell relative overflow-hidden rounded-[28px] border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_70%,transparent)] p-3 shadow-[0_34px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
-            <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_78%_22%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_28%,rgba(255,255,255,0.03))]" />
-            <div className="hero-console relative rounded-[22px] border border-[var(--border)] bg-[rgba(5,5,7,0.62)]">
+        {/* ── Right column — Product visual ── */}
+        <div className="hero-lab relative min-h-[480px] lg:min-h-[600px]">
+
+          {/* Main panel */}
+          <div className="hero-panel lab-shell relative overflow-hidden rounded-[26px] border border-[var(--border-bright)] shadow-[0_40px_130px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+            <div className="absolute inset-0 rounded-[26px] bg-[radial-gradient(circle_at_74%_18%,color-mix(in_srgb,var(--accent)_20%,transparent),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.07),transparent_30%,rgba(255,255,255,0.025))]" />
+
+            {/* Console chrome */}
+            <div className="hero-console relative rounded-[22px] border border-[var(--border)] bg-[rgba(5,5,7,0.65)] m-2.5">
               <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent)]" />
-                  <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-secondary)]">
+                  <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
+                  <span className="text-[9px] uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                     Memory engine
                   </span>
                 </div>
-                <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                  24 hour recall
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                  <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)]">
+                    Live
+                  </span>
+                </div>
               </div>
 
-              <div className="preview-grid grid gap-3 p-3 md:grid-cols-[0.78fr_1.22fr] md:p-4">
+              <div className="preview-grid grid gap-3 p-3 md:grid-cols-[0.76fr_1.24fr] md:p-3.5">
+                {/* Left column */}
                 <div className="space-y-3">
-                  <div className="source-panel rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_76%,transparent)] p-3">
-                    <p className="mb-3 text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                  {/* Ingest queue */}
+                  <div className="source-panel rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_72%,transparent)] p-3">
+                    <p className="mb-2.5 text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
                       Ingest queue
                     </p>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {SOURCES.map(({ icon: Icon, type, title }) => (
                         <div
                           key={title}
-                          className="source-row flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-2.5"
+                          className="source-row flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.025)] p-2"
                         >
-                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent-bright)]">
-                            <Icon size={15} />
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent-bright)]">
+                            <Icon size={13} />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-[8px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                            <span className="block text-[7px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
                               {type}
                             </span>
-                            <span className="block truncate text-xs font-medium text-[var(--text-primary)]">
+                            <span className="block truncate text-[11px] font-medium text-[var(--text-primary)]">
                               {title}
                             </span>
                           </span>
@@ -224,20 +285,21 @@ export function Hero() {
                     </div>
                   </div>
 
-                  <div className="wiki-panel rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_72%,transparent)] p-3">
-                    <div className="mb-3 flex items-center justify-between">
-                      <p className="text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                  {/* Memory pages */}
+                  <div className="wiki-panel rounded-2xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_68%,transparent)] p-3">
+                    <div className="mb-2.5 flex items-center justify-between">
+                      <p className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
                         Memory pages
                       </p>
-                      <Brain size={14} className="text-[var(--accent-bright)]" />
+                      <Brain size={12} className="text-[var(--accent-bright)]" />
                     </div>
                     <div className="space-y-2">
                       {WIKI_PAGES.map(([type, title]) => (
                         <div key={title} className="flex items-center justify-between gap-2">
-                          <span className="truncate text-xs text-[var(--text-secondary)]">
+                          <span className="truncate text-[11px] text-[var(--text-secondary)]">
                             {title}
                           </span>
-                          <span className="shrink-0 rounded-full bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] px-2 py-1 text-[7px] uppercase tracking-[0.12em] text-[var(--accent-bright)]">
+                          <span className="shrink-0 rounded-full bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-2 py-0.5 text-[7px] uppercase tracking-[0.12em] text-[var(--accent-bright)]">
                             {type}
                           </span>
                         </div>
@@ -246,34 +308,34 @@ export function Hero() {
                   </div>
                 </div>
 
-                <div className="graph-panel dark-preview relative min-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[radial-gradient(circle_at_50%_42%,rgba(255,124,37,0.14),transparent_36%),rgba(255,255,255,0.025)] p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="preview-chip rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur">
+                {/* Right column — brain canvas */}
+                <div className="graph-panel dark-preview relative min-h-[340px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[radial-gradient(circle_at_50%_42%,rgba(255,124,37,0.13),transparent_38%),rgba(0,0,0,0.28)] p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="preview-chip rounded-full border border-[var(--border)] bg-black/30 px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] text-[var(--text-secondary)] backdrop-blur">
                       Living memory
                     </span>
-                    <span className="preview-chip preview-chip-accent rounded-full border border-[var(--border)] bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)] backdrop-blur">
+                    <span className="preview-chip preview-chip-accent rounded-full border border-[var(--border)] bg-black/30 px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] text-[var(--accent-bright)] backdrop-blur">
                       Always on
                     </span>
                   </div>
 
                   <BrainMemoryVisual />
 
-                  <div className="query-card dark-preview relative rounded-2xl border border-[var(--border-bright)] bg-black/45 p-4 backdrop-blur-xl">
-                    <div className="mb-3 flex items-center gap-2">
-                      <Network size={16} className="text-[var(--accent-bright)]" />
-                      <p className="preview-muted text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                        Cited answer
+                  <div className="query-card dark-preview relative rounded-xl border border-[var(--border-bright)] bg-black/50 p-3 backdrop-blur-xl">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Network size={13} className="text-[var(--accent-bright)]" />
+                      <p className="preview-muted text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                        Agent · cited answer
                       </p>
                     </div>
-                    <p className="preview-title text-sm font-semibold leading-6 text-[var(--text-primary)]">
-                      Answers stay connected to the sources, notes, and decisions
-                      behind them.
+                    <p className="preview-title text-[12px] font-semibold leading-5 text-[var(--text-primary)]">
+                      "Based on your Q2 strategy doc and 3 board notes — here's what the data says."
                     </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {['Cited sources', 'Linked context', 'Memory graph'].map((tag) => (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {['Your vault', '3 sources', 'No guessing'].map((tag) => (
                         <span
                           key={tag}
-                          className="preview-pill rounded-full border border-[var(--border)] px-2.5 py-1 text-[8px] uppercase tracking-[0.12em] text-[var(--text-secondary)]"
+                          className="preview-pill rounded-full border border-[var(--border)] px-2 py-0.5 text-[7px] uppercase tracking-[0.12em] text-[var(--text-secondary)]"
                         >
                           {tag}
                         </span>
@@ -285,145 +347,145 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="lab-card float-card float-card-a">
-            <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              Searchable memory
-            </span>
-            <strong className="mt-2 block text-sm text-[var(--text-primary)]">
-              Every source becomes reusable knowledge
+          {/* Floating metric cards */}
+          <div className="float-card float-card-a lab-card">
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck size={13} className="text-[var(--accent)]" />
+              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Vault-grounded</span>
+            </div>
+            <strong className="block text-[13px] leading-5 text-[var(--text-primary)]">
+              Agents that know your business — not the internet's
             </strong>
           </div>
 
-          <div className="lab-card float-card float-card-b">
-            <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              24 hour assistant
-            </span>
-            <strong className="mt-2 block text-sm text-[var(--text-primary)]">
-              Your second brain keeps working
+          <div className="float-card float-card-b lab-card">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap size={13} className="text-[var(--accent)]" />
+              <span className="text-[8px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Squad · always on</span>
+            </div>
+            <strong className="block text-[13px] leading-5 text-[var(--text-primary)]">
+              One ask. Your squad runs it. Results cited.
             </strong>
           </div>
 
-          <div className="signal-path signal-path-a" aria-hidden />
-          <div className="signal-path signal-path-b" aria-hidden />
-        </div>
+          </div>
       </div>
 
       <style jsx>{`
         .hero-root {
-          min-height: 100svh;
+          min-height: min(92svh, 900px);
         }
-        .hero-aurora {
+
+        /* ── Ambient glows ── */
+        .hero-glow-a {
           position: absolute;
           pointer-events: none;
           z-index: -10;
+          left: -8%;
+          top: 10%;
+          width: 55vw;
+          height: 55vw;
+          background: radial-gradient(circle, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%);
+          filter: blur(18px);
+          opacity: 0.85;
+        }
+        .hero-glow-b {
+          position: absolute;
+          pointer-events: none;
+          z-index: -10;
+          right: -14%;
+          top: 4%;
+          width: 52vw;
+          height: 52vw;
+          background: radial-gradient(circle, rgba(229, 229, 234, 0.08), transparent 62%);
           filter: blur(14px);
-          opacity: 0.92;
         }
-        .hero-aurora-a {
-          left: -12%;
-          top: 18%;
-          width: 62vw;
-          height: 58vw;
-          background: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent), transparent 64%);
-        }
-        .hero-aurora-b {
-          right: -18%;
-          top: 6%;
-          width: 58vw;
-          height: 58vw;
-          background: radial-gradient(circle, rgba(229, 229, 234, 0.12), transparent 62%);
-        }
-        .hero-noise {
+        .hero-scanline {
           position: absolute;
           inset: 0;
           pointer-events: none;
           z-index: -5;
           background:
-            linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.54) 100%),
-            repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 7px);
-          mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
-          -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+            linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.48) 100%),
+            repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 7px);
+          mask-image: linear-gradient(180deg, #000 0%, transparent 90%);
+          -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 90%);
         }
+
+        /* ── CTA Buttons ── */
+        .hero-btn-primary {
+          background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+          box-shadow: 0 12px 36px color-mix(in srgb, var(--accent) 30%, transparent);
+        }
+        .hero-btn-primary:hover {
+          background: linear-gradient(135deg, var(--accent-bright) 10%, var(--accent));
+          box-shadow: 0 18px 48px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        /* ── Lab shell ── */
         .lab-shell {
+          background: color-mix(in srgb, var(--surface) 68%, transparent);
           animation: hero-float 8s ease-in-out infinite;
         }
+
+        /* ── Source rows ── */
         .source-row {
-          animation: row-pulse 4.2s ease-in-out infinite;
+          animation: row-pulse 4s ease-in-out infinite;
         }
-        .source-row:nth-child(2) {
-          animation-delay: 0.45s;
-        }
-        .source-row:nth-child(3) {
-          animation-delay: 0.9s;
-        }
+        .source-row:nth-child(2) { animation-delay: 0.42s; }
+        .source-row:nth-child(3) { animation-delay: 0.84s; }
+
+        /* ── Float cards ── */
         .float-card {
           position: absolute;
           z-index: 4;
-          max-width: 245px;
+          max-width: 230px;
           border: 1px solid var(--border-bright);
-          border-radius: 18px;
-          background: color-mix(in srgb, var(--surface) 72%, transparent);
+          border-radius: 16px;
+          background: color-mix(in srgb, var(--surface) 78%, transparent);
           box-shadow: var(--shadow-2);
-          padding: 14px;
-          backdrop-filter: blur(18px);
+          padding: 13px 14px;
+          backdrop-filter: blur(20px);
         }
         .float-card-a {
-          left: -18px;
-          bottom: 62px;
+          left: -20px;
+          bottom: 56px;
         }
         .float-card-b {
-          right: -10px;
-          top: 44px;
+          right: -12px;
+          top: 40px;
         }
-        .signal-path {
-          position: absolute;
-          z-index: 3;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, var(--accent), transparent);
-          box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
-          opacity: 0.72;
-        }
-        .signal-path-a {
-          left: 18px;
-          right: 25%;
-          top: 118px;
-        }
-        .signal-path-b {
-          left: 16%;
-          right: 28px;
-          bottom: 132px;
-        }
+
+        /* ── Animations ── */
         @keyframes hero-float {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
+          50% { transform: translateY(-7px); }
         }
         @keyframes row-pulse {
           0%, 100% { border-color: var(--border); }
-          50% { border-color: color-mix(in srgb, var(--accent) 48%, var(--border)); }
+          50% { border-color: color-mix(in srgb, var(--accent) 44%, var(--border)); }
         }
+
+        /* ── Light theme overrides ── */
         :global([data-theme='light']) .hero-root {
           background:
-            radial-gradient(ellipse 72% 42% at 18% 18%, rgba(255, 122, 31, 0.12), transparent 58%),
+            radial-gradient(ellipse 72% 42% at 18% 18%, rgba(255, 122, 31, 0.10), transparent 58%),
             linear-gradient(180deg, #fffdf8 0%, #f8f2e8 54%, #fffaf3 100%);
         }
-        :global([data-theme='light']) .hero-noise {
-          opacity: 0.62;
+        :global([data-theme='light']) .hero-scanline {
+          opacity: 0.55;
           background:
             linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(246, 237, 222, 0.28) 100%),
-            repeating-linear-gradient(90deg, rgba(61, 43, 22, 0.035) 0 1px, transparent 1px 8px);
+            repeating-linear-gradient(90deg, rgba(61, 43, 22, 0.030) 0 1px, transparent 1px 8px);
         }
-        :global([data-theme='light']) .hero-aurora-a {
-          opacity: 0.55;
-        }
-        :global([data-theme='light']) .hero-aurora-b {
-          opacity: 0.18;
-        }
+        :global([data-theme='light']) .hero-glow-a { opacity: 0.50; }
+        :global([data-theme='light']) .hero-glow-b { opacity: 0.15; }
         :global([data-theme='light']) .lab-shell {
-          background: rgba(255, 255, 255, 0.84);
+          background: rgba(255, 255, 255, 0.86);
           border-color: rgba(54, 38, 22, 0.16);
           box-shadow:
             0 1px 0 rgba(255, 255, 255, 0.95) inset,
-            0 28px 80px rgba(60, 42, 20, 0.16);
+            0 32px 90px rgba(60, 42, 20, 0.14);
         }
         :global([data-theme='light']) .hero-console {
           background: linear-gradient(180deg, rgba(255, 252, 246, 0.92), rgba(246, 238, 225, 0.84));
@@ -444,114 +506,44 @@ export function Hero() {
             inset 0 1px 0 rgba(255,255,255,0.10),
             0 18px 44px rgba(43, 31, 18, 0.24);
         }
-        :global([data-theme='light']) .preview-chip {
-          color: rgba(248, 247, 244, 0.74);
-          background: rgba(0, 0, 0, 0.36);
-          border-color: rgba(255, 255, 255, 0.14);
-        }
-        :global([data-theme='light']) .preview-chip-accent {
-          color: #ff8a32;
-        }
-        :global([data-theme='light']) .preview-title {
-          color: #f8f7f4;
-        }
+        :global([data-theme='light']) .preview-chip { color: rgba(248, 247, 244, 0.74); background: rgba(0,0,0,0.34); border-color: rgba(255,255,255,0.14); }
+        :global([data-theme='light']) .preview-chip-accent { color: #ff8a32; }
+        :global([data-theme='light']) .preview-title { color: #f8f7f4; }
         :global([data-theme='light']) .preview-muted,
-        :global([data-theme='light']) .preview-pill {
-          color: rgba(248, 247, 244, 0.55);
-          border-color: rgba(255, 255, 255, 0.12);
-        }
+        :global([data-theme='light']) .preview-pill { color: rgba(248, 247, 244, 0.52); border-color: rgba(255,255,255,0.12); }
         :global([data-theme='light']) .source-panel,
         :global([data-theme='light']) .wiki-panel {
-          background: rgba(255, 255, 255, 0.78);
+          background: rgba(255, 255, 255, 0.80);
           border-color: rgba(54, 38, 22, 0.10);
           box-shadow: 0 10px 30px rgba(60, 42, 20, 0.06);
         }
         :global([data-theme='light']) .source-row {
-          background: rgba(255, 255, 255, 0.72);
+          background: rgba(255, 255, 255, 0.74);
           border-color: rgba(54, 38, 22, 0.10);
         }
+
+        /* ── Responsive ── */
         @media (max-width: 1024px) {
-          .hero-root {
-            min-height: auto;
-          }
-          .hero-lab {
-            min-height: 560px;
-          }
-          .float-card-a {
-            left: 10px;
-            bottom: 22px;
-          }
-          .float-card-b {
-            right: 10px;
-            top: 20px;
-          }
+          .hero-root { min-height: auto; }
+          .hero-lab { min-height: 540px; }
+          .float-card-a { left: 10px; bottom: 20px; }
+          .float-card-b { right: 10px; top: 18px; }
         }
         @media (max-width: 720px) {
-          .hero-root {
-            padding-top: 100px;
-            padding-bottom: 30px;
-          }
-          .hero-title {
-            letter-spacing: -0.052em;
-            max-width: 9ch;
-          }
-          .hero-lab {
-            min-height: auto;
-          }
-          .lab-shell {
-            border-radius: 22px;
-            padding: 10px;
-            animation: none;
-          }
-          .preview-grid {
-            grid-template-columns: 1fr;
-          }
-          .graph-panel {
-            min-height: 270px;
-          }
-          .float-card,
-          .signal-path {
-            display: none;
-          }
+          .hero-root { padding-top: 96px; padding-bottom: 28px; }
+          .hero-lab { min-height: auto; }
+          .lab-shell { border-radius: 20px; padding: 8px; animation: none; }
+          .preview-grid { grid-template-columns: 1fr !important; }
+          .graph-panel { min-height: 260px; }
+          .float-card { display: none; }
         }
         @media (max-width: 480px) {
-          .hero-root {
-            padding-inline: 14px;
-            padding-top: 96px;
-          }
-          .hero-title {
-            max-width: 8.8ch;
-            line-height: 0.94;
-          }
-          .hero-copy {
-            margin-top: 16px;
-            font-size: 13px;
-            line-height: 1.58;
-          }
-          .lab-shell {
-            margin-inline: -2px;
-          }
-          .hero-reveal.mt-8.grid {
-            display: none;
-          }
-          .source-panel {
-            padding: 10px;
-          }
-          .source-row:nth-child(3),
-          .wiki-panel {
-            display: none;
-          }
-          .graph-panel {
-            min-height: 250px;
-          }
-          .query-card {
-            padding: 12px;
-            border-radius: 16px;
-          }
-          .query-card p {
-            font-size: 12px;
-            line-height: 1.55;
-          }
+          .hero-root { padding-inline: 14px; padding-top: 92px; }
+          .hero-console { margin: 6px; }
+          .source-row:nth-child(3), .wiki-panel { display: none; }
+          .graph-panel { min-height: 240px; }
+          .query-card { padding: 10px; border-radius: 14px; }
+          .query-card p { font-size: 11px; line-height: 1.52; }
         }
       `}</style>
     </section>
@@ -560,35 +552,69 @@ export function Hero() {
 
 function BrainMemoryVisual() {
   return (
-    <div className="brain-memory dark-preview relative mx-auto my-4 aspect-square w-full max-w-[330px] overflow-hidden rounded-[28px] border border-[var(--border)] bg-[radial-gradient(circle_at_50%_48%,rgba(255,124,37,0.12),transparent_42%),rgba(0,0,0,0.28)]">
-      <div className="absolute inset-0 opacity-85">
+    <div className="brain-memory dark-preview relative mx-auto my-3 aspect-square w-full max-w-[300px] overflow-hidden rounded-[24px] border border-[var(--border)] bg-[radial-gradient(circle_at_50%_48%,rgba(255,124,37,0.12),transparent_42%),rgba(0,0,0,0.28)]">
+      {/* Mandala Tech Animation Background Layer */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        <svg viewBox="0 0 200 200" className="w-full h-full">
+          {/* Outer tech ring with notches */}
+          <circle cx="100" cy="100" r="85" fill="none" stroke="var(--accent)" strokeWidth="0.75" strokeDasharray="3 6" className="animate-spin-slow" />
+          {/* Inner ticks ring */}
+          <circle cx="100" cy="100" r="72" fill="none" stroke="var(--border-bright)" strokeWidth="1.25" strokeDasharray="40 8 10 8" className="animate-spin-reverse-medium opacity-70" />
+          {/* Third concentric ring */}
+          <circle cx="100" cy="100" r="58" fill="none" stroke="var(--accent-bright)" strokeWidth="0.5" strokeDasharray="1 10" className="animate-spin-fast" />
+          {/* HUD Tech ticks at 4 compass directions */}
+          <line x1="100" y1="8" x2="100" y2="18" stroke="var(--accent-bright)" strokeWidth="1.5" className="animate-pulse" />
+          <line x1="100" y1="182" x2="100" y2="192" stroke="var(--accent-bright)" strokeWidth="1.5" className="animate-pulse" />
+          <line x1="8" y1="100" x2="18" y2="100" stroke="var(--accent-bright)" strokeWidth="1.5" className="animate-pulse" />
+          <line x1="182" y1="100" x2="192" y2="100" stroke="var(--accent-bright)" strokeWidth="1.5" className="animate-pulse" />
+        </svg>
+      </div>
+
+      <div className="absolute inset-0 opacity-90">
         <BrainCanvas className="h-full w-full" />
       </div>
       <div className="brain-glow" aria-hidden />
       <style jsx>{`
         .brain-memory {
           box-shadow:
-            inset 0 0 55px rgba(0, 0, 0, 0.82),
-            0 0 34px color-mix(in srgb, var(--accent) 12%, transparent);
+            inset 0 0 50px rgba(0, 0, 0, 0.78),
+            0 0 28px color-mix(in srgb, var(--accent) 10%, transparent);
         }
         .brain-glow {
           position: absolute;
-          inset: 24%;
+          inset: 22%;
           border-radius: 999px;
-          background: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent), transparent 64%);
-          filter: blur(18px);
-          opacity: 0.9;
-          animation: brain-glow-pulse 4.8s ease-in-out infinite;
+          background: radial-gradient(circle, color-mix(in srgb, var(--accent) 16%, transparent), transparent 64%);
+          filter: blur(16px);
+          opacity: 0.85;
+          animation: brain-glow-pulse 4.6s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          transform-origin: center;
+          animation: spin-slow 24s linear infinite;
+        }
+        .animate-spin-reverse-medium {
+          transform-origin: center;
+          animation: spin-reverse-medium 14s linear infinite;
+        }
+        .animate-spin-fast {
+          transform-origin: center;
+          animation: spin-slow 8s linear infinite;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes spin-reverse-medium {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
         }
         @keyframes brain-glow-pulse {
-          0%, 100% { opacity: 0.42; transform: scale(0.96); }
-          50% { opacity: 0.78; transform: scale(1.06); }
+          0%, 100% { opacity: 0.38; transform: scale(0.95); }
+          50% { opacity: 0.74; transform: scale(1.07); }
         }
         @media (max-width: 480px) {
-          .brain-memory {
-            max-width: 238px;
-            border-radius: 22px;
-          }
+          .brain-memory { max-width: 220px; border-radius: 20px; }
         }
       `}</style>
     </div>
