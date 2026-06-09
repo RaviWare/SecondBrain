@@ -181,6 +181,25 @@ Commands (run from repo root):
 3. Merge the PR → **Coolify auto-deploys from `main`** (Dockerfile build).
 4. Verify production after the deploy finishes (probe key routes; see below).
 
+### Updating the Hermes Agent Base Image
+Because Coolify only auto-builds the main Next.js app, the underlying Hermes sandbox image (`secondbrain/hermes-agent:latest`) must be updated manually when NousResearch releases a new version.
+
+**Step-by-step update process:**
+1. **SSH into the Hetzner server:**
+   ```bash
+   ssh root@<your-hetzner-ip>
+   ```
+2. **Navigate to the repo directory:** (Adjust path if needed)
+   ```bash
+   cd /var/www/SecondBrain
+   ```
+3. **Pull latest changes and rebuild:**
+   ```bash
+   git pull origin main
+   docker build -t secondbrain/hermes-agent:latest -f docker/hermes/Dockerfile .
+   ```
+*The `Dockerfile` automatically downloads the latest Hermes installer script, so this rebuild guarantees you have the newest features. Once built, any new agent session will use this fresh image automatically.*
+
 ### Production env vars (set in Coolify → Environment Variables)
 All must be **"Available at Runtime" ✓**. Keys (values live in `.env.local` locally and
 in Coolify in prod — never commit them):

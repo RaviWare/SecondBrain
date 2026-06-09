@@ -40,6 +40,19 @@ The Hermes sandbox image installs:
 - A SecondBrain **brain connector** that registers `secondbrain_query/search/ingest`
   as native tools pointing at the user's scoped token
 
+## Updating the Hermes Sandbox Image (Server)
+
+Coolify automatically deploys the main SecondBrain web app on push, but the Hermes sandbox container (`secondbrain/hermes-agent:latest`) is a separate image that must be updated manually.
+
+1. **SSH into the server**: `ssh root@<hetzner-ip>`
+2. **Navigate to project**: `cd /var/www/SecondBrain` (or where the repo is cloned)
+3. **Pull and Build**: 
+   ```bash
+   git pull origin main
+   docker build -t secondbrain/hermes-agent:latest -f docker/hermes/Dockerfile .
+   ```
+This automatically fetches the newest Hermes installer script inside the Dockerfile.
+
 ## Manual Hermes install (reference — the standalone runtime)
 
 This is what the sandbox image automates. Do NOT run this on the app host outside a
