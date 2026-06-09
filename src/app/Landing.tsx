@@ -55,6 +55,9 @@ const PRINCIPLES = [
     label: 'Cited & Delivered',
     title: 'Results in your inbox. Every claim sourced.',
     desc: 'Every answer, briefing, and output traces back to your own vault pages — never a confident guess. Agents deliver to Telegram, Discord, WhatsApp, or email so results reach you where you work.',
+  },
+]
+
 const CAPABILITIES = [
   ['Ingest URLs, PDFs, DOCX, transcripts, and notes — source trail and provenance preserved', 'Source intake'],
   ['Auto-summaries, entities, decisions, and self-wiring links generated per source', 'Memory schema'],
