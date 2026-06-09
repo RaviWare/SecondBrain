@@ -2101,7 +2101,7 @@ export default function LandingPage() {
       </section>
 
       {/* Use cases */}
-      <section id="use-cases" className="relative py-12 md:py-16 overflow-hidden">
+      <section id="use-cases" className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 dot-bg opacity-25" />
         <div className="relative max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 md:gap-8 mb-8 md:mb-12">
@@ -2128,7 +2128,7 @@ export default function LandingPage() {
       </section>
 
     {/* Pricing */}
-      <section id="pricing" className="scroll-mt-24 py-12 md:scroll-mt-24 md:py-20">
+      <section id="pricing" className="scroll-mt-24 py-16 md:scroll-mt-32 md:py-24">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="text-center mb-8 md:mb-16">
             <p className="type-mono-xs text-[var(--text-muted)] tracking-widest mb-3">PRICING</p>

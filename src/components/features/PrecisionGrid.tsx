@@ -16,7 +16,7 @@ import { CalibrationDial } from '@/components/widgets/CalibrationDial'
 
 export function PrecisionGrid() {
   return (
-    <section id="features" className="relative scroll-mt-28 overflow-hidden py-12 md:scroll-mt-32 md:py-36">
+    <section id="features" className="relative scroll-mt-28 overflow-hidden py-16 md:scroll-mt-32 md:py-24">
       {/* ambient plume */}
       <div
         aria-hidden
