@@ -177,15 +177,15 @@ export function Hero() {
       <div aria-hidden className="hero-glow-b" />
       <div aria-hidden className="hero-scanline" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 pb-10 pt-[108px] md:gap-10 md:px-6 md:pb-16 md:pt-[120px] lg:grid-cols-[1fr_1.08fr] lg:gap-12 lg:pb-20">
+      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 pb-10 pt-[76px] md:gap-10 md:px-6 md:pb-16 md:pt-[120px] lg:grid-cols-[1fr_1.08fr] lg:gap-12 lg:pb-20">
 
         {/* ── Left column ── */}
-        <div className="max-w-[600px]">
+        <div className="w-full md:max-w-[600px]">
 
           {/* Badge */}
-          <div className="hero-badge inline-flex items-center gap-2 md:gap-2.5 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 md:px-3.5 py-1.5 md:py-2 backdrop-blur-xl max-w-full shadow-[0_2px_14px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-3 py-1.5 backdrop-blur-xl shadow-[0_2px_14px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent-bright)] animate-pulse" />
-            <span className="text-[10px] md:text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis">
+            <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)]">
               Private AI OS · Agents that know your business
             </span>
           </div>
@@ -193,25 +193,33 @@ export function Hero() {
           {/* Headline */}
           <h1
             id="hero-heading"
-            className="hero-headline mt-6 text-[3.4rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.02] md:leading-[0.93] tracking-[-0.03em] md:tracking-[-0.048em] text-[var(--text-primary)]"
+            className="hero-headline mt-4 text-[2.6rem] md:text-[clamp(3.2rem,6.5vw,5.6rem)] font-semibold leading-[1.08] md:leading-[0.93] tracking-[-0.035em] md:tracking-[-0.048em] text-[var(--text-primary)]"
           >
-            Your brain.<br className="hidden sm:block" />
-            <span className="sm:hidden"> Your squad.</span>
-            <span className="hidden sm:inline"> Your squad.</span><br />
-            <span className="brushed-text bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-bright)] to-[var(--accent-deep)] drop-shadow-[0_2px_8px_rgba(255,122,31,0.2)]">Always on.</span>
+            Your brain.<br />
+            Your squad.<br />
+            <span
+              className="brushed-text"
+              style={{
+                background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Always on.
+            </span>
           </h1>
 
           {/* Body */}
-          <p className="hero-sub mt-4 max-w-[44ch] text-[14px] leading-[1.6] text-[var(--text-secondary)] md:text-[16px] md:mt-5">
-            SecondBrain is a private knowledge vault and a team of always-on AI agents — built on your data, not the internet's. Your agents know your business because they live inside it. Cited answers, zero guesses, 24/7.
+          <p className="hero-sub mt-4 text-[13.5px] leading-[1.65] text-[var(--text-secondary)] md:text-[16px] md:mt-5 max-w-[90%] md:max-w-[44ch]">
+            SecondBrain is a private knowledge vault and a team of always-on AI agents — built on your data, not the internet’s. Cited answers, zero guesses, 24/7.
           </p>
 
           {/* CTAs */}
-          <div className="hero-cta-row mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+          <div className="hero-cta-row mt-6 md:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <Link
               href="/sign-up"
               id="hero-cta-primary"
-              className="group relative inline-flex justify-center h-[52px] items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 w-full sm:w-auto overflow-hidden"
+              className="group relative inline-flex justify-center h-12 md:h-[52px] items-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-all duration-300 w-full sm:w-auto overflow-hidden"
               style={{
                 color: 'var(--text-inverse)',
                 background: 'linear-gradient(135deg, var(--accent-bright), var(--accent))',
@@ -227,24 +235,24 @@ export function Hero() {
             <Link
               href="/#see-it"
               id="hero-cta-secondary"
-              className="inline-flex justify-center h-[52px] items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:bg-[var(--surface)] hover:border-[var(--border-glow)] hover:shadow-[0_0_24px_color-mix(in_srgb,var(--accent)_15%,transparent)] w-full sm:w-auto"
+              className="inline-flex justify-center h-12 md:h-[52px] items-center gap-2 rounded-xl border border-[var(--border-bright)] bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-5 text-[15px] font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all duration-300 hover:bg-[var(--surface)] hover:border-[var(--border-glow)] w-full sm:w-auto"
             >
               Watch it work
-              <Sparkles size={15} strokeWidth={2.2} className="text-[var(--text-muted)] group-hover:text-[var(--accent-bright)] transition-colors" />
+              <Sparkles size={15} strokeWidth={2.2} />
             </Link>
           </div>
 
-          {/* Trust row */}
-          <div className="hero-trust mt-6 grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-x-5 gap-y-3">
+          {/* Trust row — horizontal on mobile */}
+          <div className="hero-trust mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2">
-                <Icon size={14} className="shrink-0 text-[var(--accent)]" />
-                <span className="text-[12px] md:text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
+              <div key={label} className="flex items-center gap-1.5">
+                <Icon size={13} className="shrink-0 text-[var(--accent)]" />
+                <span className="text-[11px] text-[var(--text-muted)] tracking-wide">{label}</span>
               </div>
             ))}
           </div>
 
-          {/* Telemetry strip */}
+          {/* Telemetry strip — desktop only */}
           <div className="hero-trust mt-8 hidden sm:grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-6 max-w-sm">
             {TELEMETRY.map((item, i) => (
               <div key={item.label} className="hero-metric">
@@ -260,10 +268,50 @@ export function Hero() {
               </div>
             ))}
           </div>
+
+          {/* Mobile-only mini dashboard preview */}
+          <div className="mt-6 md:hidden rounded-2xl border border-[var(--border-bright)] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style={{ background: 'color-mix(in srgb, var(--surface) 70%, transparent)', backdropFilter: 'blur(20px)' }}>
+            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />
+                <span className="text-[9px] uppercase tracking-[0.18em] text-[var(--text-secondary)]">Memory engine</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                <span className="text-[9px] uppercase tracking-[0.16em] text-[var(--accent-bright)]">Live</span>
+              </div>
+            </div>
+            <div className="p-3 space-y-2">
+              {SOURCES.slice(0, 2).map(({ icon: Icon, type, title }) => (
+                <div key={title} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent-bright)]">
+                    <Icon size={13} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[7px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{type}</span>
+                    <span className="block truncate text-[12px] font-medium text-[var(--text-primary)]">{title}</span>
+                  </span>
+                  <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
+                </div>
+              ))}
+              <div className="rounded-xl border border-[var(--border-bright)] bg-black/40 p-3 backdrop-blur-xl">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Network size={12} className="text-[var(--accent-bright)]" />
+                  <span className="text-[9px] uppercase tracking-[0.14em] text-[var(--text-muted)]">{AGENT_RESPONSES[0].label}</span>
+                </div>
+                <p className="text-[12px] font-medium leading-[1.5] text-[var(--text-primary)]">{AGENT_RESPONSES[0].text}</p>
+                <div className="mt-2 flex gap-1.5">
+                  {AGENT_RESPONSES[0].tags.map(t => (
+                    <span key={t} className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[7px] uppercase tracking-[0.12em] text-[var(--text-secondary)]">{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* ── Right column — Product visual ── */}
-        <div className="hero-lab relative mt-4 md:mt-0 min-h-[480px] lg:min-h-[600px] w-full max-w-[100vw] overflow-hidden sm:overflow-visible">
+        {/* ── Right column — Product visual — DESKTOP ONLY ── */}
+        <div className="hero-lab hidden md:block relative min-h-[480px] lg:min-h-[600px] w-full">
 
           {/* Main panel */}
           <div className="hero-panel lab-shell relative overflow-hidden rounded-[20px] sm:rounded-[26px] border border-[var(--border-bright)] shadow-[0_20px_80px_rgba(0,0,0,0.65)] sm:shadow-[0_40px_130px_rgba(0,0,0,0.55)] backdrop-blur-2xl transform scale-[0.92] origin-top sm:scale-100">
@@ -567,7 +615,7 @@ export function Hero() {
           .float-card-b { right: 10px; top: 18px; }
         }
         @media (max-width: 720px) {
-          .hero-root { padding-top: 96px; padding-bottom: 28px; }
+          .hero-root { padding-top: 72px; padding-bottom: 28px; }
           .hero-lab { min-height: auto; }
           .lab-shell { border-radius: 20px; padding: 8px; animation: none; }
           .preview-grid { grid-template-columns: 1fr !important; }
@@ -575,7 +623,7 @@ export function Hero() {
           .float-card { display: none; }
         }
         @media (max-width: 480px) {
-          .hero-root { padding-inline: 14px; padding-top: 92px; }
+          .hero-root { padding-inline: 14px; padding-top: 68px; }
           .hero-console { margin: 6px; }
           .source-row:nth-child(3), .wiki-panel { display: none; }
           .graph-panel { min-height: 240px; }
