@@ -169,7 +169,7 @@ export function AgentShowcase() {
   }, [tab])
 
   return (
-    <section ref={sectionRef} id="see-it" className="relative scroll-mt-28 overflow-hidden py-12 md:scroll-mt-32 md:py-28">
+    <section ref={sectionRef} id="see-it" className="relative scroll-mt-20 overflow-hidden py-10 md:scroll-mt-32 md:py-28">
       <div className="absolute inset-0 dot-bg opacity-20" />
       <div
         aria-hidden
@@ -185,68 +185,65 @@ export function AgentShowcase() {
 
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
         {/* Header */}
-        <div className="mb-8 text-center md:mb-14">
-          <p className="type-mono-xs mb-3 tracking-widest text-[var(--text-muted)]">SEE IT IN ACTION</p>
-          <h2 className="text-[1.9rem] font-semibold leading-tight tracking-tight md:text-5xl">
+        <div className="mb-8 text-center md:mb-10">
+          <p className="type-mono-xs mb-2 tracking-widest text-[var(--text-muted)]">SEE IT IN ACTION</p>
+          <h2 className="text-[1.8rem] md:text-4xl font-semibold leading-tight tracking-tight">
             Your squad. Live in your brain.
-            <span className="block brushed-text">Watch them work.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-[var(--text-secondary)] md:text-base md:leading-8">
-            Named agents. 100+ skills. Mission orchestration. Vault-grounded cited answers.
-            Delivered to Telegram, Discord, and email. Pick a view — no signup needed.
+          <p className="mx-auto mt-2 max-w-2xl text-[13px] leading-[1.6] text-[var(--text-secondary)] md:text-base md:leading-8">
+            Named agents. 100+ skills. Mission orchestration. Vault-grounded cited answers. Delivered to Telegram, Discord, and email.
           </p>
         </div>
 
         <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean relative rounded-3xl">
 
-          {/* ── Primary Tab Bar ─────────────────────────────────────────────── */}
-          <nav className="mb-2 flex flex-wrap justify-center gap-2">
-            {MAIN_TABS.map(t => {
-              const Icon = t.icon
-              const active = tab === t.id
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className="inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition duration-300 hover:scale-[1.02]"
-                  style={active
-                    ? { borderColor: `${t.accent}88`, background: `${t.accent}1e`, color: t.accent, boxShadow: `0 0 20px -6px ${t.accent}55` }
-                    : { borderColor: 'var(--dash-border)', color: 'var(--dash-text)', background: 'var(--dash-card-solid)' }}
-                >
-                  <Icon className="h-4 w-4" />
-                  {t.label}
-                  {t.badge && (
-                    <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: t.accent }}>
-                      {t.badge}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </nav>
+          {/* ── Single scrollable tab bar (mobile-first) ── */}
+          <div className="mb-5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex items-center gap-2 min-w-max md:flex-wrap md:min-w-0 md:justify-center">
+              {MAIN_TABS.map(t => {
+                const Icon = t.icon
+                const active = tab === t.id
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border px-3 md:px-4 py-2 text-[12px] md:text-[13px] font-semibold transition duration-300 whitespace-nowrap"
+                    style={active
+                      ? { borderColor: `${t.accent}88`, background: `${t.accent}1e`, color: t.accent, boxShadow: `0 0 20px -6px ${t.accent}55` }
+                      : { borderColor: 'var(--dash-border)', color: 'var(--dash-text)', background: 'var(--dash-card-solid)' }}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {t.label}
+                    {t.badge && (
+                      <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: t.accent }}>
+                        {t.badge}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+              <div className="w-px h-5 bg-[var(--dash-border)] shrink-0" />
+              {SCENE_TABS.map(t => {
+                const Icon = t.icon
+                const active = tab === t.id
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id as Tab)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] md:text-[12px] font-medium transition duration-200 whitespace-nowrap"
+                    style={active
+                      ? { borderColor: `${t.accent}66`, background: `${t.accent}14`, color: t.accent }
+                      : { borderColor: 'var(--dash-border)', color: 'var(--dash-subtle)', background: 'transparent' }}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {t.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-          {/* ── Scene agent tabs (only when not on main tab) ────────────────── */}
-          <nav className="mb-6 flex flex-wrap justify-center gap-1.5">
-            {SCENE_TABS.map(t => {
-              const Icon = t.icon
-              const active = tab === t.id
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id as Tab)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition duration-200"
-                  style={active
-                    ? { borderColor: `${t.accent}66`, background: `${t.accent}14`, color: t.accent }
-                    : { borderColor: 'var(--dash-border)', color: 'var(--dash-subtle)', background: 'transparent' }}
-                >
-                  <Icon className="h-3 w-3" />
-                  {t.label}
-                </button>
-              )
-            })}
-          </nav>
-
-          {/* ── Main content area ────────────────────────────────────────────── */}
+          {/* ── Main content area ── */}
           <div key={tab} className="dash-rise animate-[fade-in_0.4s_ease-out] max-w-6xl mx-auto">
 
             {/* MISSION / ORCHESTRATE */}
