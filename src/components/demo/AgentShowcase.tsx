@@ -185,12 +185,13 @@ export function AgentShowcase() {
 
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
         {/* Header */}
-        <div className="mb-8 text-center md:mb-10">
+        <div className="mb-5 text-center md:mb-10">
           <p className="type-mono-xs mb-2 tracking-widest text-[var(--text-muted)]">SEE IT IN ACTION</p>
-          <h2 className="text-[1.8rem] md:text-4xl font-semibold leading-tight tracking-tight">
+          <h2 className="text-[1.5rem] md:text-5xl font-semibold leading-[1.15] tracking-tight">
             Your squad. Live in your brain.
+            <span className="block brushed-text">Watch them work.</span>
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-[13px] leading-[1.6] text-[var(--text-secondary)] md:text-base md:leading-8">
+          <p className="mx-auto mt-2 max-w-2xl text-[12.5px] leading-[1.6] text-[var(--text-secondary)] md:text-base md:leading-8 hidden sm:block">
             Named agents. 100+ skills. Mission orchestration. Vault-grounded cited answers. Delivered to Telegram, Discord, and email.
           </p>
         </div>
@@ -249,9 +250,9 @@ export function AgentShowcase() {
             {/* MISSION / ORCHESTRATE */}
             {tab === 'orchestrate' && (
               <div className="grid gap-4 lg:grid-cols-[220px_1fr_260px]">
-                <SquadSidebar />
+                <div className="hidden lg:block"><SquadSidebar /></div>
                 <Orchestration active={visible} />
-                <LiveFeed />
+                <div className="hidden lg:block"><LiveFeed /></div>
               </div>
             )}
 
@@ -259,7 +260,7 @@ export function AgentShowcase() {
             {tab === 'squad' && (
               <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
                 <SquadDashboard pulse={squadPulse} />
-                <LiveFeed />
+                <div className="hidden lg:block"><LiveFeed /></div>
               </div>
             )}
 
@@ -272,7 +273,7 @@ export function AgentShowcase() {
             {tab === 'delivery' && (
               <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
                 <DeliveryDemo activeIdx={deliveryIdx} />
-                <LiveFeed />
+                <div className="hidden lg:block"><LiveFeed /></div>
               </div>
             )}
 
@@ -280,7 +281,7 @@ export function AgentShowcase() {
             {tab === 'vault' && (
               <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
                 <VaultDemo />
-                <SquadSidebar />
+                <div className="hidden lg:block"><SquadSidebar /></div>
               </div>
             )}
 
@@ -288,7 +289,7 @@ export function AgentShowcase() {
             {isSceneTab && scene && (
               <div className="grid gap-4 lg:grid-cols-[1.8fr_1fr]">
                 <ScenePlayer scene={scene} active={visible} />
-                <div className="flex flex-col gap-4">
+                <div className="hidden lg:flex flex-col gap-4">
                   <LiveFeed />
                 </div>
               </div>
@@ -412,24 +413,23 @@ function LiveFeed() {
   )
 }
 
-// ── Squad Dashboard ─────────────────────────────────────────────────────────────
+// ── Squad Dashboard ────────────────────────────────────────────────
 function SquadDashboard({ pulse }: { pulse: number }) {
   return (
-    <div className="dash-panel dash-panel-strong dash-grain p-5">
-      <div className="flex items-center justify-between mb-5">
+    <div className="dash-panel dash-panel-strong dash-grain p-4 md:p-5">
+      <div className="flex items-center justify-between mb-3 md:mb-5">
         <div>
           <h3 className="text-sm font-semibold text-[var(--dash-text-strong)]">Jordan's Squad</h3>
           <p className="text-[11px] text-[var(--dash-muted)] mt-0.5">5 agents · 3 active right now</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[10px] text-emerald-400 font-medium">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            All agents running
-          </span>
-        </div>
+        <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[10px] text-emerald-400 font-medium">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="hidden sm:inline">All agents running</span>
+          <span className="sm:hidden">3 Running</span>
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
         {SQUAD.map((agent, i) => {
           const Icon = agent.icon
           const isActive = agent.status === 'active'
@@ -437,46 +437,38 @@ function SquadDashboard({ pulse }: { pulse: number }) {
           return (
             <div
               key={agent.name}
-              className="rounded-xl border p-4 transition-all duration-500"
+              className="rounded-xl border p-3 md:p-4 transition-all duration-500"
               style={{
                 borderColor: isPulse ? `${agent.accent}77` : isActive ? `${agent.accent}33` : 'var(--dash-border)',
                 background: isPulse ? `${agent.accent}12` : isActive ? `${agent.accent}08` : 'var(--dash-card-solid)',
                 boxShadow: isPulse ? `0 0 24px -8px ${agent.accent}44` : 'none',
               }}
             >
-              <div className="flex items-center gap-3">
-                <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border"
+              <div className="flex items-center gap-2.5">
+                <span className="relative grid h-8 w-8 md:h-10 md:w-10 shrink-0 place-items-center rounded-xl border"
                   style={{ borderColor: `${agent.accent}55`, background: `${agent.accent}18`, color: agent.accent }}>
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4 md:h-5 md:w-5" />
                   {isActive && (
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-[var(--dash-bg)]" />
+                    <span className="absolute -top-1 -right-1 h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-emerald-400 border-2 border-[var(--dash-bg)]" />
                   )}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[13px] font-semibold text-[var(--dash-text-strong)]">{agent.name}</p>
-                    <span className="text-[9px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[12px] md:text-[13px] font-semibold text-[var(--dash-text-strong)] truncate">{agent.name}</p>
+                    <span className="text-[8px] font-bold uppercase tracking-wider rounded-full px-1.5 py-0.5 shrink-0"
                       style={{ color: agent.accent, background: `${agent.accent}18` }}>
                       {agent.role}
                     </span>
                   </div>
-                  <p className="text-[11px] mt-0.5" style={{ color: isActive ? agent.accent : 'var(--dash-muted)' }}>
+                  <p className="text-[10px] md:text-[11px] mt-0.5 truncate" style={{ color: isActive ? agent.accent : 'var(--dash-muted)' }}>
                     {agent.task}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {isActive ? (
-                    <div className="flex items-center gap-1 text-[10px] text-emerald-400">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Working
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 text-[10px] text-[var(--dash-muted)]">
-                      <Clock className="h-3 w-3" />
-                      Idle
-                    </div>
-                  )}
-                </div>
+                {isActive ? (
+                  <Loader2 className="h-3 w-3 shrink-0 animate-spin text-emerald-400" />
+                ) : (
+                  <Clock className="h-3 w-3 shrink-0 text-[var(--dash-muted)]" />
+                )}
               </div>
             </div>
           )
