@@ -1526,8 +1526,6 @@ export default function LandingPage() {
                 <span className="hidden sm:inline">Get early access</span>
               </span>
             </Link>
-          </div>
-        </div>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden flex items-center justify-center w-8 h-8 rounded-full border border-[var(--border-bright)] hover:border-[var(--border-glow)] transition-colors text-[var(--text-primary)]"
