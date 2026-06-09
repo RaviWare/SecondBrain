@@ -58,6 +58,37 @@ const PRINCIPLES = [
   },
 ]
 
+function TechMandala() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.15] mix-blend-screen flex items-center justify-center scale-[1.5] md:scale-100 md:translate-x-[-15%] md:translate-y-[10%]">
+      <div className="relative w-[600px] h-[600px] flex items-center justify-center">
+        {/* Outer Ring */}
+        <div className="absolute inset-0 rounded-full border border-[var(--dash-accent)]/30 animate-[spin_40s_linear_infinite]" style={{ borderDasharray: '4 12' }} />
+        
+        {/* Secondary Ring - Counter Spin */}
+        <div className="absolute inset-4 rounded-full border-[1.5px] border-[var(--dash-accent)]/20 animate-[spin_30s_linear_infinite_reverse]" style={{ borderDasharray: '2 6 12 6' }} />
+        
+        {/* Geometric Hexagons */}
+        <svg className="absolute w-[400px] h-[400px] animate-[spin_60s_linear_infinite]" viewBox="0 0 100 100">
+          <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="none" stroke="var(--dash-accent)" strokeWidth="0.2" strokeDasharray="1 3" className="opacity-40" />
+          <polygon points="50,15 80,32.5 80,67.5 50,85 20,67.5 20,32.5" fill="none" stroke="var(--dash-accent)" strokeWidth="0.5" className="opacity-30" />
+        </svg>
+
+        {/* Inner Tech Nodes */}
+        <div className="absolute inset-[150px] rounded-full border border-[var(--dash-accent)]/40 animate-[spin_20s_ease-in-out_infinite_alternate]">
+          <div className="absolute top-[-4px] left-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-x-1/2" />
+          <div className="absolute bottom-[-4px] left-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-x-1/2" />
+          <div className="absolute left-[-4px] top-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-y-1/2" />
+          <div className="absolute right-[-4px] top-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-y-1/2" />
+        </div>
+
+        {/* Core Glow */}
+        <div className="absolute w-32 h-32 rounded-full bg-[var(--dash-accent)]/10 blur-[40px] animate-pulse" />
+      </div>
+    </div>
+  )
+}
+
 const CAPABILITIES = [
   ['Ingest URLs, PDFs, DOCX, transcripts, and notes — source trail and provenance preserved', 'Source intake'],
   ['Auto-summaries, entities, decisions, and self-wiring links generated per source', 'Memory schema'],
@@ -67,6 +98,8 @@ const CAPABILITIES = [
   ['Agent briefings delivered to Telegram, Discord, WhatsApp, or email automatically', 'Messaging delivery'],
   ['Deep semantic search across your entire connected knowledge graph', 'Retrieval'],
   ['Cited answers with honest gap analysis — every claim traced to your vault', 'Answer engine'],
+  ['Agents autonomously write, test, and deploy new custom skills based on your specific workflow needs', 'Auto-Skill Generation'],
+  ['Bring your own custom Python/Node scripts or connect internal APIs via secure Webhooks', 'Custom Tools & APIs'],
 ]
 
 const FLOW = [
@@ -2046,6 +2079,7 @@ export default function LandingPage() {
                 boxShadow: 'var(--dash-shadow-lg)' 
               }}
             >
+              <TechMandala />
               <span className="dash-spotlight-glow" aria-hidden />
               <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[0.72fr_1.28fr] gap-8">
                 <div>
