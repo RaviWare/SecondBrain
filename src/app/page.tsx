@@ -1,4 +1,5 @@
-import LandingPage, { FAQS, SITE_URL } from './Landing'
+import LandingPage from './Landing'
+import { FAQS, SITE_URL } from './constants'
 
 export default function Page() {
   const structuredData = [
