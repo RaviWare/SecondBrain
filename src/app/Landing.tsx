@@ -55,40 +55,6 @@ const PRINCIPLES = [
     label: 'Cited & Delivered',
     title: 'Results in your inbox. Every claim sourced.',
     desc: 'Every answer, briefing, and output traces back to your own vault pages — never a confident guess. Agents deliver to Telegram, Discord, WhatsApp, or email so results reach you where you work.',
-  },
-]
-
-function TechMandala() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.15] mix-blend-screen flex items-center justify-center scale-[1.5] md:scale-100 md:translate-x-[-15%] md:translate-y-[10%]">
-      <div className="relative w-[600px] h-[600px] flex items-center justify-center">
-        {/* Outer Ring */}
-        <div className="absolute inset-0 rounded-full border border-[var(--dash-accent)]/30 animate-[spin_40s_linear_infinite]" style={{ borderDasharray: '4 12' }} />
-        
-        {/* Secondary Ring - Counter Spin */}
-        <div className="absolute inset-4 rounded-full border-[1.5px] border-[var(--dash-accent)]/20 animate-[spin_30s_linear_infinite_reverse]" style={{ borderDasharray: '2 6 12 6' }} />
-        
-        {/* Geometric Hexagons */}
-        <svg className="absolute w-[400px] h-[400px] animate-[spin_60s_linear_infinite]" viewBox="0 0 100 100">
-          <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="none" stroke="var(--dash-accent)" strokeWidth="0.2" strokeDasharray="1 3" className="opacity-40" />
-          <polygon points="50,15 80,32.5 80,67.5 50,85 20,67.5 20,32.5" fill="none" stroke="var(--dash-accent)" strokeWidth="0.5" className="opacity-30" />
-        </svg>
-
-        {/* Inner Tech Nodes */}
-        <div className="absolute inset-[150px] rounded-full border border-[var(--dash-accent)]/40 animate-[spin_20s_ease-in-out_infinite_alternate]">
-          <div className="absolute top-[-4px] left-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-x-1/2" />
-          <div className="absolute bottom-[-4px] left-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-x-1/2" />
-          <div className="absolute left-[-4px] top-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-y-1/2" />
-          <div className="absolute right-[-4px] top-1/2 w-2 h-2 bg-[var(--dash-accent)] rounded-full shadow-[0_0_12px_var(--dash-accent)] -translate-y-1/2" />
-        </div>
-
-        {/* Core Glow */}
-        <div className="absolute w-32 h-32 rounded-full bg-[var(--dash-accent)]/10 blur-[40px] animate-pulse" />
-      </div>
-    </div>
-  )
-}
-
 const CAPABILITIES = [
   ['Ingest URLs, PDFs, DOCX, transcripts, and notes — source trail and provenance preserved', 'Source intake'],
   ['Auto-summaries, entities, decisions, and self-wiring links generated per source', 'Memory schema'],
@@ -2070,57 +2036,55 @@ export default function LandingPage() {
         <div className="absolute inset-0 grid-bg opacity-50" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
-          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full">
+          <div className="sb-dashboard sb-dashboard--inline sb-dashboard-clean w-full max-w-5xl mx-auto">
             <div
               ref={systemSpotlight.ref}
               onMouseMove={systemSpotlight.onMouseMove}
-              className="relative rounded-[22px] p-4 md:p-8 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
+              className="relative rounded-[22px] p-4 md:p-6 border border-[var(--dash-border)] overflow-hidden dash-panel dash-grain dash-spotlight dash-interactive"
               style={{ 
                 boxShadow: 'var(--dash-shadow-lg)' 
               }}
             >
-              <TechMandala />
               <span className="dash-spotlight-glow" aria-hidden />
-              <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[0.72fr_1.28fr] gap-8">
-                <div>
-                  <div className="flex items-center gap-3 mb-5">
+              <div className="relative z-[1] flex flex-col md:flex-row gap-6 md:gap-8 items-center">
+                <div className="md:w-1/3 shrink-0 text-center md:text-left">
+                  <div className="flex items-center justify-center md:justify-start gap-2.5 mb-3">
                     <span
-                      className="w-2 h-2 rounded-full pulse-dot"
+                      className="w-1.5 h-1.5 rounded-full pulse-dot"
                       style={{ background: 'var(--dash-accent)', boxShadow: '0 0 8px var(--dash-accent)' }}
                     />
-                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest">SECONDBRAIN OS · LIVE</span>
+                    <span className="type-mono-xs text-[var(--dash-muted)] tracking-widest text-[9px]">SECONDBRAIN OS · LIVE</span>
                   </div>
-                  <h2 className="text-[1.9rem] md:text-5xl font-semibold tracking-tight leading-tight text-[var(--dash-text-strong)]">
-                    One brain.
-                    <span className="block brushed-text">100+ skills. Your squad.</span>
+                  <h2 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight text-[var(--dash-text-strong)] mb-2">
+                    One brain.<br />100+ skills.<br />Your squad.
                   </h2>
-                  <p className="mt-4 md:mt-5 text-sm md:text-base leading-6 md:leading-8 text-[var(--dash-muted)]">
-                    Ingest sources, build cited memory, search the knowledge graph, command named specialist agents, and run multi-agent missions — all in one workspace. Results delivered to your inbox.
+                  <p className="text-xs md:text-sm leading-relaxed text-[var(--dash-muted)]">
+                    Ingest sources, build cited memory, and run multi-agent missions all in one workspace.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 w-full">
                   {CAPABILITIES.map(([title, label], i) => (
                     <div
                       key={title}
-                      className="rounded-xl p-4 border border-[var(--dash-border)]"
+                      className="rounded-lg p-2.5 border border-[var(--dash-border)]"
                       style={{
                         background: 'var(--dash-card-solid)',
                       }}
                     >
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <span className="mono text-[9px] tracking-widest text-[var(--dash-muted)]">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="mono text-[8px] tracking-widest text-[var(--dash-muted)]">
                           {label.toUpperCase()}
                         </span>
                         <span
-                          className="h-1.5 w-1.5 rounded-full"
+                          className="h-1 w-1 rounded-full"
                           style={{
                             background: i % 2 === 0 ? 'var(--dash-accent)' : '#c8c8cf',
-                            boxShadow: i % 2 === 0 ? '0 0 8px var(--dash-accent)' : 'none',
+                            boxShadow: i % 2 === 0 ? '0 0 6px var(--dash-accent)' : 'none',
                           }}
                         />
                       </div>
-                      <p className="text-sm leading-6 text-[var(--dash-text)]">
+                      <p className="text-[11px] leading-snug text-[var(--dash-text)] opacity-90">
                         {title}
                       </p>
                     </div>
